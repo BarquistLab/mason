@@ -1,0 +1,144 @@
+{% extends "layout.html" %}
+{% block content %}
+	<div class="content-section">
+		<form method="POST" action="" enctype="multipart/form-data">
+			{{ form.hidden_tag() }}
+			<fieldset class="form-group">
+				<legend class="border-bottom mb-4">Inputs for the MASON</legend>
+				<div class="form-group">
+					{{ form.custom_id.label(class="form-control-label", style="font-weight: bold;") }}
+					{% if form.custom_id.errors %}
+						{{ form.custom_id(class="form-control form-control-lg is-invalid") }}
+						<div class="invalid-feedback">
+							{% for error in form.custom_id.errors %}	
+								<span>{{ error }}</span>
+							{% endfor %}						
+						</div>
+					{% else %}
+						{{ form.custom_id(class="form-control form-control-lg") }}
+					{% endif %}
+				</div>
+				<div class="form-group">
+					{{ form.presets.label(class="form-control-label", style="font-weight: bold;") }}
+					{% if form.presets.errors %}
+						{{ form.presets(class="form-control form-control-lg is-invalid") }}
+						{% for error in form.presets.errors %}
+							<span class="text-danger">{{ error }}</span><br>
+						{% endfor %}
+					{% else %}
+						{{ form.presets(class="form-control form-control-lg") }}
+					{% endif %}
+				</div>
+				<div class="form-group">
+					{{ form.essential.label(class="form-control-label", style="font-weight: bold;") }}
+					<p>Hold down the Ctrl (windows) or Command (Mac) button to select multiple options.</p>
+					{% if form.essential.errors %}
+						{{ form.essential(class="form-control form-control-lg is-invalid") }}
+						{% for error in form.essential.errors %}
+							<span class="text-danger">{{ error }}</span><br>
+						{% endfor %}
+					{% else %}
+						{{ form.essential(class="form-control form-control-lg") }}
+					{% endif %}
+				</div>
+				<script>
+					let select_presets = document.getElementById('presets');
+					let essential_choice = document.getElementById('essential');
+					let essential_dict = {{ essential | tojson }};
+					if (select_presets.value in essential_dict) {
+						let new_choices = essential_dict[select_presets.value];
+						let optionHTML = '';
+						for (let item of new_choices) {
+							optionHTML += '<option value="' + item.value +'">'+ item.display + '</option>';
+						}
+						essential_choice.innerHTML = optionHTML;
+					}
+					select_presets.onchange = function() {
+						value = select_presets.value;
+						first = document.getElementById('div_genome');
+						second = document.getElementById('div_gff');
+						if (value == 'upload') {
+							first.style.display = 'block';
+							second.style.display = 'block';
+							essential_choice.innerHTML = '';
+						} else {
+							if (select_presets.value in essential_dict) {
+								var new_choices = essential_dict[select_presets.value];
+								essential_choice.innerHTML = '';
+								let optionHTML = '';
+								for (let item of new_choices) {
+									optionHTML += '<option value="' + item.value +'">'+ item.display + '</option>';
+								}
+								essential_choice.innerHTML = optionHTML;
+							}
+							else {
+								essential_choice.innerHTML = '';
+							}
+							first.style.display = 'none';
+							second.style.display = 'none';
+						}
+					}
+				</script>
+				<div class="form-group" id="div_genome" style="display: none;">
+					{{ form.genome.label(class="form-control-label", style="font-weight: bold;") }}
+					{% if form.genome.errors %}
+						{{ form.genome(class="form-control form-control-lg is-invalid") }}
+						{% for error in form.genome.errors %}	
+							<span class="text-danger">{{ error }}</span><br>
+						{% endfor %}
+					{% else %}
+						{{ form.genome(class="form-control form-control-lg") }}
+					{% endif %}
+				</div>
+				<div class="form-group" id="div_gff" style="display: none;">
+					{{ form.gff.label(class="form-control-label", style="font-weight: bold;") }}
+					{% if form.gff.errors %}
+						{{ form.gff(class="form-control form-control-lg is-invalid") }}
+						{% for error in form.gff.errors %}
+							<span class="text-danger">{{ error }}</span><br>
+						{% endfor %}
+					{% else %}
+						{{ form.gff(class="form-control form-control-lg") }}
+					{% endif %}
+				</div>
+				<div class="form-group">
+					{{ form.genes.label(class="form-control-label", style="font-weight: bold;") }}
+					<p>For example: SL1344_1133, SL1344_P3_0012.</p>
+					{% if form.genes.errors %}
+						{{ form.genes(class="form-control form-control-lg is-invalid") }}
+						{% for error in form.genes.errors %}	
+							<span class="text-danger">{{ error }}</span><br>
+						{% endfor %}
+					{% else %}
+						{{ form.genes(class="form-control form-control-lg") }}
+					{% endif %}
+				</div>
+				<div class="form-group">
+					{{ form.len_PNA.label(class="form-control-label", style="font-weight: bold;") }}
+					{% if form.len_PNA.errors %}
+						{{ form.len_PNA(class="form-control form-control-lg is-invalid") }}
+						{% for error in form.len_PNA.errors %}
+							<span class="text-danger">{{ error }}</span><br>
+						{% endfor %}
+					{% else %}
+						{{ form.len_PNA(class="form-control form-control-lg") }}
+					{% endif %}
+				</div>
+				<div class="form-group">
+					{{ form.mismatches.label(class="form-control-label", style="font-weight: bold;") }}
+					{% if form.mismatches.errors %}
+						{{ form.mismatches(class="form-control form-control-lg is-invalid") }}
+						{% for error in form.mismatches.errors %}
+							<span class="text-danger">{{ error }}</span><br>
+						{% endfor %}
+					{% else %}
+						{{ form.mismatches(class="form-control form-control-lg") }}
+					{% endif %}
+				</div>
+			</fieldset>
+			<div class="form-group">
+				{{ form.submit(class="btn btn-outline-info") }}
+			</div>
+		</form>
+	</div>
+{% endblock %}

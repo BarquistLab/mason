@@ -1,0 +1,49 @@
+import numpy
+cimport numpy
+
+
+cpdef list KMPSearch(bytes pat, bytes txt): 
+    
+	cdef unsigned char M = len(pat) 
+	cdef unsigned int N = len(txt)
+	zeros = numpy.zeros((M,), dtype=numpy.dtype('u1'))
+	cdef unsigned char[:] lps = zeros
+	cdef list result = []
+	computeLPSArray(pat, M, lps) 
+	
+	cdef unsigned int i = 0
+	cdef unsigned char j = 0 
+
+	while i < N: 
+		if pat[j] == txt[i]: 
+			i += 1
+			j += 1
+		else:
+			if j != 0: 
+				j = lps[j-1] 
+			else: 
+				i += 1
+				
+		if j == M: 
+			result.append(i-j) 
+			j = lps[j-1] 
+	return result
+
+
+cdef list computeLPSArray(bytes pat, unsigned char M, unsigned char[:] lps): 
+    
+	cdef int length = 0 
+	cdef int i = 1
+	# lps[0] = 0
+	
+	while i < M: 
+		if pat[i]== pat[length]: 
+			length += 1
+			lps[i] = length
+			i += 1
+		else: 
+			if length != 0: 
+				length = lps[length-1] 
+			else: 
+				lps[i] = 0
+				i += 1

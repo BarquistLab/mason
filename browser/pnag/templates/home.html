@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+{% block content %}
+	<div class="content-section">
+		<!-- here I add the logo of MASON and centre it to the middle -->
+		<div class="border-bottom mb-4 pb-3">
+			<img src="{{ url_for('static', filename='mason.png') }}" width="400px" class="mx-auto d-block"/>
+		</div>
+		<p>MASON (<b>M</b>ake <b>A</b>ntisense <b>O</b>ligos <b>N</b>ow) is a web-tool which guides the
+		design of antisense oligonucleotides (ASOs). All you need is a genome and the gene you want to target. </p>
+		<p>This is work in progress. Please excuse any error that may occur.
+		If you run into any error, please make a screenshot of the whole page and send it with a description of what you were trying to do:
+			<a href="mailto:patrick.pfau@helmholtz-hzi.de?subject=Error&body=Message">Send Error <i class="material-icons">announcement</i></a></p>
+		{% if current_user.is_authenticated %}
+		<p>You can start here: <a href="{{ url_for('start') }}"><i class="material-icons">play_circle_outline</i></a></p>
+	    <p>You can find your recent results below.</p>
+	    {% else %}
+	    <p>Please log in first <a href="{{ url_for('login') }}"><i class="material-icons">login</i></a></p>
+	    <p>Or create an account <a href="{{ url_for('register') }}"><i class="material-icons">how_to_reg</i></a></p>
+	    {% endif %}
+
+	</div>
+	{% if current_user.is_authenticated %}
+	<div>
+		<h1>Results:</h1>
+	</div>
+	{% endif %}
+
+	{% for result in results %}
+		<article class="content-section">
+			<div class="article-metadata">
+				<small class="text-muted">{{ result.owner.username }}</small>
+				<small class="text-muted">{{ result.date.strftime('%d.%m.%Y') }}</small>				
+			</div>
+			<h3 class="article-title"><a href="{{ url_for('result', result_id=result.id) }}">{{ result.custom_id }}</a></h3>
+			{% if result.finish %}
+			<p>ASO result file: <a href="{{ url_for('download', path=code | url_encode(result.result) ) }}">Download</a></p>
+			{% else %}
+			<p>ASO result file: Calculating... reload this page in a few minutes</p>
+			{% endif %}
+		</article>
+	{% endfor %}
+{% endblock %}

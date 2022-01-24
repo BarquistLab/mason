@@ -116,7 +116,7 @@ do
 done
 
 rm -rf $OUT/*_sorted_sorted.tab
-python ./pnag/summarize_offtargets.py $OUT/offtargets_fulltranscripts_sorted.tab $OUT
+python ./pnag/summarize_offtargets.py $OUT
 
 
 

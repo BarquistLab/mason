@@ -1,11 +1,5 @@
 {% extends "layout.html" %}
 {% block head %}
-	<script src="https://code.highcharts.com/highcharts.js"></script>
-	<script src="https://code.highcharts.com/highcharts-more.js"></script>
-	<script src="https://code.highcharts.com/modules/data.js"></script>
-	<script src="https://code.highcharts.com/modules/exporting.js"></script>
-	<script src="https://code.highcharts.com/modules/export-data.js"></script>
-	<script src="https://code.highcharts.com/modules/accessibility.js"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
 {% endblock %}
 
@@ -49,7 +43,6 @@
 	  </div>
 	</div>
 	<div class="content-section">
-		<p>
 			<h3 class="border-bottom mb-4">ASOs for {{ result.custom_id }}</h3>
 			<p>
 				Below, the designed ASOs are visualized as they would align with the target gene's mRNA.
@@ -61,30 +54,34 @@
 			<img src="{{ svg_res1 }}" >
 		<br>
 		<br>
-		</p>
-		<p>
+		<br>
+		<br>
 			<h3 class="border-bottom mb-4"> Predicted off-targets for {{ result.custom_id }} - ASOs </h3>
 					<p>The predicterd off-targets (OT) of ASOs are shown in the barplot below. OT in the whole
 						transcriptome of the targeted bacterium is visualized in dar blue. OT, which are located in the
 						translation initiation regions (TIR, -20 to +10 nt from start of coding sequence) of genes of
 						the targeted organism. </p>
 			<img src="{{ svg_res2 }}" >
-		</p>
-				<br>
 		<br>
-		</p>
-		<p>
+		<br>
+		<br>
+		<br>
 			<h3 class="border-bottom mb-4"> Predicted melting temperatures for {{ result.custom_id }} - ASOs </h3>
 					<p>The predicterd off-targets (OT) of ASOs are shown in the barplot below. OT in the whole
 						transcriptome of the targeted bacterium is visualized in dar blue. OT, which are located in the
 						translation initiation regions (TIR, -20 to +10 nt from start of coding sequence) of genes of
 						the targeted organism. </p>
-			<img src="{{ svg_res3 }}" >
-		</p>
-
+			<img src="{{ svg_res3 }}" class="center">
+		<br>
+		<br>
+		<br>
+		<br>
+			<h3 class="border-bottom mb-4"> Summary table for {{ result.custom_id }} - ASOs </h3>
+					<p> Summary for each ASO. </p>
+			<img src="{{ rtable }}" class="larger">
 
 	</div>
 	{% else %}
-		<p>ASO result file: Calculating... try again in a few minutes</p>
+		<p>MASON is running ... try reloading the page in about 30 seconds</p>
 	{% endif %}
 {% endblock %}

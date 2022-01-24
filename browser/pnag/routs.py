@@ -7,6 +7,8 @@ It tells which template to use and validates submitted forms.
 """
 import os
 from datetime import datetime
+
+import pandas as pd
 from flask import render_template, url_for, flash, redirect, request, send_file, Markup
 # import needed things from other files in this package
 from pnag import app, db, bcrypt, mail
@@ -116,15 +118,14 @@ def start():
         time_string = datetime.utcnow().strftime('_%Y_%m_%d_%H_%M_%S_')
         # save uploaded data with timestring attached:
         if form.presets.data == 'upload':
-            paths['genome'] = save_file(form.genome.data, 'genome', time_string)
-            paths['gff'] = save_file(form.gff.data, 'gff', time_string)
+            paths['genome'] = form.genome.data
+            paths['gff'] = form.gff.data
         else:
             # genome first value in list
             files = PRESETS[form.presets.data]
             paths['genome'] = files[0]
             paths['gff'] = files[1]
         target_genes = form.genes.data
-        print(target_genes)
         for locus_tag in form.essential.data:
             if len(target_genes) > 1:
                 target_genes += ', ' + locus_tag  # add comma only if already a lt was added:
@@ -142,6 +143,7 @@ def start():
                                                                         paths['gff'], target_genes, str(form.len_PNA.data),
                                                                         str(form.mismatches.data),
                                                                         str(r.id) + "_" + str(r.user_id), r.id]).start()
+
         return redirect(url_for('result', result_id=r.id))
     return render_template("start.html", title="Start", essential=ESSENTIAL_GENES, form=form)
 
@@ -155,11 +157,13 @@ def result(result_id):
     svg_res1 = dir_out + "/heatmap.png"
     svg_res2 = dir_out + "/plot_ots_whole_transcriptome.png"
     svg_res3 = dir_out + "/tm.png"
-    print(svg_res1)
+    print(svg_res3)
+    print(dir_out + "/result_table.tsv")
+    res_table = dir_out + "/result_table.png"
     # just the owner can see the result page of his results
     if current_user == res.owner or current_user.username in ["PatrickPfau", "jakobjung"]:
         return render_template("result.html", title="Result", result=res, svg_res1=Markup(svg_res1),
-                               svg_res2=Markup(svg_res2), svg_res3=Markup(svg_res3))
+                               svg_res2=Markup(svg_res2), svg_res3=Markup(svg_res3), rtable=res_table)
     else:
         return redirect(url_for('home'))
 
@@ -278,7 +282,7 @@ def save_file(form_file, prefix, time_str):
         file_path = os.path.join(app.root_path, 'static/data', file_fn)
     else:
         file_fn = prefix + time_str + str(current_user.id) + '.fasta'
-        file_path = os.path.join(app.root_path, 'temp', file_fn)
+        file_path = os.path.join(path_parent, 'pnag/static/data/', file_fn)
     return file_path
 
 

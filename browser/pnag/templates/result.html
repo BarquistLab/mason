@@ -13,11 +13,14 @@
 		{% if result.finish %}
 		<button id="btn_right" type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal"><i class="material-icons">delete_forever</i></button>
 		{% endif %}
+		<p>Target gene (locus tag): {{ result.genes }}</p>
 		<p>Allowed mismatches for off targets: {{ result.mismatches }}</p>
-		<p>Used genome file: <a href="{{ url_for('download', path=code | url_encode(result.genome) ) }}"><i class="material-icons">cloud_download</i></a></p>
-		<p>Used target genes file: <a href="{{ url_for('download', path=code2 | url_encode(result.genes) ) }}"><i class="material-icons">cloud_download</i></a></p>
+		<p>Used genome file (FASTA): <a href="{{ url_for('download', path=code | url_encode(result.genome) ) }}"><i class="material-icons">cloud_download</i></a></p>
+		<p>Used annotation file (GFF): <a href="{{ url_for('download', path=code | url_encode(result.gff) ) }}"><i class="material-icons">cloud_download</i></a></p>
+
 		{% if result.finish %}
-			<p>ASO result file: <a href="{{ url_for('download', path=code3 | url_encode(result.result) ) }}"><i class="material-icons">cloud_download</i></a></p>
+			<p>Output table (CSV): <a href="{{ dir_out + '/result_table.csv' }}"><i class="material-icons">cloud_download</i></a></p>
+			<p>Detailed off-target table (CSV): <a href="{{ dir_out + '/offtargets_fulltranscripts_sorted.csv' }}"><i class="material-icons">cloud_download</i></a></p>
 		{% endif %}
 	</article>
 
@@ -43,43 +46,51 @@
 	  </div>
 	</div>
 	<div class="content-section">
-			<h3 class="border-bottom mb-4">ASOs for {{ result.custom_id }}</h3>
+			<h3 class="border-bottom mb-4">ASO sequences</h3>
 			<p>
 				Below, the designed ASOs are visualized as they would align with the target gene's mRNA.
 				If a 'GAGG' sequence was found in the mRNA, this indicates a bacterial
 				Shine-Dalgarno (SD) region and additional ASOs were
 				designed. 'GAGG' and start codon are highlighted by darkened fields.
-				PNAs are not included if they have more than 40% self-complementarity.
+				PNAs are not included if they have more than 50% self-complementarity.
 			</p>
-			<img src="{{ svg_res1 }}" >
+			<img src="{{ dir_out + '/heatmap.png' }}" >
+		<p>Download ASO sequences (FASTA): <a href="{{ dir_ref + '/aso_sequences.fasta' }}"><i class="material-icons">cloud_download</i></a></p>
+		<br>
+
+			<h3 class="border-bottom mb-4"> Predicted melting temperature (Tm, in °C) for ASOs </h3>
+					<p>The predicterd Tm of ASOs are shown in the barplot below. For Tm prediction, we used the R
+						package
+						<a href="https://bioconductor.org/packages/release/bioc/html/rmelting.html">rmelting</a>
+						(v1.10.0) which is an interface to the
+						<a href="https://www.ebi.ac.uk/biomodels-static/tools/melting/">MELTING</a> (v5)
+						program. We decided to calculate the melting temperature for RNA-RNA duplexes, because
+						there are no available algorithms for the Tm of PNA-mRNA duplexes. As parameters we used the
+						nucleic acid concentration of 8 μM and a Na concentration of 0.1M. The Tm values are useful
+						for relative comparison between PNAs. However, the absolute Tm is only an approximation and
+						should be validated experimentally! </p>
+			<img src="{{ dir_out + '/tm.png' }}" class="center">
 		<br>
 		<br>
 		<br>
 		<br>
-			<h3 class="border-bottom mb-4"> Predicted off-targets for {{ result.custom_id }} - ASOs </h3>
+			<h3 class="border-bottom mb-4"> Predicted off-targets for ASOs </h3>
 					<p>The predicterd off-targets (OT) of ASOs are shown in the barplot below. OT in the whole
 						transcriptome of the targeted bacterium is visualized in dar blue. OT, which are located in the
 						translation initiation regions (TIR, -20 to +10 nt from start of coding sequence) of genes of
 						the targeted organism. </p>
-			<img src="{{ svg_res2 }}" >
+			<img src="{{ dir_out + '/plot_ots_whole_transcriptome.png' }}" >
 		<br>
 		<br>
-		<br>
-		<br>
-			<h3 class="border-bottom mb-4"> Predicted melting temperatures for {{ result.custom_id }} - ASOs </h3>
-					<p>The predicterd off-targets (OT) of ASOs are shown in the barplot below. OT in the whole
-						transcriptome of the targeted bacterium is visualized in dar blue. OT, which are located in the
-						translation initiation regions (TIR, -20 to +10 nt from start of coding sequence) of genes of
-						the targeted organism. </p>
-			<img src="{{ svg_res3 }}" class="center">
-		<br>
-		<br>
+		<p>Download detailed critical-off-target table (CSV): <a href="{{ dir_out + '/offtargets_fulltranscripts_sorted.csv' }}"><i class="material-icons">cloud_download</i></a></p>
 		<br>
 		<br>
 			<h3 class="border-bottom mb-4"> Summary table for {{ result.custom_id }} - ASOs </h3>
 					<p> Summary for each ASO. </p>
-			<img src="{{ rtable }}" class="larger">
-
+			<img src="{{ dir_out + '/result_table.png' }}" class="larger">
+		<br>
+		<br>
+		<p>Download ASO summary table (CSV): <a href="{{ dir_out + '/result_table.csv' }}"><i class="material-icons">cloud_download</i></a></p>
 	</div>
 	{% else %}
 		<p>MASON is running ... try reloading the page in about 30 seconds</p>

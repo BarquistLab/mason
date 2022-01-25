@@ -118,8 +118,12 @@ def start():
         time_string = datetime.utcnow().strftime('_%Y_%m_%d_%H_%M_%S_')
         # save uploaded data with timestring attached:
         if form.presets.data == 'upload':
-            paths['genome'] = form.genome.data
-            paths['gff'] = form.gff.data
+            genome_file = os.path.join(app.root_path, 'static/data/', form.genome.data.filename)
+            gff_file = os.path.join(app.root_path, 'static/data/', form.gff.data.filename)
+            form.genome.data.save(genome_file)
+            form.gff.data.save(gff_file)
+            paths['genome'] = genome_file
+            paths['gff'] = gff_file
         else:
             # genome first value in list
             files = PRESETS[form.presets.data]
@@ -131,11 +135,9 @@ def start():
                 target_genes += ', ' + locus_tag  # add comma only if already a lt was added:
             else:
                 target_genes += locus_tag
-        paths['genes'] = save_file(target_genes, 'genes', time_string)
-        paths['pnas'] = save_file(None, 'pnas', time_string)
 
-        r = Result(custom_id=form.custom_id.data, genome=paths['genome'], genes=paths['genes'], gff=paths['gff'],
-                   mismatches=form.mismatches.data, finish=False, result=paths['pnas'], user_id=current_user.id)
+        r = Result(custom_id=form.custom_id.data, genome=paths['genome'], genes=target_genes, gff=paths['gff'],
+                   mismatches=form.mismatches.data, finish=False, result="no_res", user_id=current_user.id)
         db.session.add(r)
         db.session.commit()
         # Now run MASON as background process while continuing with start.html and showing the "waiting" html:
@@ -154,16 +156,10 @@ def result(result_id):
     # each result gets its own page to access it. Just by calling .../result/<id of result>.
     res = Result.query.get_or_404(result_id)
     dir_out = "../static/data/" + str(res.id) + "_" + str(res.user_id) + "/outputs"
-    svg_res1 = dir_out + "/heatmap.png"
-    svg_res2 = dir_out + "/plot_ots_whole_transcriptome.png"
-    svg_res3 = dir_out + "/tm.png"
-    print(svg_res3)
-    print(dir_out + "/result_table.tsv")
-    res_table = dir_out + "/result_table.png"
+    dir_ref = "../static/data/" + str(res.id) + "_" + str(res.user_id) + "/reference_sequences"
     # just the owner can see the result page of his results
     if current_user == res.owner or current_user.username in ["PatrickPfau", "jakobjung"]:
-        return render_template("result.html", title="Result", result=res, svg_res1=Markup(svg_res1),
-                               svg_res2=Markup(svg_res2), svg_res3=Markup(svg_res3), rtable=res_table)
+        return render_template("result.html", title="Result", result=res, dir_out=dir_out, dir_ref=dir_ref)
     else:
         return redirect(url_for('home'))
 

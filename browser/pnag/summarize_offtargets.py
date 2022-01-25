@@ -1,3 +1,5 @@
+import os
+
 import matplotlib.pyplot as plt
 import re
 import pandas as pd
@@ -42,9 +44,6 @@ for i in all_off_targets["ASO"].unique():
     # change output:
     output_df.loc[ i, "OT_transcriptome"] = int(num_tot_ot)
     output_df.loc[i, "OT_TIR_regions"] = int(num_tir_ot)
-
-# save df for download/visualization:
-output_df.to_csv(sys.argv[1] + "/result_table.tsv", sep="\t")
 
 
 # visualize:
@@ -107,4 +106,7 @@ output_df["OT_TIR_regions"] = output_df["OT_TIR_regions"].astype(int)
 ax = render_mpl_table(output_df, header_columns=0, col_width=4.0)
 ax.figure.savefig(sys.argv[1] + "/result_table.png", bbox_inches='tight')
 
+# save df for download/visualization:
+output_df.to_csv(sys.argv[1] + "/result_table.csv", sep=",")
+os.remove(sys.argv[1] + "/result_table.tsv")
 

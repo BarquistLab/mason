@@ -38,7 +38,6 @@ class User(db.Model, UserMixin):
 			return None
 		return User.query.get(user_id)
 
-
 	def __repr__(self):
 		return f"User('{self.username}', '{self.email}')"
 
@@ -52,7 +51,7 @@ class Result(db.Model):
 	mismatches = db.Column(db.Integer, nullable=False)
 	finish = db.Column(db.Boolean, nullable=False, default=False)
 	result = db.Column(db.String(35))
-	pnas = db.Column(db.PickleType)
+	pnas = db.Column(db.String(35))
 	date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 	# this is a backref to call the user who created/owns this result
 	user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)

@@ -8,4 +8,4 @@ This will start the server
 from pnag import app 	# import from the __init__.py in pnag
 
 if __name__ == "__main__":
-	app.run(debug=True)  # change after debugging!
+	app.run()  # change after debugging!

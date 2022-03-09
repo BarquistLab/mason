@@ -72,16 +72,20 @@ This project is licensed under the terms of the MIT license.
         	{% endwith %}
           {% block content %}{% endblock %}
         </div>
-        <div class="col-md-3">
+        <div class="col-md-12">
           <div class="content-section">
-            <h3>Quick Links</h3>
+            <h3>Research institutes & networks</h3>
             <p class='text-muted'>
-              <ul class="list-group">
-                <a href="{{ url_for('home') }}"><li class="list-group-item list-group-item-light">Latest Results</li></a>
-                <li class="list-group-item list-group-item-light">Announcements</li>
-                <li class="list-group-item list-group-item-light">FAQ</li>
-                <li class="list-group-item list-group-item-light">etc</li>
-              </ul>
+                <a href="http://www.imib-wuerzburg.de/imib/"><img src="{{ url_for('static', filename='imib.png') }}" height="60px" /></a>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <a href="https://www.uni-wuerzburg.de/startseite/"><img src="{{ url_for('static', filename='uniwue.png') }}" height="50px" /></a>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <a href="https://www.helmholtz-hiri.de/"><img src="{{ url_for('static', filename='hirilogo.png') }}" height="30px" /></a>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <a href="https://bayresq.net/"><img src="{{ url_for('static', filename='bayresq.png') }}" height="70px" /></a>
             </p>
           </div>
         </div>

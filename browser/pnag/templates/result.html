@@ -52,7 +52,7 @@
 				If a 'GAGG' sequence was found in the mRNA, this indicates a bacterial
 				Shine-Dalgarno (SD) region and additional ASOs were
 				designed. 'GAGG' and start codon are highlighted by darkened fields.
-				PNAs are not included if they have more than 50% self-complementarity.
+				PNAs are not included if they have more than 60% self-complementarity.
 			</p>
 			<img src="{{ dir_out + '/heatmap.png' }}" >
 		<p>Download ASO sequences (FASTA): <a href="{{ dir_ref + '/aso_sequences.fasta' }}"><i class="material-icons">cloud_download</i></a></p>
@@ -86,7 +86,16 @@
 		<br>
 		<br>
 			<h3 class="border-bottom mb-4"> Summary table for {{ result.custom_id }} - ASOs </h3>
-					<p> Summary for each ASO. </p>
+					<p> Summary for each ASO sequence. meanings of column names: <br>
+						location = location (start and end) of the ASO-binding site, measured from the CDS start site <br>
+						SC_bases = maximum stretch of self-complementary bases <br>
+						pur_perc = percentage of purine bases in ASO sequence (too high % should be avoided) <br>
+						long_pur_stretch = longest purine stretch (too long purine stretches should be avoided) <br>
+						Tm = Melting temperature<br>
+						OT_tot = critical off-targets in the whole transcriptome<br>
+						OT_TIR = critical off-targets in translation initiation regions<br>
+
+					</p>
 			<img src="{{ dir_out + '/result_table.png' }}" class="larger">
 		<br>
 		<br>

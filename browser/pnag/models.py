@@ -9,7 +9,6 @@ from pnag import db, login_manager, app
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from datetime import datetime
 from flask_login import UserMixin
-import pickle
 
 
 @login_manager.user_loader
@@ -25,7 +24,7 @@ class User(db.Model, UserMixin):
 	# this is a backref to call all results created by this user
 	results = db.relationship('Result', backref='owner', lazy=True)
 
-	def get_reset_token(self, expires_sec=600):
+	def get_reset_token(self, expires_sec=1800):
 		s = Serializer(app.config['SECRET_KEY'], expires_sec)
 		return s.dumps({'user_id': self.id}).decode('utf-8')
 

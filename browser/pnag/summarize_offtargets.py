@@ -1,5 +1,4 @@
 import os
-
 import matplotlib.pyplot as plt
 import re
 import pandas as pd
@@ -19,7 +18,6 @@ all_off_targets = all_off_targets[all_off_targets["longest_stretch"] >= 7]
 
 # add output df used for other things, e.g. Tm:
 output_df = pd.read_csv(sys.argv[1] + "/result_table.tsv", sep="\t", index_col=None)
-print(output_df)
 
 # add variable for whether it is in the TIR
 all_off_targets.loc[all_off_targets["trans_coord"].isin(range(-20, 5)), "TIR"] = "TIR"
@@ -42,8 +40,8 @@ for i in all_off_targets["ASO"].unique():
     df_plot = df_plot.append(pd.Series([aso_n, "OT in TIR regions", "start regions", num_tir_ot,
                                         target_seq], index=df_plot.columns), ignore_index=True)
     # change output:
-    output_df.loc[ i, "OT_transcriptome"] = int(num_tot_ot)
-    output_df.loc[i, "OT_TIR_regions"] = int(num_tir_ot)
+    output_df.loc[ i, "OT_tot"] = int(num_tot_ot)
+    output_df.loc[i, "OT_TIR"] = int(num_tir_ot)
 
 
 # visualize:
@@ -53,7 +51,7 @@ def render_mpl_table(data, col_width=3.0, row_height=0.625, font_size=15,
                      ax=None, **kwargs):
     if ax is None:
         size = (np.array(data.shape[::-1]) + np.array([0, 1])) * np.array([col_width, row_height])
-        fig, ax = plt.subplots(figsize=(25,data.shape[1]))
+        fig, ax = plt.subplots(figsize=(25, data.shape[1]))
         ax.axis('off')
 
     mpl_table = ax.table(cellText=data.values, bbox=bbox, colLabels=data.columns, **kwargs)
@@ -94,17 +92,19 @@ def create_ot_barplot(dataframe, title, filepath):
     bp.set_title(title, fontsize=30, fontweight='bold')
     bp.set_xticklabels(bp.get_xticklabels(), rotation=45, horizontalalignment='right', fontsize=15)
     bp.legend(title="off-target type", fontsize=15, title_fontsize=20)
-    bp.figure.savefig(filepath)
+    bp.figure.savefig(filepath + ".png")
+    bp.figure.savefig(filepath + ".svg")
     plt.clf()
 
 
-create_ot_barplot(df_plot, "Critical off-targets of ASOs", sys.argv[1] + "/plot_ots_whole_transcriptome.png")
+create_ot_barplot(df_plot, "Critical off-targets of ASOs", sys.argv[1] + "/plot_ots_whole_transcriptome")
 
 
-output_df["OT_transcriptome"] = output_df["OT_transcriptome"].astype(int)
-output_df["OT_TIR_regions"] = output_df["OT_TIR_regions"].astype(int)
+output_df["OT_tot"] = output_df["OT_tot"].astype(int)
+output_df["OT_TIR"] = output_df["OT_TIR"].astype(int)
 ax = render_mpl_table(output_df, header_columns=0, col_width=4.0)
 ax.figure.savefig(sys.argv[1] + "/result_table.png", bbox_inches='tight')
+ax.figure.savefig(sys.argv[1] + "/result_table.svg", bbox_inches='tight')
 
 # save df for download/visualization:
 output_df.to_csv(sys.argv[1] + "/result_table.csv", sep=",")

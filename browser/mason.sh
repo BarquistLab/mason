@@ -3,8 +3,7 @@
 # I start with assigning the flags (user inputs):
 
 
-
-while getopts f:g:t:l:m:p:i: flag
+while getopts f:g:t:l:m:p:i:b: flag
 do
     case "${flag}" in
 	f) fasta=${OPTARG};;
@@ -14,12 +13,13 @@ do
 	m) mismatches=${OPTARG};;
 	i) result_id=${OPTARG};;
 	p) pna_input=${OPTARG};;
+	b) bases_before=${OPTARG};;
     esac
 done
 
 
 # I print them out to be sure it worked out:
-
+echo "bases_before= $bases_before"
 echo "fasta: $fasta";
 echo "gff: $gff";
 
@@ -58,7 +58,7 @@ then
     # Now I run the python script which I wrote to design PNAs:
     echo $length
     echo $result_id
-    python ./pnag/make_pnas.py $length $RES
+    python ./pnag/make_pnas.py $length $RES $bases_before
 
 else
     echo "PNA $pna_input put in"

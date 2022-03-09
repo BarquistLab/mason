@@ -10,12 +10,13 @@ from pnag import db
 from pnag.models import Result
 
 
-def start_calculation(mason, fasta, gff, targets, length, mismatches, id, result_id):
+def start_calculation(mason, fasta, gff, targets, length, mismatches, b_before,  id, result_id):
     """ This function starts the calculation of MASON
     """
+    print(b_before)
     subprocess.run(["sh", mason, "-f", fasta, "-g", gff,
                     "-t", targets, "-l", length, "-m", mismatches,
-                    "-i", id])
+                    "-i", id, "-b", b_before])
     r = Result.query.get(result_id)
     r.finish = True
     db.session.commit()

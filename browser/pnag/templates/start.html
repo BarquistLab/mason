@@ -31,7 +31,7 @@
 				</div>
 				<div class="form-group">
 					{{ form.essential.label(class="form-control-label", style="font-weight: bold;") }}
-					<p>Hold down the Ctrl (windows) or Command (Mac) button to select multiple options.</p>
+					<p>Hold down the Ctrl (windows) or Command (Mac) button to select multiple genes.</p>
 					{% if form.essential.errors %}
 						{{ form.essential(class="form-control form-control-lg is-invalid") }}
 						{% for error in form.essential.errors %}
@@ -79,8 +79,10 @@
 						}
 					}
 				</script>
-				<div class="form-group" id="div_genome" style="display: none;">
+				<div class="form-group" id="div_genome" >
 					{{ form.genome.label(class="form-control-label", style="font-weight: bold;") }}
+					<p>FASTA files of bacteria can be downloaded from
+						<a href="https://www.ncbi.nlm.nih.gov/genome/">NCBI</a> </p>
 					{% if form.genome.errors %}
 						{{ form.genome(class="form-control form-control-lg is-invalid") }}
 						{% for error in form.genome.errors %}	
@@ -90,8 +92,10 @@
 						{{ form.genome(class="form-control form-control-lg") }}
 					{% endif %}
 				</div>
-				<div class="form-group" id="div_gff" style="display: none;">
+				<div class="form-group" id="div_gff" >
 					{{ form.gff.label(class="form-control-label", style="font-weight: bold;") }}
+					<p>GFF files of bacteria can be downloaded from
+						<a href="https://www.ncbi.nlm.nih.gov/genome/">NCBI</a> </p>
 					{% if form.gff.errors %}
 						{{ form.gff(class="form-control form-control-lg is-invalid") }}
 						{% for error in form.gff.errors %}
@@ -101,9 +105,10 @@
 						{{ form.gff(class="form-control form-control-lg") }}
 					{% endif %}
 				</div>
-				<div class="form-group">
+				<div class="form-group" id="div_lt" >
 					{{ form.genes.label(class="form-control-label", style="font-weight: bold;") }}
-					<p>For example: SL1344_1133, SL1344_P3_0012.</p>
+					<p>For example: SL1344_1133, SL1344_P3_0012 for <i> Salmonella</i> SL1344. Locus tags of genes can be found in the GFF file in
+					the 9th column. Do not fill in if you already selected essential genes in the dropdown menue!</p>
 					{% if form.genes.errors %}
 						{{ form.genes(class="form-control form-control-lg is-invalid") }}
 						{% for error in form.genes.errors %}	
@@ -115,6 +120,7 @@
 				</div>
 				<div class="form-group">
 					{{ form.len_PNA.label(class="form-control-label", style="font-weight: bold;") }}
+					<p>Length of bacterial ASOs is usually chosen to be between 9-12 nucleobases.</p>
 					{% if form.len_PNA.errors %}
 						{{ form.len_PNA(class="form-control form-control-lg is-invalid") }}
 						{% for error in form.len_PNA.errors %}
@@ -126,6 +132,9 @@
 				</div>
 				<div class="form-group">
 					{{ form.mismatches.label(class="form-control-label", style="font-weight: bold;") }}
+					<p>Number of maximally alowed mismatches for the off-target prediction algorithm.
+					For 10-mer PNAs usually three or less mismatches should be chosen, as more mismatches prevent
+					PNA binding</p>
 					{% if form.mismatches.errors %}
 						{{ form.mismatches(class="form-control form-control-lg is-invalid") }}
 						{% for error in form.mismatches.errors %}
@@ -133,6 +142,20 @@
 						{% endfor %}
 					{% else %}
 						{{ form.mismatches(class="form-control form-control-lg") }}
+					{% endif %}
+				</div>
+				<div class="form-group">
+					{{ form.bases_before.label(class="form-control-label", style="font-weight: bold;") }}
+					<p>If not specified, all ASOs overlapping the start codon are designed.
+					If a SD sequence exists, it can be useful to design more ASOs lying upstream (5') the CDS to inhibit
+					translation. </p>
+					{% if form.bases_before.errors %}
+						{{ form.bases_before(class="form-control form-control-lg is-invalid") }}
+						{% for error in form.bases_before.errors %}
+							<span class="text-danger">{{ error }}</span><br>
+						{% endfor %}
+					{% else %}
+						{{ form.bases_before(class="form-control form-control-lg") }}
 					{% endif %}
 				</div>
 			</fieldset>

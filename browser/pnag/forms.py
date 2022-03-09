@@ -9,10 +9,11 @@ from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
 from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, SelectMultipleField
 from wtforms.fields import IntegerField
-from wtforms.validators import Length, Email, EqualTo, ValidationError, NumberRange, InputRequired
+from wtforms.validators import Length, Email, EqualTo, ValidationError, NumberRange, InputRequired, Regexp
 from flask_login import current_user
 from pnag import app
 from pnag.models import User
+import re
 
 
 class NoValidationSelectMultipleField(SelectMultipleField):
@@ -22,6 +23,7 @@ class NoValidationSelectMultipleField(SelectMultipleField):
 	"""
 	def pre_validate(self, form):
 		pass
+
 
 class RegistrationForm(FlaskForm):
 	username = StringField('Username', validators=[InputRequired(), Length(min=5, max=20)])
@@ -67,15 +69,16 @@ class UpdateAccountForm(FlaskForm):
 
 
 class startForm(FlaskForm):
-	custom_id = StringField('Custom ID for later recognition', validators=[InputRequired(), Length(min=3, max=25)])
+	custom_id = StringField('Custom ID for result recognition', validators=[InputRequired(), Length(min=3, max=25)])
 	genome = FileField('Whole genome FASTA File', validators=[FileAllowed(['fasta', 'fa', 'fna'])])
-	gff = FileField('Gff File', validators=[FileAllowed(['gff', 'gff3', 'gff2', 'gff1', 'gtf'])])
-	presets = SelectField('Select one of the presets or use "Own files" to upload your own.', choices=[], validators=[InputRequired()])
-	essential = NoValidationSelectMultipleField('Essential genes you can select', choices=[])
-	genes = StringField('Please enter the locus_tags of the target genes separated by comma.')
-	len_PNA = IntegerField('Length of ASOs', validators=[InputRequired(), NumberRange(min=3, max=20)])
-	mismatches = IntegerField('Allowed mismatches for off targets', validators=[InputRequired(),
-																				NumberRange(min=0, max=5)])
+	gff = FileField('GFF File', validators=[FileAllowed(['gff', 'gff3', 'gff2', 'gff1', 'gtf'])])
+	presets = SelectField('Select one of the preset genomes or use "Own files" to upload your own genome', choices=[], validators=[InputRequired()])
+	essential = NoValidationSelectMultipleField('Essential genes to be selected', choices=[])
+	genes = StringField('Enter the locus tags of target genes separated by comma')
+	len_PNA = IntegerField('Length of ASOs', validators=[InputRequired(), NumberRange(min=5, max=19)])
+	mismatches = IntegerField('Allowed mismatches for off targets', validators=[InputRequired(), NumberRange(min=0, max=5)])
+	bases_before = StringField('Bases before (5 prime) CDS (start codon) to start ASO design (optional)',
+							   validators=[Regexp("^[1-9]$|^1[0-9]$|^2[0-5]$|^$", message="Numbers between 1-25 are acepted")])
 	submit = SubmitField('Start')
 
 	def validate_genes(self, genes):

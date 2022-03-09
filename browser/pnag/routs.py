@@ -110,8 +110,9 @@ def account():
 def start():
     # form to upload the input files
     form = startForm()
-    choices = [(key, PRESETS[key][2]) for key in PRESETS.keys()]
-    choices.append(('upload', 'Own files'))
+
+    choices = [('upload', 'Own files')]
+    choices += [(key, PRESETS[key][2]) for key in PRESETS.keys()]
     form.presets.choices = choices
     if form.validate_on_submit():
         paths = {}
@@ -130,6 +131,7 @@ def start():
             paths['genome'] = files[0]
             paths['gff'] = files[1]
         target_genes = form.genes.data
+        b_before = form.bases_before.data
         for locus_tag in form.essential.data:
             if len(target_genes) > 1:
                 target_genes += ', ' + locus_tag  # add comma only if already a lt was added:
@@ -143,7 +145,7 @@ def start():
         # Now run MASON as background process while continuing with start.html and showing the "waiting" html:
         threading.Thread(target=start_calculation, name="masons", args=[path_parent.__str__() + "/mason.sh", paths['genome'],
                                                                         paths['gff'], target_genes, str(form.len_PNA.data),
-                                                                        str(form.mismatches.data),
+                                                                        str(form.mismatches.data), str(b_before),
                                                                         str(r.id) + "_" + str(r.user_id), r.id]).start()
 
         return redirect(url_for('result', result_id=r.id))
@@ -233,8 +235,9 @@ def reset_request():
     form = RequestResetForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
+        print("ABC")
         send_reset_email(user)
-        flash('An e-mail has been sent to reset your password. Check your spam folder as well.', 'info')
+        flash('An email has been sent to reset your password. Check your spam folder as well.', 'info')
         return redirect(url_for('login'))
     return render_template('reset_request.html', title='Reset Passowrd', form=form)
 

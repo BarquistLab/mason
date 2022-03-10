@@ -12,3 +12,4 @@
 *.gz
 browser/pnag/static/data/**
 browser/pnag/site.db
+*__pycache__*

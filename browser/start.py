@@ -14,6 +14,7 @@ def start_calculation(mason, fasta, gff, targets, length, mismatches, b_before, 
     """ This function starts the calculation of MASON
     """
     print(b_before)
+    subprocess.run(["pwd", ">", "pwd.txt"])
     subprocess.run(["sh", mason, "-f", fasta, "-g", gff,
                     "-t", targets, "-l", length, "-m", mismatches,
                     "-i", id, "-b", b_before])

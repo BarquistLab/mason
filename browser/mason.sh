@@ -17,6 +17,10 @@ do
     esac
 done
 
+# re-activate conda environment:
+. /home/jakob/miniconda3/etc/profile.d/conda.sh 
+conda activate browser
+
 
 # I print them out to be sure it worked out:
 echo "bases_before= $bases_before"
@@ -58,11 +62,11 @@ then
     # Now I run the python script which I wrote to design PNAs:
     echo $length
     echo $result_id
-    python ./pnag/make_pnas.py $length $RES $bases_before
+    python ./pnag/make_pnas.py $length $RES $bases_before > logfile_masonscript.log 2>&1
 
 else
     echo "PNA $pna_input put in"
-    python ./pnag/modify_PNAs.py $pna_input
+    python ./pnag/modify_PNAs.py $pna_input >> logfile_masonscript.log 2>&1
 fi
 
 
@@ -70,7 +74,7 @@ fi
 
 seqmap $mismatches "$REF/aso_targets.fasta" "$REF/full_transcripts_$FASTA" \
        "$OUT/offtargets_fulltranscripts.tab" /output_all_matches \
-       /forward_strand /output_statistics /available_memory:5000
+       /forward_strand /output_statistics /available_memory:5000 >> logfile_masonscript.log 2>&1
 
 
 
@@ -116,7 +120,7 @@ do
 done
 
 rm -rf $OUT/*_sorted_sorted.tab
-python ./pnag/summarize_offtargets.py $OUT
+python ./pnag/summarize_offtargets.py $OUT >> logfile_masonscript.log 2>&1
 
-
+echo "MASON finished" >> logfile_masonscript.log 
 

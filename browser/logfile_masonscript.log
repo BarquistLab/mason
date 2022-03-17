@@ -1,0 +1,158 @@
+/home/jakob/mason/browser/./pnag/make_pnas.py:73: FutureWarning: The frame.append method is deprecated and will be removed from pandas in a future version. Use pandas.concat instead.
+  output_df = output_df.append(added_row, ignore_index=True)
+/home/jakob/mason/browser/./pnag/make_pnas.py:73: FutureWarning: The frame.append method is deprecated and will be removed from pandas in a future version. Use pandas.concat instead.
+  output_df = output_df.append(added_row, ignore_index=True)
+/home/jakob/mason/browser/./pnag/make_pnas.py:73: FutureWarning: The frame.append method is deprecated and will be removed from pandas in a future version. Use pandas.concat instead.
+  output_df = output_df.append(added_row, ignore_index=True)
+/home/jakob/mason/browser/./pnag/make_pnas.py:73: FutureWarning: The frame.append method is deprecated and will be removed from pandas in a future version. Use pandas.concat instead.
+  output_df = output_df.append(added_row, ignore_index=True)
+/home/jakob/mason/browser/./pnag/make_pnas.py:73: FutureWarning: The frame.append method is deprecated and will be removed from pandas in a future version. Use pandas.concat instead.
+  output_df = output_df.append(added_row, ignore_index=True)
+/home/jakob/mason/browser/./pnag/make_pnas.py:73: FutureWarning: The frame.append method is deprecated and will be removed from pandas in a future version. Use pandas.concat instead.
+  output_df = output_df.append(added_row, ignore_index=True)
+/home/jakob/mason/browser/./pnag/make_pnas.py:73: FutureWarning: The frame.append method is deprecated and will be removed from pandas in a future version. Use pandas.concat instead.
+  output_df = output_df.append(added_row, ignore_index=True)
+
+--------------------------------------------------------------------------------
+Welcome to rmelting version 1.10.0
+
+
+# To know how to use this package type:
+  browseVignettes(package = 'rmelting')
+  for the package vignette.
+
+# To know whats new in this version type:
+  news(package='rmelting')
+  for the NEWS file.
+
+# To cite the methods in the package type:
+  citation(package='rmelting')
+
+# To suppress this message use:
+  suppressPackageStartupMessages(library(rmelting))
+--------------------------------------------------------------------------------
+
+Loading required package: BiocGenerics
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:stats’:
+
+    IQR, mad, sd, var, xtabs
+
+The following objects are masked from ‘package:base’:
+
+    anyDuplicated, append, as.data.frame, basename, cbind, colnames,
+    dirname, do.call, duplicated, eval, evalq, Filter, Find, get, grep,
+    grepl, intersect, is.unsorted, lapply, Map, mapply, match, mget,
+    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
+    rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,
+    union, unique, unsplit, which.max, which.min
+
+Loading required package: S4Vectors
+Loading required package: stats4
+
+Attaching package: ‘S4Vectors’
+
+The following objects are masked from ‘package:base’:
+
+    expand.grid, I, unname
+
+Loading required package: IRanges
+Loading required package: XVector
+Loading required package: GenomeInfoDb
+
+Attaching package: ‘Biostrings’
+
+The following object is masked from ‘package:base’:
+
+    strsplit
+
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:Biostrings’:
+
+    collapse, intersect, setdiff, setequal, union
+
+The following object is masked from ‘package:GenomeInfoDb’:
+
+    intersect
+
+The following object is masked from ‘package:XVector’:
+
+    slice
+
+The following objects are masked from ‘package:IRanges’:
+
+    collapse, desc, intersect, setdiff, slice, union
+
+The following objects are masked from ‘package:S4Vectors’:
+
+    first, intersect, rename, setdiff, setequal, union
+
+The following objects are masked from ‘package:BiocGenerics’:
+
+    combine, intersect, setdiff, union
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by RJavaTools to method java.util.HashMap$KeySet.iterator()
+WARNING: Please consider reporting this to the maintainers of RJavaTools
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+Saving 7 x 7 in image
+7
+Command line:seqmap 0 ./pnag/static/data/57_1/reference_sequences/aso_targets.fasta ./pnag/static/data/57_1/reference_sequences/full_transcripts_s_typhi.fa ./pnag/static/data/57_1/outputs/offtargets_fulltranscripts.tab /output_all_matches /forward_strand /output_statistics /available_memory:5000 
+Loading fasta file ./pnag/static/data/57_1/reference_sequences/aso_targets.fasta.
+14 sequences read, total length is 140.
+analysing probes...totally 14 probes, minimum length = 10, maximum length = 10, set internal key length = 10
+importing probes....14 probes imported. 14 are valid.
+checking resources...64-bit version.
+available memory: 5000MB.
+Split probe into 1 parts.
+total 1 copies of probes.
+estimated memory usage: 2MB.
+Building 1 probe lists.1 probe lists created.
+estimated search speed is 3.90176e+06 bps/sec.
+detecting probes
+
+average search steps:1.50097 maximum search steps:3
+4660922 base pairs processed. average search speed: 1.48799e+07 bps/sec.
+time used: 1.31571 seconds
+/home/jakob/mason/browser/./pnag/summarize_offtargets.py:38: FutureWarning: The frame.append method is deprecated and will be removed from pandas in a future version. Use pandas.concat instead.
+  df_plot = df_plot.append(pd.Series([aso_n, "OT in transcriptome", "whole transcriptome", num_tot_ot,
+/home/jakob/mason/browser/./pnag/summarize_offtargets.py:40: FutureWarning: The frame.append method is deprecated and will be removed from pandas in a future version. Use pandas.concat instead.
+  df_plot = df_plot.append(pd.Series([aso_n, "OT in TIR regions", "start regions", num_tir_ot,
+/home/jakob/mason/browser/./pnag/summarize_offtargets.py:38: FutureWarning: The frame.append method is deprecated and will be removed from pandas in a future version. Use pandas.concat instead.
+  df_plot = df_plot.append(pd.Series([aso_n, "OT in transcriptome", "whole transcriptome", num_tot_ot,
+/home/jakob/mason/browser/./pnag/summarize_offtargets.py:40: FutureWarning: The frame.append method is deprecated and will be removed from pandas in a future version. Use pandas.concat instead.
+  df_plot = df_plot.append(pd.Series([aso_n, "OT in TIR regions", "start regions", num_tir_ot,
+/home/jakob/mason/browser/./pnag/summarize_offtargets.py:38: FutureWarning: The frame.append method is deprecated and will be removed from pandas in a future version. Use pandas.concat instead.
+  df_plot = df_plot.append(pd.Series([aso_n, "OT in transcriptome", "whole transcriptome", num_tot_ot,
+/home/jakob/mason/browser/./pnag/summarize_offtargets.py:40: FutureWarning: The frame.append method is deprecated and will be removed from pandas in a future version. Use pandas.concat instead.
+  df_plot = df_plot.append(pd.Series([aso_n, "OT in TIR regions", "start regions", num_tir_ot,
+/home/jakob/mason/browser/./pnag/summarize_offtargets.py:38: FutureWarning: The frame.append method is deprecated and will be removed from pandas in a future version. Use pandas.concat instead.
+  df_plot = df_plot.append(pd.Series([aso_n, "OT in transcriptome", "whole transcriptome", num_tot_ot,
+/home/jakob/mason/browser/./pnag/summarize_offtargets.py:40: FutureWarning: The frame.append method is deprecated and will be removed from pandas in a future version. Use pandas.concat instead.
+  df_plot = df_plot.append(pd.Series([aso_n, "OT in TIR regions", "start regions", num_tir_ot,
+/home/jakob/mason/browser/./pnag/summarize_offtargets.py:38: FutureWarning: The frame.append method is deprecated and will be removed from pandas in a future version. Use pandas.concat instead.
+  df_plot = df_plot.append(pd.Series([aso_n, "OT in transcriptome", "whole transcriptome", num_tot_ot,
+/home/jakob/mason/browser/./pnag/summarize_offtargets.py:40: FutureWarning: The frame.append method is deprecated and will be removed from pandas in a future version. Use pandas.concat instead.
+  df_plot = df_plot.append(pd.Series([aso_n, "OT in TIR regions", "start regions", num_tir_ot,
+/home/jakob/mason/browser/./pnag/summarize_offtargets.py:38: FutureWarning: The frame.append method is deprecated and will be removed from pandas in a future version. Use pandas.concat instead.
+  df_plot = df_plot.append(pd.Series([aso_n, "OT in transcriptome", "whole transcriptome", num_tot_ot,
+/home/jakob/mason/browser/./pnag/summarize_offtargets.py:40: FutureWarning: The frame.append method is deprecated and will be removed from pandas in a future version. Use pandas.concat instead.
+  df_plot = df_plot.append(pd.Series([aso_n, "OT in TIR regions", "start regions", num_tir_ot,
+/home/jakob/mason/browser/./pnag/summarize_offtargets.py:38: FutureWarning: The frame.append method is deprecated and will be removed from pandas in a future version. Use pandas.concat instead.
+  df_plot = df_plot.append(pd.Series([aso_n, "OT in transcriptome", "whole transcriptome", num_tot_ot,
+/home/jakob/mason/browser/./pnag/summarize_offtargets.py:40: FutureWarning: The frame.append method is deprecated and will be removed from pandas in a future version. Use pandas.concat instead.
+  df_plot = df_plot.append(pd.Series([aso_n, "OT in TIR regions", "start regions", num_tir_ot,
+MASON finished

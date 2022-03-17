@@ -62,7 +62,7 @@ for r in range(len(target_regions)):
                     curstretch += 1
                     pur += 1
                     if curstretch > longest_purine_stretch:
-                        longest_purine_stretch = curstretch
+                        longest_purine_stretch += 1
                 else:
                     curstretch = 0
             pur_perc = (pur/len(aso.__str__()))*100

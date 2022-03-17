@@ -18,7 +18,7 @@ do
 done
 
 # re-activate conda environment:
-. /home/jakob/miniconda3/etc/profile.d/conda.sh 
+. /home/jakob/miniconda3/etc/profile.d/conda.sh
 conda activate browser
 
 

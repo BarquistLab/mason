@@ -12,30 +12,20 @@
 		<p> We are trying to improve this web-server's performance. Please excuse any error that may occur.
 			If you run into any errors or have suggestions for additional features, please email us:
 			<a href="mailto:jakobjung@tutanota.com?subject=MASON&body=Message"> send email <i class="material-icons">announcement</i></a></p>
-		{% if current_user.is_authenticated %}
 		<p>You can start designing ASOs for targeting any bacterial gene here:
 			<a href="{{ url_for('start') }}">start<i class="material-icons">play_circle_outline</i></a></p>
 	    <p>You can find your recent results below.</p>
-	    {% else %}
-	    <p>Please log in first: <a href="{{ url_for('login') }}"> login<i class="material-icons">login</i>,</a>
-	    or create an account: <a href="{{ url_for('register') }}"> register<i class="material-icons">how_to_reg</i></a></p>
-	    {% endif %}
-
 	</div>
-	{% if current_user.is_authenticated %}
 	<div>
 		<h1>Results:</h1>
 	</div>
-	{% endif %}
 	Keep in mind that the results may be deleted after 30 days
-	{% for result in results %}
-
+	{% for result in results.keys() %}
 		<article class="content-section">
 			<div class="article-metadata">
-				<small class="text-muted">{{ result.owner.username }}</small>
-				<small class="text-muted">{{ result.date.strftime('%d.%m.%Y') }}</small>				
+				<small class="text-muted">{{ results[result][0] }}</small>
 			</div>
-			<h3 class="article-title"><a href="{{ url_for('result', result_id=result.id) }}">{{ result.custom_id }}</a></h3>
+			<h3 class="article-title"><a href="{{ url_for('result', result_id=result) }}">{{ results[result][1] }}</a></h3>
 			{% if result.finish %}
 			<p>ASO result file: <a href="{{ url_for('download', path=code | url_encode(result.result) ) }}">Download</a></p>
 			{% else %}

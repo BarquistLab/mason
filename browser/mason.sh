@@ -7,8 +7,8 @@ while getopts f:g:t:l:m:p:i:b: flag
 do
     case "${flag}" in
 	f) fasta=${OPTARG};;
-        g) gff=${OPTARG};;
-        t) target=${OPTARG};;
+  g) gff=${OPTARG};;
+  t) target=${OPTARG};;
 	l) length=${OPTARG};;
 	m) mismatches=${OPTARG};;
 	i) result_id=${OPTARG};;
@@ -35,7 +35,13 @@ OUT="$RES/outputs"
 GFF="$(basename -- $gff)"
 FASTA="$(basename -- $fasta)"  # get base names of files wo paths
 
+echo "$REF"
+echo "$OUT"
+
 mkdir -p $REF $OUT
+
+scp "$gff" "$REF/$GFF"
+scp "$fasta" "$REF/$FASTA"
 
 # same for full regions (change to whole CDS and 30 nt upstream):
 grep -P "\tCDS\t|\tsRNA\t|\tncRNA\t" $gff |\
@@ -121,6 +127,8 @@ done
 
 rm -rf $OUT/*_sorted_sorted.tab
 python ./pnag/summarize_offtargets.py $OUT >> logfile_masonscript.log 2>&1
+
+touch "$RES/$target"
 
 echo "MASON finished" >> logfile_masonscript.log 
 

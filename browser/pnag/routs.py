@@ -7,14 +7,12 @@ It tells which template to use and validates submitted forms.
 """
 import os
 from datetime import datetime
-
+import re
 import pandas as pd
 from flask import render_template, url_for, flash, redirect, request, send_file, Markup
 # import needed things from other files in this package
-from pnag import app, db, bcrypt, mail
-from pnag.forms import (RegistrationForm, LoginForm, UpdateAccountForm, startForm,
-                        RequestResetForm, ResetPasswordForm)
-from pnag.models import User, Result
+from pnag import app, bcrypt, mail
+from pnag.forms import startForm
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_mail import Message
 import base64
@@ -39,88 +37,52 @@ with open('ESSENTIAL_GENES.json', 'r') as f:
 @app.route("/")
 @app.route("/home")
 def home():
-    if current_user.is_authenticated:
-        # changes what is shown when the user is logged in
-        results = current_user.results
-        return render_template("home.html", title="Home", results=reversed(results))
-    else:
-        return render_template("home.html", title="Home")
-
-
-@app.route("/register", methods=['GET', 'POST'])
-def register():
-    if current_user.is_authenticated:
-        return redirect(url_for('home'))
-    form = RegistrationForm()
-    if form.validate_on_submit():
-        # secure password to store in db
-        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-        email = form.email.data
-        user = User(username=form.username.data, email=email.lower(), password=hashed_password)
-        db.session.add(user)
-        db.session.commit()
-        # sets a nice info message
-        flash('Your account has been created! You are now able to log in.', 'success')
-        return redirect(url_for('login'))
-    return render_template("registration.html", title="Register", form=form)
-
-
-@app.route("/login", methods=['GET', 'POST'])
-def login():
-    if current_user.is_authenticated:
-        return redirect(url_for('home'))
-    form = LoginForm()
-    if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data).first()
-        if user and bcrypt.check_password_hash(user.password, form.password.data):
-            login_user(user, remember=form.remember.data)
-            ''' if the logged in user have tried to access a page with required login and was redirected here, 
-			it redirects back to the page which was tried to accessed before'''
-            next_page = request.args.get('next')
-            return redirect(next_page) if next_page else redirect(url_for('home'))
-        else:
-            flash('Login unsuccessful. Please check email and password.', 'danger')
-    return render_template("login.html", title="Login", form=form)
-
-
-@app.route("/logout")
-def logout():
-    logout_user()
-    return redirect(url_for('home'))
-
-
-@app.route("/account", methods=['GET', 'POST'])
-@login_required  # site is only accessable when logged in
-def account():
-    form = UpdateAccountForm()
-    if form.validate_on_submit():
-        current_user.username = form.username.data
-        current_user.email = form.email.data
-        db.session.commit()
-        flash('Your account has been updated!', 'success')
-        return redirect(url_for('account'))
-    elif request.method == "GET":
-        form.username.data = current_user.username
-        form.email.data = current_user.email
-    return render_template("account.html", title="Account", form=form)
+    results = {}
+    print(os.listdir("./pnag/static/data/"))
+    for i in os.listdir("./pnag/static/data/"):
+        if i.startswith("20"):
+            time = re.sub("([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)",
+                          "Date: \\1-\\2-\\3 ; Time: \\4:\\5:\\6", i)
+            f = open('./pnag/static/data/'+i+"/inputs.txt")
+            lines = f.readlines()
+            custom_id = lines[1]
+            f.close()
+            results[i] = [time, custom_id]
+    print(results)
+    return render_template("home.html", title="Home", results=results)
 
 
 @app.route("/start", methods=['GET', 'POST'])
-@login_required
 def start():
     # form to upload the input files
     form = startForm()
-
     choices = [('upload', 'Own files')]
     choices += [(key, PRESETS[key][2]) for key in PRESETS.keys()]
+
     form.presets.choices = choices
     if form.validate_on_submit():
         paths = {}
-        time_string = datetime.utcnow().strftime('_%Y_%m_%d_%H_%M_%S_')
+        time_string = datetime.utcnow().strftime('%Y_%m_%d_%H_%M_%S')
+
+        print(time_string)
+
+        target_genes = form.genes.data
+        target_genes = [x.strip() for x in target_genes.split(',')]
+        if "" in target_genes:
+            target_genes.remove("")
+        print(target_genes)
+        b_before = form.bases_before.data
+        for locus_tag in form.essential.data:
+            if len(target_genes) > 1:
+                target_genes += [locus_tag]  # add space only if a lt exists:
+            else:
+                target_genes += [locus_tag]
+        # create directory for result:
+        os.mkdir("./pnag/static/data/"+time_string)
         # save uploaded data with timestring attached:
         if form.presets.data == 'upload':
-            genome_file = os.path.join(app.root_path, 'static/data/', form.genome.data.filename)
-            gff_file = os.path.join(app.root_path, 'static/data/', form.gff.data.filename)
+            genome_file = os.path.join(app.root_path, 'static/data/', time_string + "/", form.genome.data.filename)
+            gff_file = os.path.join(app.root_path, 'static/data/', time_string + "/", form.gff.data.filename)
             form.genome.data.save(genome_file)
             form.gff.data.save(gff_file)
             paths['genome'] = genome_file
@@ -130,44 +92,63 @@ def start():
             files = PRESETS[form.presets.data]
             paths['genome'] = files[0]
             paths['gff'] = files[1]
-        target_genes = form.genes.data
-        b_before = form.bases_before.data
-        for locus_tag in form.essential.data:
-            if len(target_genes) > 1:
-                target_genes += ', ' + locus_tag  # add comma only if already a lt was added:
-            else:
-                target_genes += locus_tag
+        with open("./pnag/static/data/"+time_string+"/inputs.txt", "w+") as input_file:
+            input_file.write(paths['genome'] + "," + paths['gff'])
+        print(target_genes)
+        result_custom_id = form.custom_id.data
 
-        r = Result(custom_id=form.custom_id.data, genome=paths['genome'], genes=target_genes, gff=paths['gff'],
-                   mismatches=form.mismatches.data, finish=False, result="no_res", user_id=current_user.id)
-        db.session.add(r)
-        db.session.commit()
         # Now run MASON as background process while continuing with start.html and showing the "waiting" html:
-        threading.Thread(target=start_calculation, name="masons", args=[path_parent.__str__() + "/mason.sh", paths['genome'],
-                                                                        paths['gff'], target_genes, str(form.len_PNA.data),
-                                                                        str(form.mismatches.data), str(b_before),
-                                                                        str(r.id) + "_" + str(r.user_id), r.id]).start()
+        for tgene in target_genes:
+            print("heres it")
+            print(result_custom_id)
+            print(tgene)
+            resultid = time_string + "/" + tgene
+            threading.Thread(target=start_calculation, name="masons", args=[path_parent.__str__() + "/mason.sh", paths['genome'],
+                                                                            paths['gff'], tgene, str(form.len_PNA.data),
+                                                                            str(form.mismatches.data), str(b_before),
+                                                                            resultid, resultid]).start()
+        with open("./pnag/static/data/"+time_string + "/inputs.txt", "a") as inputfile:
+            inputfile.write("\n" + result_custom_id)
 
-        return redirect(url_for('result', result_id=r.id))
+        return redirect(url_for('result', result_id=time_string))
     return render_template("start.html", title="Start", essential=ESSENTIAL_GENES, form=form)
 
 
-@app.route("/result/<int:result_id>")
-@login_required
+@app.route("/result/<result_id>")
 def result(result_id):
     # each result gets its own page to access it. Just by calling .../result/<id of result>.
-    res = Result.query.get_or_404(result_id)
-    dir_out = "../static/data/" + str(res.id) + "_" + str(res.user_id) + "/outputs"
-    dir_ref = "../static/data/" + str(res.id) + "_" + str(res.user_id) + "/reference_sequences"
-    # just the owner can see the result page of his results
-    if current_user == res.owner or current_user.username in ["PatrickPfau", "jakobjung"]:
-        return render_template("result.html", title="Result", result=res, dir_out=dir_out, dir_ref=dir_ref)
-    else:
-        return redirect(url_for('home'))
+    print(result_id)
+    time = re.sub("([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)",
+                  "Date: \\1-\\2-\\3 ; Time: \\4:\\5:\\6", result_id)
+    # get download paths:
+    f = open('./pnag/static/data/' + result_id + "/inputs.txt")
+    lines = f.readlines()
+    custom_id = lines[1]
+    genome_file, gff_file = lines[0].split(sep=",")
+    f.close()
+
+    dir_out = "../static/data/" + result_id
+    rfinished = os.path.isfile("./pnag/static/data/" + result_id + "/done.txt")
+
+    print(os.listdir("./pnag/static/data/" + result_id))
+
+    all_output_dirs=[]
+    for dirs in os.listdir("./pnag/static/data/" + result_id):
+        if "." not in dirs:
+            all_output_dirs += [dirs]
+    print(all_output_dirs)
+    print("../" + "/".join(genome_file.split(sep="/")[-4:]))
+    ffile = "../" + "/".join(genome_file.split(sep="/")[-4:])
+    gfffile = "../" + "/".join(gff_file.split(sep="/")[-4:])
+    print(all_output_dirs)
+    # show results page
+    return render_template("result.html", title="Result", result=result_id, dir_out=dir_out,
+                           all_output_dirs=all_output_dirs,
+                           rfin=rfinished, genome_file=ffile, gff_file=gfffile, custom_id=custom_id,
+                           time=time)
 
 
 @app.route("/delete_result/<result_id>")
-@login_required
 def delete_result(result_id):
     res = Result.query.get_or_404(result_id)
     # just the owner can delete the result
@@ -189,7 +170,6 @@ def delete_result(result_id):
 
 
 @app.route("/download/<path>")
-@login_required
 def download(path):
     # just for download the file in path
     path = url_decode(path)
@@ -199,16 +179,13 @@ def download(path):
     first.split('_')
     if 'presets' in preset:
         return send_file(path, as_attachment=True)
-    elif current_user.id == int(first[-1]):
+    else:
         # just the owner can download the file
         try:
             return send_file(path, as_attachment=True)
         except FileNotFoundError:
             flash(u'This file does not exist. Maybe no target genes found to build PNA.fasta.', 'danger')
             return redirect(url_for('home'))
-    else:
-        flash('You need to be the owner of the file.', 'warning')
-        return redirect(url_for('home'))
 
 
 @app.route("/about")
@@ -216,50 +193,9 @@ def about():
     return render_template("about.html", title="About")
 
 
-def send_reset_email(user):
-    token = user.get_reset_token()
-    msg = Message('Password Reset Request', sender='pna-generator@gmx.de', recipients=[user.email])
-    msg.body = f'''To reset your password, visit the following link:
-	http://pna-generator.helmholtz-hiri.de{url_for('reset_request_token', token=token)}
-
-If you did not make this request then simply ignore this e-mail and no changes will be made.
-This e-mail was created automatically. Please do not reply to this e-mail.
-	'''
-    mail.send(msg)
-
-
-@app.route("/reset_password", methods=['GET', 'POST'])
-def reset_request():
-    if current_user.is_authenticated:
-        return redirect(url_for('home'))
-    form = RequestResetForm()
-    if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data).first()
-        print("ABC")
-        send_reset_email(user)
-        flash('An email has been sent to reset your password. Check your spam folder as well.', 'info')
-        return redirect(url_for('login'))
-    return render_template('reset_request.html', title='Reset Passowrd', form=form)
-
-
-@app.route("/reset_password/<token>", methods=['GET', 'POST'])
-def reset_request_token(token):
-    if current_user.is_authenticated:
-        return redirect(url_for('home'))
-    user = User.verify_reset_token(token)
-    if user is None:
-        flash('That is an invalid or expired token', 'warning')
-        return redirect(url_for('reset_request'))
-    form = ResetPasswordForm()
-    if form.validate_on_submit():
-        # secure password to store in db
-        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-        user.password = hashed_password
-        db.session.commit()
-        # sets a nice info message
-        flash('Your password has been updated! You are now able to log in.', 'success')
-        return redirect(url_for('login'))
-    return render_template('reset_request_token.html', title='Reset Passowrd', form=form)
+@app.route("/help")
+def help():
+    return render_template("help.html", title="Help")
 
 
 def save_file(form_file, prefix, time_str):

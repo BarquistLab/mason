@@ -3,28 +3,28 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
 {% endblock %}
 
+
 {% block content %}
 	<article class="content-section">
 		<div class="article-metadata">
-			<small class="text-muted">{{ result.owner.username }}</small>
-			<small class="text-muted">{{ result.date.strftime('%d.%m.%Y') }}</small>				
+			<small class="text-muted">{{ custom_id }}</small>
 		</div>
-		<h3 class="article-title">{{ result.custom_id }}</h3>
-		{% if result.finish %}
+		<h3 class="article-title">{{ result_id }}</h3>
+		{% if rfin %}
 		<button id="btn_right" type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal"><i class="material-icons">delete_forever</i></button>
 		{% endif %}
+		<p>{{ time }}</p>
 		<p>Target gene (locus tag): {{ result.genes }}</p>
 		<p>Allowed mismatches for off targets: {{ result.mismatches }}</p>
-		<p>Used genome file (FASTA): <a href="{{ url_for('download', path=code | url_encode(result.genome) ) }}"><i class="material-icons">cloud_download</i></a></p>
-		<p>Used annotation file (GFF): <a href="{{ url_for('download', path=code | url_encode(result.gff) ) }}"><i class="material-icons">cloud_download</i></a></p>
+		<p>Used genome file (FASTA): <a href="{{ genome_file }}"><i class="material-icons">cloud_download</i></a></p>
+		<p>Used annotation file (GFF): <a href="{{ gff_file }}"><i class="material-icons">cloud_download</i></a></p>
 
-		{% if result.finish %}
-			<p>Output table (CSV): <a href="{{ dir_out + '/result_table.csv' }}"><i class="material-icons">cloud_download</i></a></p>
-			<p>Detailed off-target table (CSV): <a href="{{ dir_out + '/offtargets_fulltranscripts_sorted.csv' }}"><i class="material-icons">cloud_download</i></a></p>
-		{% endif %}
+
 	</article>
 
-	{% if result.finish %}
+	{% if rfin %}
+	{%for res in all_output_dirs%}
+	<h2>gene - {{ " " + res }}</h2>
 	<!-- Modal -->
 	<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
 	  <div class="modal-dialog" role="document">
@@ -54,8 +54,8 @@
 				designed. 'GAGG' and start codon are highlighted by darkened fields.
 				PNAs are not included if they have more than 60% self-complementarity.
 			</p>
-			<img src="{{ dir_out + '/heatmap.png' }}" >
-		<p>Download ASO sequences (FASTA): <a href="{{ dir_ref + '/aso_sequences.fasta' }}"><i class="material-icons">cloud_download</i></a></p>
+			<img src="{{ dir_out + "/" + res + '/outputs/heatmap.png' }}" >
+		<p>Download ASO sequences (FASTA): <a href="{{ dir_out + "/" + res + '/reference_sequences/aso_sequences.fasta' }}"><i class="material-icons">cloud_download</i></a></p>
 		<br>
 
 			<h3 class="border-bottom mb-4"> Predicted melting temperature (Tm, in °C) for ASOs </h3>
@@ -69,7 +69,7 @@
 						nucleic acid concentration of 8 μM and a Na concentration of 0.1M. The Tm values are useful
 						for relative comparison between PNAs. However, the absolute Tm is only an approximation and
 						should be validated experimentally! </p>
-			<img src="{{ dir_out + '/tm.png' }}" class="center">
+			<img src="{{ dir_out + "/" + res + '/outputs/tm.png' }}" class="center">
 		<br>
 		<br>
 		<br>
@@ -79,10 +79,10 @@
 						transcriptome of the targeted bacterium is visualized in dar blue. OT, which are located in the
 						translation initiation regions (TIR, -20 to +10 nt from start of coding sequence) of genes of
 						the targeted organism. </p>
-			<img src="{{ dir_out + '/plot_ots_whole_transcriptome.png' }}" >
+			<img src="{{ dir_out + "/" + res + '/outputs/plot_ots_whole_transcriptome.png'}}" >
 		<br>
 		<br>
-		<p>Download detailed critical-off-target table (CSV): <a href="{{ dir_out + '/offtargets_fulltranscripts_sorted.csv' }}"><i class="material-icons">cloud_download</i></a></p>
+		<p>Download detailed critical-off-target table (CSV): <a href="{{ dir_out + "/" + res + '/outputs/offtargets_fulltranscripts_sorted.csv' }}"><i class="material-icons">cloud_download</i></a></p>
 		<br>
 		<br>
 			<h3 class="border-bottom mb-4"> Summary table for {{ result.custom_id }} - ASOs </h3>
@@ -96,11 +96,12 @@
 						OT_TIR = critical off-targets in translation initiation regions<br>
 
 					</p>
-			<img src="{{ dir_out + '/result_table.png' }}" class="larger">
+			<img src="{{ dir_out + "/" + res + '/outputs' + '/result_table.png' }}" class="larger">
 		<br>
 		<br>
-		<p>Download ASO summary table (CSV): <a href="{{ dir_out + '/result_table.csv' }}"><i class="material-icons">cloud_download</i></a></p>
+		<p>Download ASO summary table (CSV): <a href="{{ dir_out + "/" + res + '/outputs' + '/result_table.csv' }}"><i class="material-icons">cloud_download</i></a></p>
 	</div>
+	{% endfor %}
 	{% else %}
 		<p>MASON is running ... try reloading the page in about 30 seconds</p>
 	{% endif %}

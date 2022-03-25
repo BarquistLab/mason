@@ -43,7 +43,7 @@ for r in range(len(target_regions)):
     if seq[15:28].find(sd) != -1:
         sd_pos = seq[15:28].find(sd) + 15
 
-    for i in range(30-bases_before, 30):   # 30 is start of cds
+    for i in range(30-bases_before, 31):   # 30 is start of cds
         s = seq[i:i+length]
         s_rev = s[::-1]
         aso = s.reverse_complement()
@@ -65,7 +65,7 @@ for r in range(len(target_regions)):
                         longest_purine_stretch += 1
                 else:
                     curstretch = 0
-            pur_perc = (pur/len(aso.__str__()))*100
+            pur_perc = "{:.2f}".format((pur/len(aso.__str__()))*100)
 
             # add to dataframe:
             added_row = pd.Series([aso_name, aso.__str__(), s.transcribe().__str__(), str(i-30) + ";" + str(i-30+length),
@@ -89,6 +89,7 @@ for r in range(len(target_regions)):
     # safe output df:
     output_df.to_csv(res_path + "/outputs/result_table.tsv", sep="\t", index=False)
     # run rscript:
+    print(res_path + "/outputs/result_table.tsv")
     subprocess.run(["Rscript", "./pnag/melting.R", res_path + "/outputs/result_table.tsv"])
 
     # seaborn:

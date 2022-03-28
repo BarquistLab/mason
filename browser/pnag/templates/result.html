@@ -5,17 +5,18 @@
 
 
 {% block content %}
+	<h1>Results for {{ custom_id }}</h1>
 	<article class="content-section">
 		<div class="article-metadata">
-			<small class="text-muted">{{ custom_id }}</small>
-		</div>
+			<h3 >Input data </h3>
 		<h3 class="article-title">{{ result_id }}</h3>
+			</div>
 		{% if rfin %}
 		<button id="btn_right" type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal"><i class="material-icons">delete_forever</i></button>
 		{% endif %}
 		<p>{{ time }}</p>
-		<p>Target gene (locus tag): {{ result.genes }}</p>
-		<p>Allowed mismatches for off targets: {{ result.mismatches }}</p>
+		<p>Target gene(s) (locus tag): {{ tgenes }}</p>
+		<p>Allowed mismatches for off targets: {{ mismatches }}</p>
 		<p>Used genome file (FASTA): <a href="{{ genome_file }}"><i class="material-icons">cloud_download</i></a></p>
 		<p>Used annotation file (GFF): <a href="{{ gff_file }}"><i class="material-icons">cloud_download</i></a></p>
 
@@ -40,7 +41,7 @@
 		  </div>
 		  <div class="modal-footer">
 			  <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="material-icons">clear</i></button>
-			  <a href="{{ url_for('delete_result', result_id=result.id) }}"><button type="button" class="btn btn-primary"><i class="material-icons">check</i></button></a>
+			  <a href="{{ url_for('delete_result', result_id=result) }}"><button type="button" class="btn btn-primary"><i class="material-icons">check</i></button></a>
 		  </div>
 		</div>
 	  </div>
@@ -50,12 +51,14 @@
 			<p>
 				Below, the designed ASOs are visualized as they would align with the target gene's mRNA.
 				If a 'GAGG' sequence was found in the mRNA, this indicates a bacterial
-				Shine-Dalgarno (SD) region and additional ASOs were
-				designed. 'GAGG' and start codon are highlighted by darkened fields.
-				PNAs are not included if they have more than 60% self-complementarity.
+				Shine-Dalgarno (SD) region. 'GAGG' and start codon are highlighted by darkened fields.
+				PNAs are not included if they have more than 60% bases of self-complementarity.
 			</p>
 			<img src="{{ dir_out + "/" + res + '/outputs/heatmap.png' }}" >
-		<p>Download ASO sequences (FASTA): <a href="{{ dir_out + "/" + res + '/reference_sequences/aso_sequences.fasta' }}"><i class="material-icons">cloud_download</i></a></p>
+		<p>Download ASO sequences: &nbsp <a href="{{ dir_out + "/" + res + '/reference_sequences/aso_sequences.fasta' }}">FASTA<i class="material-icons">cloud_download</i></a></p>
+		<p>Download heatmap: &nbsp<a href="{{ dir_out + "/" + res + '/outputs/heatmap.svg' }}">SVG <i class="material-icons">cloud_download</i></a>
+			&nbsp&nbsp
+		<a href="{{ dir_out + "/" + res + '/outputs/heatmap.png' }}"> PNG <i class="material-icons">cloud_download</i></a></p>
 		<br>
 
 			<h3 class="border-bottom mb-4"> Predicted melting temperature (Tm, in °C) for ASOs </h3>
@@ -70,6 +73,7 @@
 						for relative comparison between PNAs. However, the absolute Tm is only an approximation and
 						should be validated experimentally! </p>
 			<img src="{{ dir_out + "/" + res + '/outputs/tm.png' }}" class="center">
+		<p>Download barplot: &nbsp<a href="{{ dir_out + "/" + res + '/outputs/tm.png' }}">PNG <i class="material-icons">cloud_download</i></a>
 		<br>
 		<br>
 		<br>
@@ -82,7 +86,10 @@
 			<img src="{{ dir_out + "/" + res + '/outputs/plot_ots_whole_transcriptome.png'}}" >
 		<br>
 		<br>
-		<p>Download detailed critical-off-target table (CSV): <a href="{{ dir_out + "/" + res + '/outputs/offtargets_fulltranscripts_sorted.csv' }}"><i class="material-icons">cloud_download</i></a></p>
+		<p>Download detailed critical-off-target table: &nbsp <a href="{{ dir_out + "/" + res + '/outputs/offtargets_fulltranscripts_sorted.csv' }}">CSV <i class="material-icons">cloud_download</i></a></p>
+		<p>Download barplot: &nbsp<a href="{{ dir_out + "/" + res + '/outputs/plot_ots_whole_transcriptome.svg' }}">SVG <i class="material-icons">cloud_download</i></a>
+			&nbsp&nbsp
+		<a href="{{ dir_out + "/" + res + '/outputs/plot_ots_whole_transcriptome.png' }}"> PNG <i class="material-icons">cloud_download</i></a></p>
 		<br>
 		<br>
 			<h3 class="border-bottom mb-4"> Summary table for {{ result.custom_id }} - ASOs </h3>
@@ -99,7 +106,8 @@
 			<img src="{{ dir_out + "/" + res + '/outputs' + '/result_table.png' }}" class="larger">
 		<br>
 		<br>
-		<p>Download ASO summary table (CSV): <a href="{{ dir_out + "/" + res + '/outputs' + '/result_table.csv' }}"><i class="material-icons">cloud_download</i></a></p>
+		<p>Download ASO summary table: &nbsp<a href="{{ dir_out + "/" + res + '/outputs' + '/result_table.csv' }}">CSV <i class="material-icons">cloud_download</i></a></p>
+		<p>Download table (graphic): &nbsp<a href="{{ dir_out + "/" + res + '/outputs/result_table.png' }}">PNG <i class="material-icons">cloud_download</i></a>
 	</div>
 	{% endfor %}
 	{% else %}

@@ -7,6 +7,7 @@
 				<legend class="border-bottom mb-4">Inputs for the MASON</legend>
 				<div class="form-group">
 					{{ form.custom_id.label(class="form-control-label", style="font-weight: bold;") }}
+					<p>Please select a unique custom ID for your results</p>
 					{% if form.custom_id.errors %}
 						{{ form.custom_id(class="form-control form-control-lg is-invalid") }}
 						<div class="invalid-feedback">
@@ -108,7 +109,7 @@
 				<div class="form-group" id="div_lt" >
 					{{ form.genes.label(class="form-control-label", style="font-weight: bold;") }}
 					<p>For example: SL1344_1133, SL1344_P3_0012 for <i> Salmonella</i> SL1344. Locus tags of genes can be found in the GFF file in
-					the 9th column. Do not fill in if you already selected essential genes in the dropdown menue!</p>
+					the 9th column. </p>
 					{% if form.genes.errors %}
 						{{ form.genes(class="form-control form-control-lg is-invalid") }}
 						{% for error in form.genes.errors %}	

@@ -8,6 +8,7 @@ It tells which template to use and validates submitted forms.
 import os
 from datetime import datetime
 import re
+import shutil
 import pandas as pd
 from flask import render_template, url_for, flash, redirect, request, send_file, Markup
 # import needed things from other files in this package
@@ -109,6 +110,8 @@ def start():
                                                                             resultid, resultid]).start()
         with open("./pnag/static/data/"+time_string + "/inputs.txt", "a") as inputfile:
             inputfile.write("\n" + result_custom_id)
+            inputfile.write("\n" + "; ".join(target_genes))
+            inputfile.write("\n" + str(form.mismatches.data))
 
         return redirect(url_for('result', result_id=time_string))
     return render_template("start.html", title="Start", essential=ESSENTIAL_GENES, form=form)
@@ -124,6 +127,8 @@ def result(result_id):
     f = open('./pnag/static/data/' + result_id + "/inputs.txt")
     lines = f.readlines()
     custom_id = lines[1]
+    tgenes = lines[2]
+    mismatches = lines[3]
     genome_file, gff_file = lines[0].split(sep=",")
     f.close()
 
@@ -145,27 +150,12 @@ def result(result_id):
     return render_template("result.html", title="Result", result=result_id, dir_out=dir_out,
                            all_output_dirs=all_output_dirs,
                            rfin=rfinished, genome_file=ffile, gff_file=gfffile, custom_id=custom_id,
-                           time=time)
+                           time=time, tgenes=tgenes, mismatches = mismatches)
 
 
 @app.route("/delete_result/<result_id>")
 def delete_result(result_id):
-    res = Result.query.get_or_404(result_id)
-    # just the owner can delete the result
-    if (current_user == res.owner and res.finish) or current_user.username == "PatrickPfau":
-        first = res.genome.split('/')
-        if 'presets' not in first:
-            os.remove(res.gff)
-            os.remove(res.genome)
-        os.remove(res.genes)
-        try:
-            os.remove(res.result)
-        except FileNotFoundError:
-            pass
-        db.session.delete(res)
-        db.session.commit()
-    else:
-        flash('You cannot delete this result.', 'error')
+    shutil.rmtree("./pnag/static/data/" + result_id)
     return redirect(url_for('home'))
 
 

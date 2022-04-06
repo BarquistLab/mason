@@ -39,7 +39,6 @@ with open('ESSENTIAL_GENES.json', 'r') as f:
 @app.route("/home")
 def home():
     results = {}
-    print(os.listdir("./pnag/static/data/"))
     for i in os.listdir("./pnag/static/data/"):
         if i.startswith("20"):
             time = re.sub("([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)",
@@ -49,7 +48,6 @@ def home():
             custom_id = lines[1]
             f.close()
             results[i] = [time, custom_id]
-    print(results)
     return render_template("home.html", title="Home", results=results)
 
 
@@ -112,6 +110,15 @@ def start():
             inputfile.write("\n" + result_custom_id)
             inputfile.write("\n" + "; ".join(target_genes))
             inputfile.write("\n" + str(form.mismatches.data))
+
+        # send message:
+        msg = Message("MASON results page " + result_custom_id, sender="mason.hiri@gmail.com",
+                      recipients=["jakobjung@tutanota.com"])
+        msg.body = "click here to get the results for " + "mason.helmholtz-hiri.de/result/" + time_string
+        #print(msg.body)
+        #print("click here to get the results for " + "mason.helmholtz-hiri.de/" + time_string)
+
+        mail.send(msg)
 
         return redirect(url_for('result', result_id=time_string))
     return render_template("start.html", title="Start", essential=ESSENTIAL_GENES, form=form)

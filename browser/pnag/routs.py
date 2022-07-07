@@ -64,7 +64,7 @@ def start():
         time_string = datetime.utcnow().strftime('%Y_%m_%d_%H_%M_%S')
 
         print(time_string)
-
+        additional_screen = request.form['add_screen']
         target_genes = form.genes.data
         target_genes = [x.strip() for x in target_genes.split(',')]
         if "" in target_genes:
@@ -110,15 +110,6 @@ def start():
             inputfile.write("\n" + result_custom_id)
             inputfile.write("\n" + "; ".join(target_genes))
             inputfile.write("\n" + str(form.mismatches.data))
-
-        # send message:
-        #msg = Message("MASON results page " + result_custom_id, sender="mason.hiri@gmail.com",
-        #              recipients=["jakobjung@tutanota.com"])
-        #msg.body = "click here to get the results for " + "mason.helmholtz-hiri.de/result/" + time_string
-        #print(msg.body)
-        #print("click here to get the results for " + "mason.helmholtz-hiri.de/" + time_string)
-
-        #mail.send(msg)
 
         return redirect(url_for('result', result_id=time_string))
     return render_template("start.html", title="Start", essential=ESSENTIAL_GENES, form=form)

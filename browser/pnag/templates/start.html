@@ -4,7 +4,7 @@
 		<form method="POST" action="" enctype="multipart/form-data">
 			{{ form.hidden_tag() }}
 			<fieldset class="form-group">
-				<legend class="border-bottom mb-4">Inputs for the MASON</legend>
+				<legend class="border-bottom mb-4">Inputs for MASON</legend>
 				<div class="form-group">
 					{{ form.custom_id.label(class="form-control-label", style="font-weight: bold;") }}
 					<p>Please select a unique custom ID for your results</p>
@@ -19,6 +19,7 @@
 						{{ form.custom_id(class="form-control form-control-lg") }}
 					{% endif %}
 				</div>
+				<br>
 				<div class="form-group">
 					{{ form.presets.label(class="form-control-label", style="font-weight: bold;") }}
 					{% if form.presets.errors %}
@@ -30,7 +31,8 @@
 						{{ form.presets(class="form-control form-control-lg") }}
 					{% endif %}
 				</div>
-				<div class="form-group">
+				<br>
+				<div class="form-group" id="essgenes">
 					{{ form.essential.label(class="form-control-label", style="font-weight: bold;") }}
 					<p>Hold down the Ctrl (windows) or Command (Mac) button to select multiple genes.</p>
 					{% if form.essential.errors %}
@@ -44,8 +46,11 @@
 				</div>
 				<script>
 					let select_presets = document.getElementById('presets');
+					document.getElementById('essgenes').style.display = "none";
+
 					let essential_choice = document.getElementById('essential');
 					let essential_dict = {{ essential | tojson }};
+
 					if (select_presets.value in essential_dict) {
 						let new_choices = essential_dict[select_presets.value];
 						let optionHTML = '';
@@ -58,12 +63,15 @@
 						value = select_presets.value;
 						first = document.getElementById('div_genome');
 						second = document.getElementById('div_gff');
+						egenes = document.getElementById('essgenes');
 						if (value == 'upload') {
+							egenes.style.display = 'none';
 							first.style.display = 'block';
 							second.style.display = 'block';
 							essential_choice.innerHTML = '';
 						} else {
 							if (select_presets.value in essential_dict) {
+								egenes.style.display = 'block';
 								var new_choices = essential_dict[select_presets.value];
 								essential_choice.innerHTML = '';
 								let optionHTML = '';
@@ -80,32 +88,34 @@
 						}
 					}
 				</script>
-				<div class="form-group" id="div_genome" >
-					{{ form.genome.label(class="form-control-label", style="font-weight: bold;") }}
-					<p>FASTA files of bacteria can be downloaded from
-						<a href="https://www.ncbi.nlm.nih.gov/genome/">NCBI</a> </p>
-					{% if form.genome.errors %}
-						{{ form.genome(class="form-control form-control-lg is-invalid") }}
-						{% for error in form.genome.errors %}	
-							<span class="text-danger">{{ error }}</span><br>
-						{% endfor %}
-					{% else %}
-						{{ form.genome(class="form-control form-control-lg") }}
-					{% endif %}
+				<br>
+				<div class="form-group row" id="div_genome">
+					<p class="col-md-12"> Below, custom FASTA and GFF files of a bacterium of interest can be uploaded (can be downloaded from
+							<a href="https://www.ncbi.nlm.nih.gov/genome/">NCBI</a>): </p>
+					<div class="col-md-6" id="div_genome" >
+						{{ form.genome.label(class="form-control-label") }}
+						{% if form.genome.errors %}
+							{{ form.genome(class="form-control form-control-lg is-invalid") }}
+							{% for error in form.genome.errors %}
+								<span class="text-danger">{{ error }}</span><br>
+							{% endfor %}
+						{% else %}
+							{{ form.genome(class="form-control form-control-lg") }}
+						{% endif %}
+					</div>
+					<div class="col-md-6" id="div_gff" >
+						{{ form.gff.label(class="form-control-label") }}
+						{% if form.gff.errors %}
+							{{ form.gff(class="form-control form-control-lg is-invalid") }}
+							{% for error in form.gff.errors %}
+								<span class="text-danger">{{ error }}</span><br>
+							{% endfor %}
+						{% else %}
+							{{ form.gff(class="form-control form-control-lg") }}
+						{% endif %}
+					</div>
 				</div>
-				<div class="form-group" id="div_gff" >
-					{{ form.gff.label(class="form-control-label", style="font-weight: bold;") }}
-					<p>GFF files of bacteria can be downloaded from
-						<a href="https://www.ncbi.nlm.nih.gov/genome/">NCBI</a> </p>
-					{% if form.gff.errors %}
-						{{ form.gff(class="form-control form-control-lg is-invalid") }}
-						{% for error in form.gff.errors %}
-							<span class="text-danger">{{ error }}</span><br>
-						{% endfor %}
-					{% else %}
-						{{ form.gff(class="form-control form-control-lg") }}
-					{% endif %}
-				</div>
+				<br>
 				<div class="form-group" id="div_lt" >
 					{{ form.genes.label(class="form-control-label", style="font-weight: bold;") }}
 					<p>For example: SL1344_1133, SL1344_P3_0012 for <i> Salmonella</i> SL1344. Locus tags of genes can be found in the GFF file in
@@ -119,6 +129,7 @@
 						{{ form.genes(class="form-control form-control-lg") }}
 					{% endif %}
 				</div>
+				<br>
 				<div class="form-group">
 					{{ form.len_PNA.label(class="form-control-label", style="font-weight: bold;") }}
 					<p>Length of bacterial ASOs is usually chosen to be between 9-12 nucleobases.</p>
@@ -131,6 +142,7 @@
 						{{ form.len_PNA(class="form-control form-control-lg") }}
 					{% endif %}
 				</div>
+				<br>
 				<div class="form-group">
 					{{ form.mismatches.label(class="form-control-label", style="font-weight: bold;") }}
 					<p>Number of maximally alowed mismatches for the off-target prediction algorithm.
@@ -145,6 +157,7 @@
 						{{ form.mismatches(class="form-control form-control-lg") }}
 					{% endif %}
 				</div>
+				<br>
 				<div class="form-group">
 					{{ form.bases_before.label(class="form-control-label", style="font-weight: bold;") }}
 					<p>If not specified, all ASOs overlapping the start codon are designed.
@@ -158,6 +171,65 @@
 					{% else %}
 						{{ form.bases_before(class="form-control form-control-lg") }}
 					{% endif %}
+				</div>
+				<br>
+				<div class="form-group">
+					<p><b> Screen other genomes for off-targets (optional) </b></p>
+
+					<p> Select to screen for off-targets in the human genome, microbiome add a custom genome: </p>
+
+					<input type="radio" name="add_screen" id="none" value="none" checked> None  </input><br>
+					<input type="radio" name="add_screen" id="add_human" value="human"> Human genome  </input><br>
+					<input type="radio" name="add_screen" id="add_microbiome" value="microbiome"> Human microbiome </input><br>
+					<input type="radio" name="add_screen" id="add_custom" value="custom"> Custom genome </input><br>
+					<br>
+					<div class="form-group row" id="div_genome_2">
+						<p class="col-md-12"> Optionally, custom FASTA and GFF files of another organism of interest can be uploaded to be
+							screened for off-targets (can be downloaded from
+								<a href="https://www.ncbi.nlm.nih.gov/genome/">NCBI</a>): </p>
+						<div class="col-md-6" id="div_genome" >
+							{{ form.genome.label(class="form-control-label") }}
+							{% if form.genome.errors %}
+								{{ form.genome(class="form-control form-control-lg is-invalid") }}
+								{% for error in form.genome.errors %}
+									<span class="text-danger">{{ error }}</span><br>
+								{% endfor %}
+							{% else %}
+								{{ form.genome(class="form-control form-control-lg") }}
+							{% endif %}
+						</div>
+						<div class="col-md-6" id="div_gff" >
+							{{ form.gff.label(class="form-control-label") }}
+							{% if form.gff.errors %}
+								{{ form.gff(class="form-control form-control-lg is-invalid") }}
+								{% for error in form.gff.errors %}
+									<span class="text-danger">{{ error }}</span><br>
+								{% endfor %}
+							{% else %}
+								{{ form.gff(class="form-control form-control-lg") }}
+							{% endif %}
+					</div>
+					<script>
+						document.getElementById('div_genome_2').style.display = "none";
+						let select_none = document.getElementById('none');
+						let select_human_genome = document.getElementById('add_human');
+						let select_microbome = document.getElementById('add_microbiome');
+						let select_add_genome = document.getElementById('add_custom');
+						select_add_genome.onclick = function() {
+							document.getElementById('div_genome_2').style.display = "block";
+						}
+						select_human_genome.onclick = function() {
+							document.getElementById('div_genome_2').style.display = "none";
+						}
+						select_microbome.onclick = function() {
+							document.getElementById('div_genome_2').style.display = "none";
+						}
+						select_none.onclick = function() {
+							document.getElementById('div_genome_2').style.display = "none";
+						}
+
+					</script>
+				</div>
 				</div>
 			</fieldset>
 			<div class="form-group">

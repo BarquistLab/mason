@@ -8,7 +8,7 @@ This will start the calculation in background
 import subprocess
 
 
-def start_calculation(mason, fasta, gff, targets, length, mismatches, b_before,  id, result_id):
+def start_calculation(mason, fasta, gff, targets, length, mismatches, b_before,  id, result_id, screen):
     """ This function starts the calculation of MASON
     """
     print(b_before)
@@ -17,7 +17,7 @@ def start_calculation(mason, fasta, gff, targets, length, mismatches, b_before, 
         
     subprocess.run(["bash", mason, "-f", fasta, "-g", gff,
                     "-t", targets, "-l", length, "-m", mismatches,
-                    "-i", id, "-b", b_before])
+                    "-i", id, "-b", b_before, "-s", screen])
     f = open("./pnag/static/data/" + result_id + "/../done.txt", "w+")
     f.close()
     print("finished mason calculation!")

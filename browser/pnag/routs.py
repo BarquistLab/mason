@@ -93,19 +93,15 @@ def start():
             paths['gff'] = files[1]
         with open("./pnag/static/data/"+time_string+"/inputs.txt", "w+") as input_file:
             input_file.write(paths['genome'] + "," + paths['gff'])
-        print(target_genes)
         result_custom_id = form.custom_id.data
 
         # Now run MASON as background process while continuing with start.html and showing the "waiting" html:
         for tgene in target_genes:
-            print("heres it")
-            print(result_custom_id)
-            print(tgene)
             resultid = time_string + "/" + tgene
             threading.Thread(target=start_calculation, name="masons", args=[path_parent.__str__() + "/mason.sh", paths['genome'],
                                                                             paths['gff'], tgene, str(form.len_PNA.data),
                                                                             str(form.mismatches.data), str(b_before),
-                                                                            resultid, resultid]).start()
+                                                                            resultid, resultid, additional_screen]).start()
         with open("./pnag/static/data/"+time_string + "/inputs.txt", "a") as inputfile:
             inputfile.write("\n" + result_custom_id)
             inputfile.write("\n" + "; ".join(target_genes))

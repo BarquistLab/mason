@@ -3,17 +3,18 @@
 # I start with assigning the flags (user inputs):
 
 
-while getopts f:g:t:l:m:p:i:b: flag
+while getopts f:g:t:l:m:p:i:b:s: flag
 do
     case "${flag}" in
 	f) fasta=${OPTARG};;
-  g) gff=${OPTARG};;
-  t) target=${OPTARG};;
+	g) gff=${OPTARG};;
+	t) target=${OPTARG};;
 	l) length=${OPTARG};;
 	m) mismatches=${OPTARG};;
 	i) result_id=${OPTARG};;
 	p) pna_input=${OPTARG};;
 	b) bases_before=${OPTARG};;
+	s) screen=${OPTARG};;
     esac
 done
 
@@ -31,27 +32,39 @@ mkdir "./pnag/static/data/$result_id"
 
 RES="./pnag/static/data/$result_id"
 REF="$RES/reference_sequences"
+PRESETS="./pnag/static/data/presets"
 OUT="$RES/outputs"
 GFF="$(basename -- $gff)"
 FASTA="$(basename -- $fasta)"  # get base names of files wo paths
+WARNINGS="$RES/warnings.txt"
+
 
 echo "$REF"
 echo "$OUT"
 
 mkdir -p $REF $OUT
+touch "$WARNINGS"
 
 scp "$gff" "$REF/$GFF"
 scp "$fasta" "$REF/$FASTA"
 
 # same for full regions (change to whole CDS and 30 nt upstream):
-grep -P "\tCDS\t|\tsRNA\t|\tncRNA\t" $gff |\
-        awk -F'\t' 'BEGIN { OFS="\t" } \
-{if ($7=="-") {$5=$5+30} \
-else { $4=$4-30} print $0}'| \
-    sed -E 's/([^\t]*\t[^\t]*\t)([^\t]*)(.*locus_tag=([^;]+).*)/\1\4\3/' | \
-    sed -E 's/([^\t]*\t[^\t]*\t)([^\t]*)(.*gene=([^;]+).*)/\1\2;\4\3/' \
-	> "$REF/full_transcripts_$GFF"
+grep -P "\tCDS\t|\tsRNA\t|\tncRNA\t|\tgene\t" $gff |\
+        awk -F'\t' 'BEGIN { OFS="\t" } {if ($7=="-") {$5=$5+30} else { $4=$4-30} print $0}'| \
+    sed -E 's/([^\t]*\t[^\t]*\t)([^\t]*)(.*;locus_tag=([^;]+).*)/\1\4\3/' | \
+    sed -E 's/([^\t]*\t[^\t]*\t)([^\t]*)(.*;gene=([^;]+).*)/\1\2;\4\3/' |
+    grep ";locus_tag="> \
+    "$REF/full_transcripts_$GFF"
 
+
+bioawk -c fastx '{ print $name, length($seq) }' < "$fasta"  > "$REF/genelengths.tsv"
+
+# change the gff entries that go too far:
+Rscript pnag/modify_gff.R "$REF/full_transcripts_$GFF" "$REF/genelengths.tsv" "$WARNINGS"
+
+
+
+echo "start running bedtools"
 # I extract the fasta files from the gff using bedtools:
 bedtools getfasta -s -fi $fasta -bed "$REF/full_transcripts_$GFF"  \
 	 -name+ -fo "$REF/full_transcripts_$FASTA"
@@ -64,10 +77,10 @@ then
     echo "no PNA put in"
     # Now I create a list of all PNAs:
     grep -A 1 $target "$REF/full_transcripts_$FASTA" | \
-	sed -E 's/^([A-Z]{46}).*/\1/' > "$REF/targetgene_startreg.fasta" |  # select -30 to + 16 region
+	sed -E 's/^([A-Z]{46}).*/\1/' > "$REF/targetgene_startreg.fasta"   |# select -30 to + 16 region
     # Now I run the python script which I wrote to design PNAs:
-    echo $length
-    echo $result_id
+    echo "$length"
+    echo "$result_id"
     python ./pnag/make_pnas.py $length $RES $bases_before > logfile_masonscript.log 2>&1
 
 else
@@ -77,13 +90,22 @@ fi
 
 
 #Now I run seqmap on start regions and whole transcriptome:
-
-seqmap $mismatches "$REF/aso_targets.fasta" "$REF/full_transcripts_$FASTA" \
+echo "run seqmap"
+seqmap "$mismatches" "$REF/aso_targets.fasta" "$REF/full_transcripts_$FASTA" \
        "$OUT/offtargets_fulltranscripts.tab" /output_all_matches \
        /forward_strand /output_statistics /available_memory:5000 >> logfile_masonscript.log 2>&1
 
 
+#if [[$screen = "human"]]
+#then
+#    seqmap $mismatches "$REF/aso_targets.fasta" "$PRESETS/start_regions_microbiom.fasta" \
+#       "$OUT/offtargets_microbiom.tab" /output_all_matches \
+#       /forward_strand /output_statistics /available_memory:5000 >> logfile_masonscript.log 2>&1
+#elif [[$screen="microbiome"]]
+#then
 
+
+echo "determine mismatch positions"
 # I use awk to determine the mismatch positions:
 for NAME in $(ls $OUT/offtargets_*.tab)
 do
@@ -121,7 +143,7 @@ do
 	     print $0
 	}' |  sed -E 's/^([^;:]*)::/\1;\1::/'| \
 	    sed -E 's/^([^;:]*);([^:]*)::[^\(]*\(([\+\-])\)/\1\t\2\t\3/' >> $NEWNAME
-    rm $NAME
+    #rm $NAME
     
 done
 

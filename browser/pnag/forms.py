@@ -30,13 +30,13 @@ class startForm(FlaskForm):
 	gff = FileField('GFF File', validators=[FileAllowed(['gff', 'gff3', 'gff2', 'gff1', 'gtf'])])
 	genome_2 = FileField('FASTA File', validators=[FileAllowed(['fasta', 'fa', 'fna'])])
 	gff_2 = FileField('GFF File', validators=[FileAllowed(['gff', 'gff3', 'gff2', 'gff1', 'gtf'])])
-	presets = SelectField('Select one of the preset genomes or use "Own files" to upload your own genome', choices=[], validators=[InputRequired()])
+	presets = SelectField('Genome of target organism', choices=[], validators=[InputRequired()])
 	essential = NoValidationSelectMultipleField('Essential genes to be selected', choices=[])
-	genes = StringField( 'Enter the locus tags of target genes separated by comma')
-	len_PNA = IntegerField('Length of ASOs', validators=[InputRequired(), NumberRange(min=5, max=18)])
+	genes = StringField('Enter the locus tags of target genes separated by comma')
+	len_PNA = IntegerField('Length of ASOs', validators=[InputRequired(), NumberRange(min=7, max=16)])
 	mismatches = IntegerField('Allowed mismatches for off targets', validators=[InputRequired(), NumberRange(min=0, max=4)])
 	bases_before = StringField('Bases before (5 prime) CDS (start codon) to start ASO design (optional)',
-							   validators=[Regexp("^[1-9]$|^1[0-9]$|^2[0-5]$|^$", message="Numbers between 1-25 are acepted")])
+							   validators=[Regexp("^[1-9]$|^1[0-9]$|^2[0]$|^$", message="Numbers between 1-20 are acepted")])
 	submit = SubmitField('Start')
 
 	def validate_genes(self, genes):

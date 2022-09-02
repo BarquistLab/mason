@@ -27,6 +27,7 @@ conda activate browser
 echo "bases_before= $bases_before"
 echo "fasta: $fasta";
 echo "gff: $gff";
+echo "screen: $screen";
 
 mkdir "./pnag/static/data/$result_id"
 
@@ -88,6 +89,13 @@ else
     python ./pnag/modify_PNAs.py $pna_input >> logfile_masonscript.log 2>&1
 fi
 
+if [ ! -s "$REF/aso_targets.fasta" ]
+then
+  echo "No PNAs created!"
+  touch "$RES/../done.txt"
+  echo  "$target" >> "$RES/../error.txt"
+fi
+
 
 #Now I run seqmap on start regions and whole transcriptome:
 echo "run seqmap"
@@ -96,23 +104,28 @@ seqmap "$mismatches" "$REF/aso_targets.fasta" "$REF/full_transcripts_$FASTA" \
        /forward_strand /output_statistics /available_memory:5000 >> logfile_masonscript.log 2>&1
 
 
-#if [[$screen = "human"]]
-#then
-#    seqmap $mismatches "$REF/aso_targets.fasta" "$PRESETS/start_regions_microbiom.fasta" \
-#       "$OUT/offtargets_microbiom.tab" /output_all_matches \
-#       /forward_strand /output_statistics /available_memory:5000 >> logfile_masonscript.log 2>&1
-#elif [[$screen="microbiome"]]
-#then
 
+if [[ $screen = "microbiome" ]]
+then
+    seqmap "$mismatches" "$REF/aso_targets.fasta" "$PRESETS/start_regions_HMP.fasta" \
+       "$OUT/offtargets_microbiome.tab" /output_all_matches \
+       /forward_strand /output_statistics /available_memory:5000 >> logfile_masonscript.log 2>&1
+elif [[ $screen = "human" ]]
+then
+  seqmap "$mismatches" "$REF/aso_targets.fasta" "$PRESETS/GRCh38_latest_rna.fna" \
+       "$OUT/offtargets_human.tab" /output_all_matches \
+       /forward_strand /output_statistics /available_memory:5000 >> logfile_masonscript.log 2>&1
+fi
 
 echo "determine mismatch positions"
 # I use awk to determine the mismatch positions:
-for NAME in $(ls $OUT/offtargets_*.tab)
+for NAME in "$OUT"/offtargets*.tab
 do
     echo "$NAME"
     NEWNAME=${NAME%.tab}_sorted.tab
     head -1 $NAME | sed -E "s/(.*)/\\1\tmismatch_positions\tlongest_stretch/" |
-	sed -E  's/^trans_id/locus_tag\tgene_name\tstrand/' > $NEWNAME
+    sed -E  's/^trans_id/locus_tag\tgene_name\tstrand/' > $NEWNAME
+
     echo "$NEWNAME"
     sed 1d $NAME |\
 	sort -t "$(printf "\t")"  -k4 |\
@@ -139,16 +152,18 @@ do
 	     } 
 	     $7=mm
 	     $8=longest_stretch
-	     $2=$2-32
+	     #$2=$2-32
 	     print $0
 	}' |  sed -E 's/^([^;:]*)::/\1;\1::/'| \
-	    sed -E 's/^([^;:]*);([^:]*)::[^\(]*\(([\+\-])\)/\1\t\2\t\3/' >> $NEWNAME
-    #rm $NAME
+	    sed -E 's/^([^;:]*);([^:]*)::[^\(]*\(([\+\-])\)/\1\t\2\t\3/'| \
+	     sed -E 's/^([A-Z][A-Z]_[^ ]+) ([^\t]+)/\1\t\2\tU/'| \
+	     sed -E 's/^([A-Z][A-Z]_[^_]+)_([^\(]+)\(([\+\-])\)/\1\t\2\t\3/'  >> "$NEWNAME"
+    rm "$NAME"
     
 done
 
 rm -rf $OUT/*_sorted_sorted.tab
-python ./pnag/summarize_offtargets.py $OUT >> logfile_masonscript.log 2>&1
+python ./pnag/summarize_offtargets.py "$OUT" "$screen" >> logfile_masonscript.log 2>&1
 
 touch "$RES/$target"
 

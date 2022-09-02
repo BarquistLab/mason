@@ -10,7 +10,6 @@ args <- commandArgs(trailingOnly = T)
 
 # import gff and fasta lengths:
 gff <-  read.delim(args[1], header = FALSE) 
-print(head(gff))
 
 fastas <- read.delim(args[2], header = FALSE, row.names = 1)
 

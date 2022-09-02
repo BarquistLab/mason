@@ -17,8 +17,8 @@ df_asos$ASO <- gsub(".*_(ASO.*)", "\\1", rownames(df_asos))
 g <- df_asos %>% ggplot(aes(x=ASO, y=Tm)) + geom_col(fill="steelblue") + theme_minimal() +
   coord_cartesian(ylim=c(min(df_asos$Tm)-5, max(df_asos$Tm)+5)) +  ylab("Tm (°C)") +
   xlab("") +
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 80/length(df_asos$Tm)),
-        axis.text.y = element_text(size = 80/length(df_asos$Tm)),
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 10),
+        axis.text.y = element_text(size = 10),
         axis.title.y = element_text(size =12),
         panel.grid.major.x = element_blank()) 
 

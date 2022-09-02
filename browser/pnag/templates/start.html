@@ -7,7 +7,7 @@
 				<legend class="border-bottom mb-4">Inputs for MASON</legend>
 				<div class="form-group">
 					{{ form.custom_id.label(class="form-control-label", style="font-weight: bold;") }}
-					<p>Please select a unique custom ID for your results</p>
+					<p>Please select a unique custom ID for your result storage</p>
 					{% if form.custom_id.errors %}
 						{{ form.custom_id(class="form-control form-control-lg is-invalid") }}
 						<div class="invalid-feedback">
@@ -22,6 +22,17 @@
 				<br>
 				<div class="form-group">
 					{{ form.presets.label(class="form-control-label", style="font-weight: bold;") }}
+					<p>Select one of the preset genomes or use "Own files" to upload your own genome.</p>
+					<p> For the preset genomes of <i> Salmonella </i> (substr. SL1344) (<a href="../static/data/presets/s_typhi.fa">FASTA</a>,
+						<a href="../static/data/presets/s_typhi.gff">GFF</a>) and <i> E. coli </i> (K12) (<a href="../static/data/presets/e_coli_K12.fna">FASTA</a>,
+						<a href="../static/data/presets/e_coli_K12.gff">GFF</a>)we
+					provide a list of essential genes. For <i> Clostridium difficile </i> 630 (<a href="../static/data/presets/c_diffi630.fasta">FASTA</a>,
+						<a href="../static/data/presets/c_diffi630.gff3">GFF</a>) and
+					<i> Fusobacterium nucleatum </i> (ATCC 23726) (<a href="../static/data/presets/Fuso.fasta">FASTA</a>,
+						<a href="../static/data/presets/Fuso.gff3">GFF</a>) we provide the newest genome files with annotations.
+						Other genomes (FASTA) and their annotations (GFF) can be downloaded from the <a href="https://www.ncbi.nlm.nih.gov/">NCBI </a>website
+					and uploaded using the "Own files" option. For more details on  how to download custom genomes, have a look at our
+						<a href="{{ url_for('help') }}">help page</a></p>
 					{% if form.presets.errors %}
 						{{ form.presets(class="form-control form-control-lg is-invalid") }}
 						{% for error in form.presets.errors %}
@@ -34,7 +45,8 @@
 				<br>
 				<div class="form-group" id="essgenes">
 					{{ form.essential.label(class="form-control-label", style="font-weight: bold;") }}
-					<p>Hold down the Ctrl (windows) or Command (Mac) button to select multiple genes.</p>
+					<p>Hold down the Ctrl (windows) or Command (Mac) button to select multiple genes. Please select
+						no more than 10 genes at once to keep the running time low</p>
 					{% if form.essential.errors %}
 						{{ form.essential(class="form-control form-control-lg is-invalid") }}
 						{% for error in form.essential.errors %}
@@ -119,7 +131,8 @@
 				<div class="form-group" id="div_lt" >
 					{{ form.genes.label(class="form-control-label", style="font-weight: bold;") }}
 					<p>For example: SL1344_1133, SL1344_P3_0012 for <i> Salmonella</i> SL1344. Locus tags of genes can be found in the GFF file in
-					the 9th column. </p>
+						the 9th column, following "locus_tag=", see <a href="./help">help page</a>. Please select
+						no more than 10 genes at once to keep the running time low </p>
 					{% if form.genes.errors %}
 						{{ form.genes(class="form-control form-control-lg is-invalid") }}
 						{% for error in form.genes.errors %}	
@@ -132,7 +145,8 @@
 				<br>
 				<div class="form-group">
 					{{ form.len_PNA.label(class="form-control-label", style="font-weight: bold;") }}
-					<p>Length of bacterial ASOs is usually chosen to be between 9-12 nucleobases.</p>
+					<p>Length of bacterial ASOs is usually chosen to be between 9-12 nucleobases to enable entry into the
+						cell. Length needs to between 7 and 16 bases</p>
 					{% if form.len_PNA.errors %}
 						{{ form.len_PNA(class="form-control form-control-lg is-invalid") }}
 						{% for error in form.len_PNA.errors %}
@@ -162,7 +176,7 @@
 					{{ form.bases_before.label(class="form-control-label", style="font-weight: bold;") }}
 					<p>If not specified, all ASOs overlapping the start codon are designed.
 					If a SD sequence exists, it can be useful to design more ASOs lying upstream (5') the CDS to inhibit
-					translation. </p>
+					translation </p>
 					{% if form.bases_before.errors %}
 						{{ form.bases_before(class="form-control form-control-lg is-invalid") }}
 						{% for error in form.bases_before.errors %}
@@ -176,12 +190,18 @@
 				<div class="form-group">
 					<p><b> Screen other genomes for off-targets (optional) </b></p>
 
-					<p> Select to screen for off-targets in the human genome, microbiome add a custom genome: </p>
+					<p> Select to screen for off-targets in the <a href="https://www.ncbi.nlm.nih.gov/genome/guide/human/">human genome</a>
+						(<a href="../static/data/presets/GRCh38_latest_rna.fna">FASTA</a>) or
+						the <a href="https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA28331">human microbiome</a>
+						(<a href="../static/data/presets/start_regions_HMP.fasta">FASTA</a>). For the human genome,
+						the whole transcriptome is screened, whereas for the human microbiome only translation
+						initiation sites are considered. Note, that the selection of these additional screens will
+						increase the running time of MASON</p>
 
 					<input type="radio" name="add_screen" id="none" value="none" checked> None  </input><br>
 					<input type="radio" name="add_screen" id="add_human" value="human"> Human genome  </input><br>
 					<input type="radio" name="add_screen" id="add_microbiome" value="microbiome"> Human microbiome </input><br>
-					<input type="radio" name="add_screen" id="add_custom" value="custom"> Custom genome </input><br>
+				<!--	<input type="radio" name="add_screen" id="add_custom" value="custom"> Custom genome </input><br>
 					<br>
 					<div class="form-group row" id="div_genome_2">
 						<p class="col-md-12"> Optionally, custom FASTA and GFF files of another organism of interest can be uploaded to be
@@ -229,6 +249,7 @@
 						}
 
 					</script>
+					-->
 				</div>
 				</div>
 			</fieldset>

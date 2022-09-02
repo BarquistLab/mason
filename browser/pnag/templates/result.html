@@ -13,104 +13,127 @@
 			</div>
 		{% if rfin %}
 		<button id="btn_right" type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal"><i class="material-icons">delete_forever</i></button>
+		{% else %}
+		<meta http-equiv="refresh" content="15" >
 		{% endif %}
 		<p>{{ time }}</p>
 		<p>Target gene(s) (locus tag): {{ tgenes }}</p>
 		<p>Allowed mismatches for off targets: {{ mismatches }}</p>
 		<p>Used genome file (FASTA): <a href="{{ genome_file }}"><i class="material-icons">cloud_download</i></a></p>
 		<p>Used annotation file (GFF): <a href="{{ gff_file }}"><i class="material-icons">cloud_download</i></a></p>
+		{% if add_screen == "microbiome" %}
+		<p>Used HMP file (FASTA): <a href="../static/data/presets/start_regions_HMP.fasta"><i class="material-icons">cloud_download</i></a></p>
+		{% endif %}
+		{% if add_screen == "human" %}
+		<p>Used human transcriptome file (FASTA): <a href="../static/data/presets/GRCh38_latest_rna.fna"><i class="material-icons">cloud_download</i></a></p>
+		{% endif %}
 
 
 	</article>
 
 	{% if rfin %}
-	{%for res in all_output_dirs%}
-	<h2>gene - {{ " " + res }}</h2>
-	<!-- Modal -->
-	<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-	  <div class="modal-dialog" role="document">
-		<div class="modal-content">
-		  <div class="modal-header">
-			<h5 class="modal-title" id="exampleModalLabel">Delete Result</h5>
-			<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-			  <span aria-hidden="true">&times;</span>
-			</button>
-		  </div>
-		  <div class="modal-body">
-			  <p>Are you sure you want to delete the result? This process cannot be undone.</p>
-		  </div>
-		  <div class="modal-footer">
-			  <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="material-icons">clear</i></button>
-			  <a href="{{ url_for('delete_result', result_id=result) }}"><button type="button" class="btn btn-primary"><i class="material-icons">check</i></button></a>
-		  </div>
-		</div>
-	  </div>
-	</div>
-	<div class="content-section">
-			<h3 class="border-bottom mb-4">ASO sequences</h3>
-			<p>
-				Below, the designed ASOs are visualized as they would align with the target gene's mRNA.
-				If a 'GAGG' sequence was found in the mRNA, this indicates a bacterial
-				Shine-Dalgarno (SD) region. 'GAGG' and start codon are highlighted by darkened fields.
-				PNAs are not included if they have more than 60% bases of self-complementarity.
-			</p>
-			<img src="{{ dir_out + "/" + res + '/outputs/heatmap.png' }}" >
-		<p>Download ASO sequences: &nbsp <a href="{{ dir_out + "/" + res + '/reference_sequences/aso_sequences.fasta' }}">FASTA<i class="material-icons">cloud_download</i></a></p>
-		<p>Download heatmap: &nbsp<a href="{{ dir_out + "/" + res + '/outputs/heatmap.svg' }}">SVG <i class="material-icons">cloud_download</i></a>
-			&nbsp&nbsp
-		<a href="{{ dir_out + "/" + res + '/outputs/heatmap.png' }}"> PNG <i class="material-icons">cloud_download</i></a></p>
-		<br>
+		{%for res in all_output_dirs%}
 
-			<h3 class="border-bottom mb-4"> Predicted melting temperature (Tm, in °C) for ASOs </h3>
-					<p>The predicterd Tm of ASOs are shown in the barplot below. For Tm prediction, we used the R
-						package
-						<a href="https://bioconductor.org/packages/release/bioc/html/rmelting.html">rmelting</a>
-						(v1.10.0) which is an interface to the
-						<a href="https://www.ebi.ac.uk/biomodels-static/tools/melting/">MELTING</a> (v5)
-						program. We decided to calculate the melting temperature for RNA-RNA duplexes, because
-						there are no available algorithms for the Tm of PNA-mRNA duplexes. As parameters we used the
-						nucleic acid concentration of 8 μM and a Na concentration of 0.1M. The Tm values are useful
-						for relative comparison between PNAs. However, the absolute Tm is only an approximation and
-						should be validated experimentally! </p>
-			<img src="{{ dir_out + "/" + res + '/outputs/tm.png' }}" class="center">
-		<p>Download barplot: &nbsp<a href="{{ dir_out + "/" + res + '/outputs/tm.png' }}">PNG <i class="material-icons">cloud_download</i></a>
-		<br>
-		<br>
-		<br>
-		<br>
-			<h3 class="border-bottom mb-4"> Predicted off-targets for ASOs </h3>
-					<p>The predicterd off-targets (OT) of ASOs are shown in the barplot below. OT in the whole
-						transcriptome of the targeted bacterium is visualized in dar blue. OT, which are located in the
-						translation initiation regions (TIR, -20 to +10 nt from start of coding sequence) of genes of
-						the targeted organism. </p>
-			<img src="{{ dir_out + "/" + res + '/outputs/plot_ots_whole_transcriptome.png'}}" >
-		<br>
-		<br>
-		<p>Download detailed critical-off-target table: &nbsp <a href="{{ dir_out + "/" + res + '/outputs/offtargets_fulltranscripts_sorted.csv' }}">CSV <i class="material-icons">cloud_download</i></a></p>
-		<p>Download barplot: &nbsp<a href="{{ dir_out + "/" + res + '/outputs/plot_ots_whole_transcriptome.svg' }}">SVG <i class="material-icons">cloud_download</i></a>
-			&nbsp&nbsp
-		<a href="{{ dir_out + "/" + res + '/outputs/plot_ots_whole_transcriptome.png' }}"> PNG <i class="material-icons">cloud_download</i></a></p>
-		<br>
-		<br>
-			<h3 class="border-bottom mb-4"> Summary table for {{ result.custom_id }} - ASOs </h3>
-					<p> Summary for each ASO sequence. meanings of column names: <br>
-						location = location (start and end) of the ASO-binding site, measured from the CDS start site <br>
-						SC_bases = maximum stretch of self-complementary bases <br>
-						pur_perc = percentage of purine bases in ASO sequence (too high % should be avoided) <br>
-						long_pur_stretch = longest purine stretch (too long purine stretches should be avoided) <br>
-						Tm = Melting temperature<br>
-						OT_tot = critical off-targets in the whole transcriptome<br>
-						OT_TIR = critical off-targets in translation initiation regions<br>
+				<h2>gene - {{ " " + res }}</h2>
+				<!-- Modal -->
+				<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+				  <div class="modal-dialog" role="document">
+					<div class="modal-content">
+					  <div class="modal-header">
+						<h5 class="modal-title" id="exampleModalLabel">Delete Result</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						  <span aria-hidden="true">&times;</span>
+						</button>
+					  </div>
+					  <div class="modal-body">
+						  <p>Are you sure you want to delete the result? This process cannot be undone.</p>
+					  </div>
+					  <div class="modal-footer">
+						  <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="material-icons">clear</i></button>
+						  <a href="{{ url_for('delete_result', result_id=result) }}"><button type="button" class="btn btn-primary"><i class="material-icons">check</i></button></a>
+					  </div>
+					</div>
+				  </div>
+				</div>
+				<div class="content-section">
+					{%if res not in errs %}
+							<h3 class="border-bottom mb-4">ASO sequences</h3>
+							<p>
+								Below, the designed ASOs are visualized as they would align with the target gene's mRNA.
+								If a 'GAGG' sequence was found in the mRNA, this indicates a bacterial
+								Shine-Dalgarno (SD) region. 'GAGG' and start codon are highlighted by darkened fields.
+								PNAs are not included if they have more than 60% bases of self-complementarity.
+							</p>
+							<img src="{{ dir_out + "/" + res + '/outputs/heatmap.png' }}" >
+						<p>Download ASO sequences: &nbsp <a href="{{ dir_out + "/" + res + '/reference_sequences/aso_sequences.fasta' }}">FASTA<i class="material-icons">cloud_download</i></a></p>
+						<p>Download heatmap: &nbsp<a href="{{ dir_out + "/" + res + '/outputs/heatmap.svg' }}">SVG <i class="material-icons">cloud_download</i></a>
+							&nbsp&nbsp
+						<a href="{{ dir_out + "/" + res + '/outputs/heatmap.png' }}"> PNG <i class="material-icons">cloud_download</i></a></p>
+						<br>
 
-					</p>
-			<img src="{{ dir_out + "/" + res + '/outputs' + '/result_table.png' }}" class="larger">
-		<br>
-		<br>
-		<p>Download ASO summary table: &nbsp<a href="{{ dir_out + "/" + res + '/outputs' + '/result_table.csv' }}">CSV <i class="material-icons">cloud_download</i></a></p>
-		<p>Download table (graphic): &nbsp<a href="{{ dir_out + "/" + res + '/outputs/result_table.png' }}">PNG <i class="material-icons">cloud_download</i></a>
-	</div>
-	{% endfor %}
+							<h3 class="border-bottom mb-4"> Predicted melting temperature (Tm, in °C) for ASOs </h3>
+									<p>The predicterd Tm of ASOs are shown in the barplot below. For Tm prediction, we used the R
+										package
+										<a href="https://bioconductor.org/packages/release/bioc/html/rmelting.html">rmelting</a>
+										(v1.10.0) which is an interface to the
+										<a href="https://www.ebi.ac.uk/biomodels-static/tools/melting/">MELTING</a> (v5)
+										program. We decided to calculate the melting temperature for RNA-RNA duplexes, because
+										there are no available algorithms for the Tm of PNA-mRNA duplexes. As parameters we used the
+										nucleic acid concentration of 8 μM and a Na concentration of 0.1M. The Tm values are useful
+										for relative comparison between PNAs. However, the absolute Tm is only an approximation and
+										should be validated experimentally! </p>
+							<img src="{{ dir_out + "/" + res + '/outputs/tm.png' }}" class="center">
+						<p>Download barplot: &nbsp<a href="{{ dir_out + "/" + res + '/outputs/tm.png' }}">PNG <i class="material-icons">cloud_download</i></a>
+						<br>
+						<br>
+						<br>
+						<br>
+							<h3 class="border-bottom mb-4"> Predicted off-targets for ASOs </h3>
+									<p>The predicterd off-targets (OT) of ASOs are shown in the barplot below. OT in the whole
+										transcriptome of the targeted bacterium is visualized in dar blue. OT, which are located in the
+										translation initiation regions (TIR, -20 to +10 nt from start of coding sequence) of genes of
+										the targeted organism. </p>
+							<img src="{{ dir_out + "/" + res + '/outputs/plot_ots_whole_transcriptome.png'}}" >
+						<br>
+						<br>
+						<p>Download detailed critical-off-target table: &nbsp <a href="{{ dir_out + "/" + res + '/outputs/offtargets_fulltranscripts_sorted.csv' }}">CSV <i class="material-icons">cloud_download</i></a></p>
+						{% if add_screen == "microbiome" %}
+							<p>Download detailed HMP off-target table: <a href="{{ dir_out + "/" + res + '/outputs/offtargets_hmp_sorted.csv' }}">CSV <i class="material-icons">cloud_download</i></a></p>
+						{% endif %}
+						{% if add_screen == "human" %}
+							<p>Download detailed human genome off-target table: <a href="{{ dir_out + "/" + res + '/outputs/offtargets_human_sorted.csv' }}">CSV <i class="material-icons">cloud_download</i></a></p>
+						{% endif %}
+
+						<p>Download barplot: &nbsp<a href="{{ dir_out + "/" + res + '/outputs/plot_ots_whole_transcriptome.svg' }}">SVG <i class="material-icons">cloud_download</i></a>
+							&nbsp&nbsp
+						<a href="{{ dir_out + "/" + res + '/outputs/plot_ots_whole_transcriptome.png' }}"> PNG <i class="material-icons">cloud_download</i></a></p>
+						<br>
+						<br>
+							<h3 class="border-bottom mb-4"> Summary table for {{ result.custom_id }} - ASOs </h3>
+									<p> Summary for each ASO sequence. meanings of column names: <br>
+										location = location (start and end) of the ASO-binding site, measured from the CDS start site <br>
+										SC_bases = maximum stretch of self-complementary bases <br>
+										pur_perc = percentage of purine bases in ASO sequence (too high % should be avoided) <br>
+										long_pur_stretch = longest purine stretch (too long purine stretches should be avoided) <br>
+										Tm = Melting temperature<br>
+										OT_tot = critical off-targets in the whole transcriptome<br>
+										OT_TIR = critical off-targets in translation initiation regions<br>
+
+									</p>
+							<img src="{{ dir_out + "/" + res + '/outputs' + '/result_table.png' }}" class="larger">
+						<br>
+						<br>
+						<p>Download ASO summary table: &nbsp<a href="{{ dir_out + "/" + res + '/outputs' + '/result_table.csv' }}">CSV <i class="material-icons">cloud_download</i></a></p>
+						<p>Download table (graphic): &nbsp<a href="{{ dir_out + "/" + res + '/outputs/result_table.png' }}">PNG <i class="material-icons">cloud_download</i></a>
+					{% else %}
+						<h5 style="background-color:rgba(128, 0, 0, 1.0);color:white;">No sequence could be designed due to complementarity issues!
+						All possible sequences have more than 60% bases complementary to themselves and were therefore omitted. </h5>
+					{% endif %}
+				</div>
+
+		{% endfor %}
 	{% else %}
 		<p>MASON is running ... try reloading the page in about 30 seconds</p>
 	{% endif %}
+
 {% endblock %}

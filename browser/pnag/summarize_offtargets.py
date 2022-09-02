@@ -1,3 +1,4 @@
+import copy
 import os
 import matplotlib.pyplot as plt
 import re
@@ -8,13 +9,40 @@ import sys
 import six
 
 
+other_ots = sys.argv[2]
+print(other_ots)
+
+colname = "none"
+if other_ots == "human" or other_ots == "microbiome":
+    if other_ots == "human":
+        ot_screen = sys.argv[1] + "/offtargets_human_sorted.tab"
+        screen_ot = pd.read_table(ot_screen, sep='\t', index_col=False)
+        colname = "GRCh38"
+        screen_ot["ASO"] = screen_ot["probe_id"].replace("_rev", "", regex=True)
+        screen_ot.rename(columns={'locus_tag': 'transcript_name_NCBI', 'gene_name': 'description'}, inplace=True)
+        screen_ot = screen_ot[screen_ot["longest_stretch"] >= 7]
+        screen_ot.to_csv(sys.argv[1] + "/offtargets_human_sorted.csv")
+
+    elif other_ots == "microbiome":
+        ot_screen = sys.argv[1] + "/offtargets_microbiome_sorted.tab"
+        screen_ot = pd.read_table(ot_screen, sep='\t', index_col=False)
+        colname = "HMP"
+        screen_ot["ASO"] = screen_ot["probe_id"].replace("_rev", "", regex=True)
+        screen_ot.rename(columns={'locus_tag': 'organism_GenBank', 'gene_name': 'locus_tag'}, inplace=True)
+        screen_ot = screen_ot[screen_ot["longest_stretch"] >= 7]
+        screen_ot.to_csv(sys.argv[1] + "/offtargets_hmp_sorted.csv")
+
+
 ot_table = sys.argv[1] + "/offtargets_fulltranscripts_sorted.tab"
 all_off_targets = pd.read_table(ot_table, sep='\t', index_col=False)
+all_off_targets["trans_coord"] = all_off_targets["trans_coord"] - 31
+
 
 all_off_targets["ASO"] = all_off_targets["probe_id"].replace("_rev", "", regex=True)
 
 # only use the mismatches with >+7 cons. mm:
 all_off_targets = all_off_targets[all_off_targets["longest_stretch"] >= 7]
+
 
 
 # add output df used for other things, e.g. Tm:
@@ -23,10 +51,6 @@ output_df = pd.read_csv(sys.argv[1] + "/result_table.tsv", sep="\t", index_col=N
 # add variable for whether it is in the TIR (-20 to +5 start)
 all_off_targets.loc[all_off_targets["trans_coord"].isin(range(-20, 5)), "TIR"] = "TIR"
 all_off_targets.loc[~all_off_targets["trans_coord"].isin(range(-20, 5)), "TIR"] = "not in TIR"
-
-print(all_off_targets.dtypes)
-print(type(all_off_targets.iloc[1, 3]))
-print(all_off_targets[all_off_targets["TIR"] == "TIR"])
 
 all_off_targets.to_csv(sys.argv[1] + "/offtargets_fulltranscripts_sorted.csv")
 all_off_targets[all_off_targets["TIR"] == "TIR"].to_csv(sys.argv[1] + "/offtargets_startregions_sorted.csv")
@@ -44,13 +68,25 @@ for i in all_off_targets["ASO"].unique():
                                         target_seq], index=df_plot.columns), ignore_index=True)
     df_plot = df_plot.append(pd.Series([aso_n, "OT in TIR regions", "start regions", num_tir_ot,
                                         target_seq], index=df_plot.columns), ignore_index=True)
+
+    if other_ots == "human" or other_ots == "microbiome":
+        ots_screen = screen_ot[screen_ot["ASO"] == i]
+        num_scr_ot = ots_screen.shape[0]
+        df_plot = df_plot.append(pd.Series([aso_n, "OT in " + colname, colname, num_scr_ot,
+                                            target_seq], index=df_plot.columns), ignore_index=True)
+        if other_ots == "human":
+            output_df.loc[i, "OT_GRCh38"] = int(num_scr_ot)
+        elif other_ots == "microbiome":
+            output_df.loc[i, "OT_HMP"] = int(num_scr_ot)
+
+
     # change output:
     output_df.loc[ i, "OT_tot"] = int(num_tot_ot)
     output_df.loc[i, "OT_TIR"] = int(num_tir_ot)
 
 
 # visualize:
-def render_mpl_table(data, col_width=3.0, row_height=0.625, font_size=14,
+def render_mpl_table(data, col_width=3.0, row_height=1, font_size=10,
                      header_color='#40466e', row_colors=['#f1f1f2', 'w'], edge_color='w',
                      bbox=[0, 0, 1, 1], header_columns=0,
                      ax=None, **kwargs):
@@ -107,7 +143,31 @@ create_ot_barplot(df_plot, "Critical off-targets of ASOs", sys.argv[1] + "/plot_
 
 output_df["OT_tot"] = output_df["OT_tot"].astype(int)
 output_df["OT_TIR"] = output_df["OT_TIR"].astype(int)
-ax = render_mpl_table(output_df, header_columns=0, col_width=4.0)
+
+
+if colname == "none":
+    output_df = output_df.drop(columns=["OT_HMP", "OT_cust", "OT_GRCh38"])
+elif colname == "GRCh38":
+    output_df = output_df.drop(columns=["OT_HMP", "OT_cust"])
+    output_df["OT_GRCh38"] = output_df["OT_GRCh38"].astype(int)
+elif colname == "HMP":
+    output_df = output_df.drop(columns=["OT_cust", "OT_GRCh38"])
+    output_df["OT_HMP"] = output_df["OT_HMP"].astype(int)
+else:
+    output_df = output_df.drop(columns=["OT_HMP", "OT_GRCh38"])
+
+# add 1 if less than 20
+# output_df["OT_TIR"] = np.where(output_df["location"].str.split(";", expand=True)[0].astype(int) < -20,
+#                               output_df["OT_TIR"]+1, output_df["OT_TIR"])
+# output_df["OT_tot"] = np.where(output_df["location"].str.split(";", expand=True)[0].astype(int) < -20,
+#                               output_df["OT_tot"]+1, output_df["OT_tot"]+1)
+
+
+output_df_fig = copy.deepcopy(output_df)
+#output_df_fig["ASO_seq"] = output_df_fig["ASO_seq"].replace("^([ATGC]{10})([ATGC]+)", "\\1\n\\2", regex=True)
+#output_df_fig["target_seq"] = output_df_fig["target_seq"].replace("^([AUGC]{10})([AUGC]+)", "\\1\n\\2", regex=True)
+
+ax = render_mpl_table(output_df_fig, header_columns=0, col_width=4.0, row_height=4)
 ax.figure.savefig(sys.argv[1] + "/result_table.png", bbox_inches='tight')
 ax.figure.savefig(sys.argv[1] + "/result_table.svg", bbox_inches='tight')
 

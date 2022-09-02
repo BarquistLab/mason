@@ -38,17 +38,7 @@ with open('ESSENTIAL_GENES.json', 'r') as f:
 @app.route("/")
 @app.route("/home")
 def home():
-    results = {}
-    for i in os.listdir("./pnag/static/data/"):
-        if i.startswith("20"):
-            time = re.sub("([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)",
-                          "Date: \\1-\\2-\\3 ; Time: \\4:\\5:\\6", i)
-            f = open('./pnag/static/data/'+i+"/inputs.txt")
-            lines = f.readlines()
-            custom_id = lines[1]
-            f.close()
-            results[i] = [time, custom_id]
-    return render_template("home.html", title="Home", results=results)
+    return render_template("home.html", title="Home")
 
 
 @app.route("/start", methods=['GET', 'POST'])
@@ -95,6 +85,10 @@ def start():
             input_file.write(paths['genome'] + "," + paths['gff'])
         result_custom_id = form.custom_id.data
 
+        # add selfcomp_errorfile
+        efilename = './pnag/static/data/' +time_string+ "/error.txt"
+        open(efilename, "w").close()
+
         # Now run MASON as background process while continuing with start.html and showing the "waiting" html:
         for tgene in target_genes:
             resultid = time_string + "/" + tgene
@@ -106,6 +100,7 @@ def start():
             inputfile.write("\n" + result_custom_id)
             inputfile.write("\n" + "; ".join(target_genes))
             inputfile.write("\n" + str(form.mismatches.data))
+            inputfile.write("\n" + additional_screen)
 
         return redirect(url_for('result', result_id=time_string))
     return render_template("start.html", title="Start", essential=ESSENTIAL_GENES, form=form)
@@ -123,15 +118,23 @@ def result(result_id):
     custom_id = lines[1]
     tgenes = lines[2]
     mismatches = lines[3]
+    add_screen = lines[4]
     genome_file, gff_file = lines[0].split(sep=",")
     f.close()
 
     dir_out = "../static/data/" + result_id
     rfinished = os.path.isfile("./pnag/static/data/" + result_id + "/done.txt")
+    errs = "no errors"
+
+    efilename = './pnag/static/data/' + result_id + "/error.txt"
+    ltags_noPNAs = open(efilename).read().splitlines()
+    print(ltags_noPNAs, "sss")
+    errs = ltags_noPNAs
+
 
     print(os.listdir("./pnag/static/data/" + result_id))
 
-    all_output_dirs=[]
+    all_output_dirs = []
     for dirs in os.listdir("./pnag/static/data/" + result_id):
         if "." not in dirs:
             all_output_dirs += [dirs]
@@ -144,7 +147,8 @@ def result(result_id):
     return render_template("result.html", title="Result", result=result_id, dir_out=dir_out,
                            all_output_dirs=all_output_dirs,
                            rfin=rfinished, genome_file=ffile, gff_file=gfffile, custom_id=custom_id,
-                           time=time, tgenes=tgenes, mismatches = mismatches)
+                           time=time, tgenes=tgenes, mismatches = mismatches, add_screen=add_screen,
+                           errs=errs)
 
 
 @app.route("/delete_result/<result_id>")

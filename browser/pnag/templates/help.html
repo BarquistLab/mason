@@ -1,9 +1,114 @@
 {% extends "layout.html" %}
 {% block content %}
 	<div class="content-section">
-		<legend class="border-bottom mb-4">Help</legend>
+		<legend class="border-bottom mb-4">FAQ's</legend>
 	    <p> Find problems which are often encountered when using MASON </p>
 
+		<div class="faq-one">
+			<!-- faq question -->
+			<h5 class="faq-page">How to find and download a genome/annotation file in NCBI?</h5>
+			<!-- faq answer -->
+
+			<div class="faq-body">
+				<p>To upload a custom organism to MASON, the genome sequence and annotation files must be provided in FASTA
+				and GFF format, respectively. Below we describe an example explaining how to find and download these
+				files for the pathogenic bacterium <i>Campylobacter jejuni</i>:
+				<ol>
+				  	<li>Open the <a href="https://www.ncbi.nlm.nih.gov/">NCBI</a> website and select “Nucleotide” in the dropdown menu</li>
+				  	<li>Add the name of your target organism (here, “Campylobacter jejuni subsp. jejuni NCTC 11168”) and
+					  click the search button</li>
+				  	<li>Once the query results are shown, select the complete genome of your target organism and click
+						on it</li>
+					<li>Click “Send to” to download available files for the organism</li>
+					<li>Select the “Complete Record button”</li>
+					<li>Click on the “File” button</li>
+					<li>Select “FASTA” from the dropdown menu</li>
+					<li>Click “Create File” to download the FASTA file of the complete genome</li>
+					<li>Repeat steps 4-8, but select “GFF3” instead of “FASTA” at step 7 to download the annotation
+						file in GFF format</li>
+
+				</ol>
+				<img src="{{ url_for('static', filename='ncb.png') }}" >
+				</p>
+
+			</div>
+		</div>
+		<hr class="hr-line">
+		<div class="faq-two">
+			<!-- faq question -->
+			<h5 class="faq-page">How to find the locus tag of my selected target gene in the target organism?</h5>
+			<!-- faq answer -->
+			<div class="faq-body">
+				<p>MASON requires locus tags as identifiers for target genes, because they are more consistent across
+					species than gene names. Below we describe an example explaining how to find the locus tag of the
+					essential gene “<i>pheA</i>” in <i>Campylobacter jejuni</i>:
+				<ol>
+				  	<li>Open the GFF annotation file in your favourite text editor</li>
+				  	<li>Use the search and find utility of your text editor. Often, <b>CTRL + F</b> opens up the
+						“Find” tool. Now enter the name of your target gene (here, “<i>pheA</i>”) and press
+						<b>ENTER</b></li>
+				  	<li>In the 9th column of the line, information of the gene is stored. Find the “locus_tag=” field
+						and copy the locus tag</li>
+					<li>Add the copied locus tag to MASON as a target gene </li>
+
+				</ol>
+				<img src="{{ url_for('static', filename='find_lt.png') }}" >
+				</p>
+			</div>
+		</div>
+		<hr class="hr-line">
+		<div class="faq-three">
+			<!-- faq question -->
+			<h5 class="faq-page">How to fill in the start form?</h5>
+			<!-- faq answer -->
+			<div class="faq-body">
+				<p>Below each start form is a short description of what to fill in. We show an example on a
+					case in which a user uses MASON to find ASO sequences for one essential gene (<i>accC</i>) and
+					another, non-essential gene (b3256) in <i>E. coli</i> K12:
+				<ol>
+				  	<li>The custom name can be any name, here we use “test”</li>
+				  	<li>We use the pre-selectable genome of <i>E. coli</i> K12. Likewise, other genomes can be
+						selected or a custom genome can be uploaded, see the other help page for information on
+						this</li>
+				  	<li>We select the essential gene “<i>accC</i>”</li>
+					<li>We additionally select another gene, with the locus tag “b3258”. This is optional and can be
+						left out if already a gene in the dropdown menu was selected</li>
+					<li>The length of the ASOs is chosen to be 10 to get 10mer ASOs</li>
+					<li>2 mismatches are allowed to be inside the ASOs to be considered a mismatch</li>
+					<li>We want to design only sequences targeting the start codon. Therefore, this option is left
+						empty</li>
+					<li>No other genome is selected for off-target screening. Optionally, we could have added the human
+						genome or the microbiome to be screened for off-targets</li>
+					<li>The start button can now be clicked to start the MASON process</li>
+
+
+				</ol>
+				<img src="{{ url_for('static', filename='start.png') }}" >
+				</p>
+			</div>
+		</div>
+
+	</div>
+	<script>
+		var faq = document.getElementsByClassName("faq-page");
+		var i;
+		for (i = 0; i < faq.length; i++) {
+			faq[i].addEventListener("click", function () {
+				/* Toggle between adding and removing the "active" class,
+				to highlight the button that controls the panel */
+				this.classList.toggle("active");
+				/* Toggle between hiding and showing the active panel */
+				var body = this.nextElementSibling;
+				if (body.style.display === "block") {
+					body.style.display = "none";
+				} else {
+					body.style.display = "block";
+				}
+			});
+		}
+	</script>
+
+	<div class="content-section">
 		<legend class="border-bottom mb-4">Contact</legend>
         <p> If there are further errors, requests for help, or suggestions for additional features, please email to
         <a href="mailto:jakobjung@tutanota.com">jakobjung@tutanota.com</a> </p>

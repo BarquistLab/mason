@@ -13,7 +13,7 @@ import pandas as pd
 from flask import render_template, url_for, flash, redirect, request, send_file, Markup
 # import needed things from other files in this package
 from pnag import app, bcrypt, mail
-from pnag.forms import startForm
+from pnag.forms import startForm, startautoForm
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_mail import Message
 import base64
@@ -61,11 +61,11 @@ def start():
             target_genes.remove("")
         print(target_genes)
         b_before = form.bases_before.data
-        for locus_tag in form.essential.data:
-            if len(target_genes) > 1:
-                target_genes += [locus_tag]  # add space only if a lt exists:
-            else:
-                target_genes += [locus_tag]
+
+        if len(target_genes) > 1:
+            target_genes += [form.essential.data]  # add space only if a lt exists:
+        else:
+            target_genes += [form.essential.data]
         # create directory for result:
         os.mkdir("./pnag/static/data/"+time_string)
         # save uploaded data with timestring attached:
@@ -106,10 +106,75 @@ def start():
     return render_template("start.html", title="Start", essential=ESSENTIAL_GENES, form=form)
 
 
+@app.route("/startauto", methods=['GET', 'POST'])
+def startauto():
+    # form to upload the input files
+    form = startautoForm()
+    choices = []
+    choices += [(key, PRESETS[key][2]) for key in PRESETS.keys()]
+    choices += [('upload', 'Own files')]
+
+    form.presets.choices = choices
+    if form.validate_on_submit():
+        paths = {}
+        time_string = datetime.utcnow().strftime('%Y_%m_%d_%H_%M_%S')
+
+        print(time_string)
+        additional_screen = request.form['add_screen']
+        target_genes = form.genes.data
+        target_genes = [x.strip() for x in target_genes.split(',')]
+        if "" in target_genes:
+            target_genes.remove("")
+        print(target_genes)
+        b_before = form.bases_before.data
+
+        if len(target_genes) > 1:
+            target_genes += [form.essential.data]  # add space only if a lt exists:
+        else:
+            target_genes += [form.essential.data]
+        # create directory for result:
+        os.mkdir("./pnag/static/data/"+time_string)
+        # save uploaded data with timestring attached:
+        if form.presets.data == 'upload':
+            genome_file = os.path.join(app.root_path, 'static/data/', time_string + "/", form.genome.data.filename)
+            gff_file = os.path.join(app.root_path, 'static/data/', time_string + "/", form.gff.data.filename)
+            form.genome.data.save(genome_file)
+            form.gff.data.save(gff_file)
+            paths['genome'] = genome_file
+            paths['gff'] = gff_file
+        else:
+            # genome first value in list
+            files = PRESETS[form.presets.data]
+            paths['genome'] = files[0]
+            paths['gff'] = files[1]
+        with open("./pnag/static/data/"+time_string+"/inputs.txt", "w+") as input_file:
+            input_file.write(paths['genome'] + "," + paths['gff'])
+        result_custom_id = form.custom_id.data
+
+        # add selfcomp_errorfile
+        efilename = './pnag/static/data/' +time_string+ "/error.txt"
+        open(efilename, "w").close()
+
+        # Now run MASON as background process while continuing with start.html and showing the "waiting" html:
+        for tgene in target_genes:
+            resultid = time_string + "/" + tgene
+            threading.Thread(target=start_calculation, name="masons", args=[path_parent.__str__() + "/mason.sh", paths['genome'],
+                                                                            paths['gff'], tgene, str(form.len_PNA.data),
+                                                                            str(form.mismatches.data), str(b_before),
+                                                                            resultid, resultid, additional_screen]).start()
+        with open("./pnag/static/data/"+time_string + "/inputs.txt", "a") as inputfile:
+            inputfile.write("\n" + result_custom_id)
+            inputfile.write("\n" + "; ".join(target_genes))
+            inputfile.write("\n" + str(form.mismatches.data))
+            inputfile.write("\n" + additional_screen)
+
+        return redirect(url_for('result', result_id=time_string))
+    return render_template("startauto.html", title="Start", essential=ESSENTIAL_GENES, form=form)
+
+
 @app.route("/result/<result_id>")
 def result(result_id):
     # each result gets its own page to access it. Just by calling .../result/<id of result>.
-    print(result_id)
     time = re.sub("([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)",
                   "Date: \\1-\\2-\\3 ; Time: \\4:\\5:\\6", result_id)
     # get download paths:
@@ -128,11 +193,7 @@ def result(result_id):
 
     efilename = './pnag/static/data/' + result_id + "/error.txt"
     ltags_noPNAs = open(efilename).read().splitlines()
-    print(ltags_noPNAs, "sss")
     errs = ltags_noPNAs
-
-
-    print(os.listdir("./pnag/static/data/" + result_id))
 
     all_output_dirs = []
     for dirs in os.listdir("./pnag/static/data/" + result_id):

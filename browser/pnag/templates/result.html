@@ -27,6 +27,9 @@
 		{% if add_screen == "human" %}
 		<p>Used human transcriptome file (FASTA): <a href="../static/data/presets/GRCh38_latest_rna.fna"><i class="material-icons">cloud_download</i></a></p>
 		{% endif %}
+		<h5 style="color:rgba(128, 0, 0, 1.0);">Please be aware that the results will be
+			automatically deleted after 30 days!</h5>
+
 
 
 	</article>
@@ -77,11 +80,12 @@
 										<a href="https://bioconductor.org/packages/release/bioc/html/rmelting.html">rmelting</a>
 										(v1.10.0) which is an interface to the
 										<a href="https://www.ebi.ac.uk/biomodels-static/tools/melting/">MELTING</a> (v5)
-										program. We decided to calculate the melting temperature for RNA-RNA duplexes, because
+										program. We calculate the melting temperature for RNA-RNA duplexes, because
 										there are no available algorithms for the Tm of PNA-mRNA duplexes. As parameters we used the
 										nucleic acid concentration of 8 μM and a Na concentration of 0.1M. The Tm values are useful
 										for relative comparison between PNAs. However, the absolute Tm is only an approximation and
-										should be validated experimentally! </p>
+										should be validated experimentally. In general, PNAs with a very low Tm should be avoided to
+										enable PNA-mRNA binding. </p>
 							<img src="{{ dir_out + "/" + res + '/outputs/tm.png' }}" class="center">
 						<p>Download barplot: &nbsp<a href="{{ dir_out + "/" + res + '/outputs/tm.png' }}">PNG <i class="material-icons">cloud_download</i></a>
 						<br>
@@ -89,19 +93,42 @@
 						<br>
 						<br>
 							<h3 class="border-bottom mb-4"> Predicted off-targets for ASOs </h3>
-									<p>The predicterd off-targets (OT) of ASOs are shown in the barplot below. OT in the whole
-										transcriptome of the targeted bacterium is visualized in dar blue. OT, which are located in the
-										translation initiation regions (TIR, -20 to +10 nt from start of coding sequence) of genes of
-										the targeted organism. </p>
+									<p>The predicted off-targets (OT) of ASOs are shown in the barplot below. OTs in the whole
+										transcriptome of the targeted bacterium are visualized in dark blue.
+										OT, which are located in the translation initiation regions (TIRs) of genes of
+										the targeted organism are visualized in light blue.
+										OTs in the TIR of transcripts are defined as binding regions with the
+										first base in the region between -20 and +5 bases relative to the annotated
+										start site of the CDS.  </p>
 							<img src="{{ dir_out + "/" + res + '/outputs/plot_ots_whole_transcriptome.png'}}" >
 						<br>
 						<br>
-						<p>Download detailed critical-off-target table: &nbsp <a href="{{ dir_out + "/" + res + '/outputs/offtargets_fulltranscripts_sorted.csv' }}">CSV <i class="material-icons">cloud_download</i></a></p>
+							<p>Download detailed critical-off-target table: &nbsp <a href="{{ dir_out + "/" + res +
+								'/outputs/offtargets_fulltranscripts_sorted.csv' }}">CSV <i class="material-icons">
+									cloud_download</i></a>
+								&nbsp&nbsp
+								<a href="{{ dir_out + "/" + res +
+								'/outputs/offtargets_fulltranscripts_sorted.xlsx' }}">Excel <i class="material-icons">cloud_download</i></a>
+							</p>
+
 						{% if add_screen == "microbiome" %}
-							<p>Download detailed HMP off-target table: <a href="{{ dir_out + "/" + res + '/outputs/offtargets_hmp_sorted.csv' }}">CSV <i class="material-icons">cloud_download</i></a></p>
+							<p>Download detailed HMP off-target table: <a href="{{ dir_out + "/" + res +
+								'/outputs/offtargets_hmp_sorted.csv' }}">CSV <i class="material-icons">
+									cloud_download</i></a>
+								&nbsp&nbsp
+								<a href="{{ dir_out + "/" + res +
+								'/outputs/offtargets_hmp_sorted.xlsx' }}">Excel <i class="material-icons">cloud_download</i></a>
+							</p>
 						{% endif %}
 						{% if add_screen == "human" %}
-							<p>Download detailed human genome off-target table: <a href="{{ dir_out + "/" + res + '/outputs/offtargets_human_sorted.csv' }}">CSV <i class="material-icons">cloud_download</i></a></p>
+							<p>Download detailed human genome off-target table:
+								<a href="{{ dir_out + "/" + res + '/outputs/offtargets_human_sorted.csv' }}">CSV
+								<i class="material-icons">cloud_download</i></a>
+								&nbsp&nbsp
+								<a href="{{ dir_out + "/" + res +
+								'/outputs/offtargets_human_sorted.xlsx' }}">Excel <i class="material-icons">
+									cloud_download</i></a>
+							</p>
 						{% endif %}
 
 						<p>Download barplot: &nbsp<a href="{{ dir_out + "/" + res + '/outputs/plot_ots_whole_transcriptome.svg' }}">SVG <i class="material-icons">cloud_download</i></a>
@@ -118,22 +145,36 @@
 										Tm = Melting temperature<br>
 										OT_tot = critical off-targets in the whole transcriptome<br>
 										OT_TIR = critical off-targets in translation initiation regions<br>
+										{% if add_screen == "microbiome" %}
+											OT_HMP = off-targets in translation initiation regions of genes in the microbiome<br>
+										{% endif %}
+										{% if add_screen == "human" %}
+											OT_GRCh38 = off-targets in coding regions of the human genome<br>
+										{% endif %}
 
 									</p>
 							<img src="{{ dir_out + "/" + res + '/outputs' + '/result_table.png' }}" class="larger">
 						<br>
 						<br>
-						<p>Download ASO summary table: &nbsp<a href="{{ dir_out + "/" + res + '/outputs' + '/result_table.csv' }}">CSV <i class="material-icons">cloud_download</i></a></p>
+						<p>Download ASO summary table: &nbsp<a href="{{ dir_out + "/" + res + '/outputs' +
+							'/result_table.csv' }}">CSV <i class="material-icons">cloud_download</i></a>
+							&nbsp&nbsp
+							<a href="{{ dir_out + "/" + res +
+							'/outputs/result_table.xlsx' }}">Excel <i class="material-icons">
+								cloud_download</i></a>
+						</p>
 						<p>Download table (graphic): &nbsp<a href="{{ dir_out + "/" + res + '/outputs/result_table.png' }}">PNG <i class="material-icons">cloud_download</i></a>
+
 					{% else %}
-						<h5 style="background-color:rgba(128, 0, 0, 1.0);color:white;">No sequence could be designed due to complementarity issues!
+						<h5 style="background-color:rgba(128, 0, 0, 1.0);color:white;">No sequence could be designed!
+							This could be either because of the usage of wrong locus tags or due to self- complementarity issues!
 						All possible sequences have more than 60% bases complementary to themselves and were therefore omitted. </h5>
 					{% endif %}
 				</div>
 
 		{% endfor %}
 	{% else %}
-		<p>MASON is running ... try reloading the page in about 30 seconds</p>
+		<p>MASON is running ... The webpage automatically refreshes after 30 seconds and shows the results when finished</p>
 	{% endif %}
 
 {% endblock %}

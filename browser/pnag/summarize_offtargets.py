@@ -22,6 +22,9 @@ if other_ots == "human" or other_ots == "microbiome":
         screen_ot.rename(columns={'locus_tag': 'transcript_name_NCBI', 'gene_name': 'description'}, inplace=True)
         screen_ot = screen_ot[screen_ot["longest_stretch"] >= 7]
         screen_ot.to_csv(sys.argv[1] + "/offtargets_human_sorted.csv")
+        print("before excel")
+        screen_ot.to_excel(sys.argv[1] + "/offtargets_human_sorted.xlsx")
+        print("after excel")
 
     elif other_ots == "microbiome":
         ot_screen = sys.argv[1] + "/offtargets_microbiome_sorted.tab"
@@ -31,6 +34,7 @@ if other_ots == "human" or other_ots == "microbiome":
         screen_ot.rename(columns={'locus_tag': 'organism_GenBank', 'gene_name': 'locus_tag'}, inplace=True)
         screen_ot = screen_ot[screen_ot["longest_stretch"] >= 7]
         screen_ot.to_csv(sys.argv[1] + "/offtargets_hmp_sorted.csv")
+        screen_ot.to_excel(sys.argv[1] + "/offtargets_hmp_sorted.xlsx")
 
 
 ot_table = sys.argv[1] + "/offtargets_fulltranscripts_sorted.tab"
@@ -53,6 +57,8 @@ all_off_targets.loc[all_off_targets["trans_coord"].isin(range(-20, 5)), "TIR"] =
 all_off_targets.loc[~all_off_targets["trans_coord"].isin(range(-20, 5)), "TIR"] = "not in TIR"
 
 all_off_targets.to_csv(sys.argv[1] + "/offtargets_fulltranscripts_sorted.csv")
+all_off_targets.to_excel(sys.argv[1] + "/offtargets_fulltranscripts_sorted.xlsx")
+
 all_off_targets[all_off_targets["TIR"] == "TIR"].to_csv(sys.argv[1] + "/offtargets_startregions_sorted.csv")
 
 df_plot = pd.DataFrame(columns=["ASO", "off-target type", "transcripts", "counts", "target sequence"])
@@ -173,5 +179,6 @@ ax.figure.savefig(sys.argv[1] + "/result_table.svg", bbox_inches='tight')
 
 # save df for download/visualization:
 output_df.to_csv(sys.argv[1] + "/result_table.csv", sep=",")
+output_df.to_excel(sys.argv[1] + "/result_table.xlsx")
 os.remove(sys.argv[1] + "/result_table.tsv")
 

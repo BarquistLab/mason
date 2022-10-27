@@ -12,16 +12,15 @@
 				designing 10-mer sequences targeting two genes
 				of the <i>E. coli</i> K12  genome.
 				<br><br>
-
 				<div class="form-group">
 					{{ form.custom_id.label(class="form-control-label", style="font-weight: bold;") }}
 					<p>Please select a unique custom ID to store the result</p>
 					{% if form.custom_id.errors %}
 						{{ form.custom_id(class="form-control form-control-lg is-invalid") }}
 						<div class="invalid-feedback">
-							{% for error in form.custom_id.errors %}	
+							{% for error in form.custom_id.errors %}
 								<span>{{ error }}</span>
-							{% endfor %}						
+							{% endfor %}
 						</div>
 					{% else %}
 						{{ form.custom_id(class="form-control form-control-lg") }}
@@ -65,8 +64,6 @@
 				</div>
 				<script>
 					let select_presets = document.getElementById('presets');
-					document.getElementById('essgenes').style.display = "none";
-
 
 					let essential_choice = document.getElementById('essential');
 					let essential_dict = {{ essential | tojson }};
@@ -109,7 +106,7 @@
 					}
 				</script>
 				<br>
-				<div class="form-group row" id="div_genome">
+				<div class="form-group row" id="div_genome" style="display:none;">
 					<p class="col-md-12"> Below, custom FASTA and GFF files of a bacterium of interest can be uploaded (can be downloaded from
 							<a href="https://www.ncbi.nlm.nih.gov/genome/">NCBI</a>): </p>
 					<div class="col-md-6" id="div_genome" >
@@ -143,7 +140,7 @@
 						no more than 5 genes at once to keep the running time low </p>
 					{% if form.genes.errors %}
 						{{ form.genes(class="form-control form-control-lg is-invalid") }}
-						{% for error in form.genes.errors %}	
+						{% for error in form.genes.errors %}
 							<span class="text-danger">{{ error }}</span><br>
 						{% endfor %}
 					{% else %}

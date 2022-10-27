@@ -43,6 +43,8 @@ WARNINGS="$RES/warnings.txt"
 echo "$REF"
 echo "$OUT"
 
+find ./pnag/static/data/20*  -mtime +30  -delete
+
 mkdir -p $REF $OUT
 touch "$WARNINGS"
 
@@ -107,12 +109,12 @@ seqmap "$mismatches" "$REF/aso_targets.fasta" "$REF/full_transcripts_$FASTA" \
 
 if [[ $screen = "microbiome" ]]
 then
-    seqmap "$mismatches" "$REF/aso_targets.fasta" "$PRESETS/start_regions_HMP.fasta" \
+    seqmap 0 "$REF/aso_targets.fasta" "$PRESETS/start_regions_HMP.fasta" \
        "$OUT/offtargets_microbiome.tab" /output_all_matches \
        /forward_strand /output_statistics /available_memory:5000 >> logfile_masonscript.log 2>&1
 elif [[ $screen = "human" ]]
 then
-  seqmap "$mismatches" "$REF/aso_targets.fasta" "$PRESETS/GRCh38_latest_rna.fna" \
+  seqmap 0 "$REF/aso_targets.fasta" "$PRESETS/GRCh38_latest_rna.fna" \
        "$OUT/offtargets_human.tab" /output_all_matches \
        /forward_strand /output_statistics /available_memory:5000 >> logfile_masonscript.log 2>&1
 fi
@@ -123,7 +125,7 @@ for NAME in "$OUT"/offtargets*.tab
 do
     echo "$NAME"
     NEWNAME=${NAME%.tab}_sorted.tab
-    head -1 $NAME | sed -E "s/(.*)/\\1\tmismatch_positions\tlongest_stretch/" |
+    head -1 $NAME | sed -E "s/(.*)/\\1\tmismatch_positions\tlongest_stretch\tbinding_sequence/" |
     sed -E  's/^trans_id/locus_tag\tgene_name\tstrand/' > $NEWNAME
 
     echo "$NEWNAME"
@@ -135,6 +137,8 @@ do
 	    mm="none"
 	    stretch=0
 	    longest_stretch=0
+	    binding_sequence=""
+	    longest_binding_sequence=""
 	     for(i=1; pos == 0 && i <= max; i++) 
 	     {
 		    v1=substr($3, i, 1) 
@@ -142,16 +146,23 @@ do
 		    if(v1 != v2)
 		     {
 		       stretch=0
+		       binding_sequence=""
 		       if(mm=="none") {mm=i} else {mm=mm ";" i}
 		     }
 		     else 
 		     {
-			stretch++
-			if(stretch > longest_stretch) {longest_stretch=stretch}
+		      binding_sequence=binding_sequence v1
+          stretch++
+          if(stretch > longest_stretch)
+          {
+          longest_stretch=stretch
+          longest_binding_sequence=binding_sequence
+          }
 		     }
 	     } 
 	     $7=mm
 	     $8=longest_stretch
+	     $9=longest_binding_sequence
 	     #$2=$2-32
 	     print $0
 	}' |  sed -E 's/^([^;:]*)::/\1;\1::/'| \

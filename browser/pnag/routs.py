@@ -53,13 +53,11 @@ def start():
         paths = {}
         time_string = datetime.utcnow().strftime('%Y_%m_%d_%H_%M_%S')
 
-        print(time_string)
         additional_screen = request.form['add_screen']
         target_genes = form.genes.data
         target_genes = [x.strip() for x in target_genes.split(',')]
         if "" in target_genes:
             target_genes.remove("")
-        print(target_genes)
         b_before = form.bases_before.data
 
         if len(target_genes) > 1:

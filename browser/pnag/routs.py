@@ -56,14 +56,17 @@ def start():
         additional_screen = request.form['add_screen']
         target_genes = form.genes.data
         target_genes = [x.strip() for x in target_genes.split(',')]
+        print(target_genes)
         if "" in target_genes:
             target_genes.remove("")
         b_before = form.bases_before.data
 
         if len(target_genes) > 1:
-            target_genes += [form.essential.data]  # add space only if a lt exists:
+            if form.essential.data is not None:
+                target_genes += [form.essential.data]  # add space only if a lt exists:
         else:
-            target_genes += [form.essential.data]
+            if form.essential.data is not None:
+                target_genes += [form.essential.data]
         # create directory for result:
         os.mkdir("./pnag/static/data/"+time_string)
         # save uploaded data with timestring attached:
@@ -88,7 +91,9 @@ def start():
         open(efilename, "w").close()
 
         # Now run MASON as background process while continuing with start.html and showing the "waiting" html:
+        print(target_genes)
         for tgene in target_genes:
+            print(tgene)
             resultid = time_string + "/" + tgene
             threading.Thread(target=start_calculation, name="masons", args=[path_parent.__str__() + "/mason.sh", paths['genome'],
                                                                             paths['gff'], tgene, str(form.len_PNA.data),
@@ -127,9 +132,11 @@ def startauto():
         b_before = form.bases_before.data
 
         if len(target_genes) > 1:
-            target_genes += [form.essential.data]  # add space only if a lt exists:
+            if form.essential.data is not None:
+                target_genes += [form.essential.data]  # add space only if a lt exists:
         else:
-            target_genes += [form.essential.data]
+            if form.essential.data is not None:
+                target_genes += [form.essential.data]
         # create directory for result:
         os.mkdir("./pnag/static/data/"+time_string)
         # save uploaded data with timestring attached:

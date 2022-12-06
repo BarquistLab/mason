@@ -21,6 +21,15 @@ if other_ots == "human" or other_ots == "microbiome":
         screen_ot["ASO"] = screen_ot["probe_id"].replace("_rev", "", regex=True)
         screen_ot.rename(columns={'locus_tag': 'transcript_name_NCBI', 'gene_name': 'description'}, inplace=True)
         screen_ot = screen_ot[screen_ot["longest_stretch"] >= 7]
+
+        screen_ot["ASO"] = screen_ot["probe_id"].replace("_rev", "", regex=True)
+        screen_ot["target_seq"] = screen_ot["target_seq"].replace("T", "U", regex=True)
+        screen_ot["probe_seq"] = screen_ot["probe_seq"].replace("T", "U", regex=True)
+        screen_ot["binding_sequence"] = screen_ot["binding_sequence"].replace("T", "U", regex=True)
+        screen_ot = screen_ot.rename(
+            columns={"target_seq": "off_target_seq_mRNA", "probe_seq": "mRNA_target_seq",
+                     "binding_sequence": "matching_sequence"})
+
         screen_ot.to_csv(sys.argv[1] + "/offtargets_human_sorted.csv")
         print("before excel")
         screen_ot.to_excel(sys.argv[1] + "/offtargets_human_sorted.xlsx")
@@ -31,7 +40,18 @@ if other_ots == "human" or other_ots == "microbiome":
         screen_ot = pd.read_table(ot_screen, sep='\t', index_col=False)
         colname = "HMP"
         screen_ot["ASO"] = screen_ot["probe_id"].replace("_rev", "", regex=True)
+        screen_ot["trans_coord"] = screen_ot["trans_coord"] - 31
+
         screen_ot.rename(columns={'locus_tag': 'organism_GenBank', 'gene_name': 'locus_tag'}, inplace=True)
+
+        screen_ot["ASO"] = screen_ot["probe_id"].replace("_rev", "", regex=True)
+        screen_ot["target_seq"] = screen_ot["target_seq"].replace("T", "U", regex=True)
+        screen_ot["probe_seq"] = screen_ot["probe_seq"].replace("T", "U", regex=True)
+        screen_ot["binding_sequence"] = screen_ot["binding_sequence"].replace("T", "U", regex=True)
+
+        screen_ot = screen_ot.rename(
+            columns={"target_seq": "off_target_seq_mRNA", "probe_seq": "mRNA_target_seq",
+                     "binding_sequence": "matching_sequence"})
         screen_ot = screen_ot[screen_ot["longest_stretch"] >= 7]
         screen_ot.to_csv(sys.argv[1] + "/offtargets_hmp_sorted.csv")
         screen_ot.to_excel(sys.argv[1] + "/offtargets_hmp_sorted.xlsx")
@@ -43,6 +63,12 @@ all_off_targets["trans_coord"] = all_off_targets["trans_coord"] - 31
 
 
 all_off_targets["ASO"] = all_off_targets["probe_id"].replace("_rev", "", regex=True)
+all_off_targets["target_seq"] = all_off_targets["target_seq"].replace("T", "U", regex=True)
+all_off_targets["probe_seq"] = all_off_targets["probe_seq"].replace("T", "U", regex=True)
+all_off_targets["binding_sequence"] = all_off_targets["binding_sequence"].replace("T", "U", regex=True)
+
+all_off_targets = all_off_targets.rename(columns={"target_seq": "off_target_seq_mRNA", "probe_seq": "mRNA_target_seq",
+                        "binding_sequence": "matching_sequence"})
 
 # only use the mismatches with >+7 cons. mm:
 all_off_targets = all_off_targets[all_off_targets["longest_stretch"] >= 7]
@@ -65,7 +91,7 @@ df_plot = pd.DataFrame(columns=["ASO", "off-target type", "transcripts", "counts
 
 # create dataframe:
 for i in all_off_targets["ASO"].unique():
-    target_seq = all_off_targets[all_off_targets["ASO"] == i].iloc[0, ]["probe_seq"]
+    target_seq = all_off_targets[all_off_targets["ASO"] == i].iloc[0, ]["mRNA_target_seq"]
     aso_n = re.sub(".*_(ASO.*)", "\\1", i)
     ot_aso = all_off_targets[all_off_targets["ASO"] == i]
     num_tot_ot = ot_aso.shape[0]-1

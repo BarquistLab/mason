@@ -35,9 +35,18 @@
 	</article>
 
 	{% if rfin %}
+		<div class="content-section">
+			<h5> Target gene(s): </h5>
+			<ul>
+				{%for res in all_output_dirs%}
+				<li> <a href="#{{res}}">{{res}}</a> </li>
+				{% endfor %}
+			</ul>
+		</div>
+
 		{%for res in all_output_dirs%}
 
-				<h2>gene - {{ " " + res }}</h2>
+				<h2 id="{{res}}">gene - {{ " " + res }}</h2>
 				<!-- Modal -->
 				<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
 				  <div class="modal-dialog" role="document">
@@ -99,7 +108,8 @@
 										the targeted organism are visualized in light blue.
 										OTs in the TIR of transcripts are defined as binding regions with the
 										first base in the region between -20 and +5 bases relative to the annotated
-										start site of the CDS.  </p>
+										start site of the CDS. For deails and explanations of the detailed off-target table see
+									<a href="../help">help page</a>. </p>
 							<img src="{{ dir_out + "/" + res + '/outputs/plot_ots_whole_transcriptome.png'}}" >
 						<br>
 						<br>

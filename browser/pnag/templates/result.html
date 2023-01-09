@@ -72,9 +72,14 @@
 							<h3 class="border-bottom mb-4">ASO sequences</h3>
 							<p>
 								Below, the designed ASOs are visualized as they would align with the target gene's mRNA.
+
 								If a 'GAGG' sequence was found in the mRNA, this indicates a bacterial
 								Shine-Dalgarno (SD) region. 'GAGG' and start codon are highlighted by darkened fields.
 								PNAs are not included if they have more than 60% bases of self-complementarity.
+
+								The ASO sequences are shown in 3’ to 5’ orientation below to show the alignment to the mRNA.
+								In the other parts of the results section and the fasta files /summary table, the correct orientation,
+								i.e. from 5' to 3' is used.
 							</p>
 							<img src="{{ dir_out + "/" + res + '/outputs/heatmap.png' }}" >
 						<p>Download ASO sequences: &nbsp <a href="{{ dir_out + "/" + res + '/reference_sequences/aso_sequences.fasta' }}">FASTA<i class="material-icons">cloud_download</i></a></p>

@@ -9,10 +9,17 @@
 			design of bacterial antisense oligonucleotides (ASOs). We initially developed it for peptide nucleic acids
 			(PNAs), although it can also be used for designing other ASOs such as PMOs or LNAs. All you need is a genome and the gene you
 			want to target. </p>
-		<p> Contact us via
-			<a href="mailto:jakobjung@tutanota.com?subject=MASON&body=Message"> email <i class="material-icons">announcement</i></a></p>
-		<p>Start designing ASOs for targeting any bacterial gene here:
-			<a href="{{ url_for('start') }}">start<i class="material-icons">play_circle_outline</i></a></p>
+
+		<p>Read our paper:
+			<a href="https://rnajournal.cshlp.org/content/early/2023/02/07/rna.079263.122">
+				RNA Journal - Design and off-target prediction for antisense oligomers targeting bacterial mRNAs with the
+				MASON webserver <i class="material-icons">public</i></a></p>
+
+		<p>Report bugs/problems by opening a GitHub issue: <a href="https://github.com/BarquistLab/mason/issues">github.com/BarquistLab/mason/issues<i class="material-icons">bug_report</i></a></p></p>
+		<p> Contact us via email:
+			<a href="mailto:jakobjung@tutanota.com?subject=MASON&body=Message"> jakobjung@tutanota.com <i class="material-icons">email</i></a></p>
+		<p>Start designing ASOs for targeting any bacterial gene:
+			<a href="{{ url_for('start') }}">start MASON <i class="material-icons">fast_forward</i></a></p>
 	</div>
 
 {% endblock %}

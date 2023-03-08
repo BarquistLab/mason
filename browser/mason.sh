@@ -5,6 +5,7 @@
 
 while getopts f:g:t:l:m:p:i:b:s: flag
 do
+    # shellcheck disable=SC2220
     case "${flag}" in
 	f) fasta=${OPTARG};;
 	g) gff=${OPTARG};;
@@ -35,21 +36,31 @@ RES="./pnag/static/data/$result_id"
 REF="$RES/reference_sequences"
 PRESETS="./pnag/static/data/presets"
 OUT="$RES/outputs"
-GFF="$(basename -- $gff)"
-FASTA="$(basename -- $fasta)"  # get base names of files wo paths
+GFF="$(basename -- "$gff")"
+FASTA="$(basename -- "$fasta")"  # get base names of files wo paths
 WARNINGS="$RES/warnings.txt"
 
 
 echo "$REF"
 echo "$OUT"
+GFF_NEW="$(echo "$GFF" | tr ' ' '_')"
+FASTA_NEW="$(echo "$FASTA" | tr ' ' '_')"
 
-find ./pnag/static/data/20*  -mtime +30  -delete
+echo "$GFF $GFF_NEW"
+echo "$FASTA $FASTA_NEW"
+
+find ./pnag/static/data/""20*  -mtime +30  -delete
 
 mkdir -p $REF $OUT
 touch "$WARNINGS"
 
-scp "$gff" "$REF/$GFF"
-scp "$fasta" "$REF/$FASTA"
+scp "$gff" "$REF/$GFF_NEW"
+scp "$fasta" "$REF/$FASTA_NEW"
+
+gff="$REF/$GFF_NEW"
+fasta="$REF/$FASTA_NEW"
+
+
 
 # same for full regions (change to whole CDS and 30 nt upstream):
 grep -P "\tCDS\t|\tsRNA\t|\tncRNA\t|\tgene\t" $gff |\
@@ -57,20 +68,20 @@ grep -P "\tCDS\t|\tsRNA\t|\tncRNA\t|\tgene\t" $gff |\
     sed -E 's/([^\t]*\t[^\t]*\t)([^\t]*)(.*;locus_tag=([^;]+).*)/\1\4\3/' | \
     sed -E 's/([^\t]*\t[^\t]*\t)([^\t]*)(.*;gene=([^;]+).*)/\1\2;\4\3/' |
     grep ";locus_tag="> \
-    "$REF/full_transcripts_$GFF"
+    "$REF/full_transcripts_$GFF_NEW"
 
 
 bioawk -c fastx '{ print $name, length($seq) }' < "$fasta"  > "$REF/genelengths.tsv"
 
 # change the gff entries that go too far:
-Rscript pnag/modify_gff.R "$REF/full_transcripts_$GFF" "$REF/genelengths.tsv" "$WARNINGS"
+Rscript pnag/modify_gff.R "$REF/full_transcripts_$GFF_NEW" "$REF/genelengths.tsv" "$WARNINGS"
 
 
 
 echo "start running bedtools"
 # I extract the fasta files from the gff using bedtools:
-bedtools getfasta -s -fi $fasta -bed "$REF/full_transcripts_$GFF"  \
-	 -name+ -fo "$REF/full_transcripts_$FASTA"
+bedtools getfasta -s -fi $fasta -bed "$REF/full_transcripts_$GFF_NEW"  \
+	 -name+ -fo "$REF/full_transcripts_$FASTA_NEW" >> logfile_masonscript.log 2>&1
 
 echo "starting if statement"
 echo $pna_input
@@ -79,12 +90,12 @@ if [ -z  "$pna_input" ];
 then
     echo "no PNA put in"
     # Now I create a list of all PNAs:
-    grep -A 1 $target "$REF/full_transcripts_$FASTA" | \
+    grep -A 1 $target "$REF/full_transcripts_$FASTA_NEW" | \
 	sed -E 's/^([A-Z]{46}).*/\1/' > "$REF/targetgene_startreg.fasta"   |# select -30 to + 16 region
     # Now I run the python script which I wrote to design PNAs:
     echo "$length"
     echo "$result_id"
-    python ./pnag/make_pnas.py $length $RES $bases_before > logfile_masonscript.log 2>&1
+    python ./pnag/make_pnas.py $length $RES $bases_before >> logfile_masonscript.log 2>&1
 
 else
     echo "PNA $pna_input put in"
@@ -101,7 +112,7 @@ fi
 
 #Now I run seqmap on start regions and whole transcriptome:
 echo "run seqmap"
-seqmap "$mismatches" "$REF/aso_targets.fasta" "$REF/full_transcripts_$FASTA" \
+seqmap "$mismatches" "$REF/aso_targets.fasta" "$REF/full_transcripts_$FASTA_NEW" \
        "$OUT/offtargets_fulltranscripts.tab" /output_all_matches \
        /forward_strand /output_statistics /available_memory:5000 >> logfile_masonscript.log 2>&1
 

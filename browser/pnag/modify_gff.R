@@ -9,14 +9,13 @@ args <- commandArgs(trailingOnly = T)
 
 
 # import gff and fasta lengths:
-gff <-  read.delim(args[1], header = FALSE) 
-
+gff <-  read.delim(args[1], header = FALSE)
 fastas <- read.delim(args[2], header = FALSE, row.names = 1)
 
 
 # fet length of fasta for each gff entry:
 gff$RL <- fastas[gff$V1,]
-
+# remove genes that are too short:
 errorgenes <- gff[(gff$RL < gff$V5 | gff$V4 < 1),]$V3
 
 if (length(errorgenes > 0)) {
@@ -24,6 +23,9 @@ if (length(errorgenes > 0)) {
                       paste0(errorgenes, collapse = "; "))
   write(texterror, file=args[3], append = T) # write(texterror, file="../../warnings.txt", append = T)
 }
+
+# make genes that have gff$V4 < 1 to 1
+gff$V4 <- ifelse(gff$V4 < 1, 1, gff$V4)
 
 #change gff if RL is bigger than end:
 #gff$V5 <- ifelse(gff$RL < gff$V5, gff$RL, gff$V5)

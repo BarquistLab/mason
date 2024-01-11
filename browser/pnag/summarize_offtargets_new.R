@@ -1,6 +1,9 @@
 library(ggplot2)
 library(dplyr)
+# install.packages("ggpubr")
 library(ggpubr)
+
+print("hello world")
 
 path_output <- commandArgs(trailingOnly = TRUE)[1]
   #"./data/sandra_rn4220_2/outputs"
@@ -59,6 +62,7 @@ for (i in unique(all_off_targets$ASO)) {
   output_df[output_df$ASO == aso_n, "OT_tot"] <- num_tot_ot
   output_df[output_df$ASO == aso_n, "OT_TIR"] <- num_tir_ot
 }
+
 print(output_df)
 print(df_plot)
 # remove location column if no target gene was given

@@ -1,0 +1,124 @@
+{% extends "layout.html" %}
+{% block content %}
+	<div class="content-section">
+		<form method="POST" action="" enctype="multipart/form-data">
+			{{ form.hidden_tag() }}
+			<fieldset class="form-group">
+				<legend class="border-bottom mb-4">Scrambler</legend>
+						<!-- here I add the logo of SCRAMBLER and centre it to the middle -->
+				<div class="border-bottom mb-4 pb-3">
+					<img src="{{ url_for('static', filename='scrambler.png') }}" width="400px" class="mx-auto d-block"/>
+				</div>
+				<p>Scrambler is an accompanying tool to MASON which can be used to generate scrambled sequences for ASO-sequences.
+					The algorithm takes in ASO sequences of lengths of 7-15 nucleotides and generates scrambled sequences by
+					shuffling the sequence while keeping the nucleotide content constant. Similar to the MASON algorithm, it
+					then screens for off-targets and evaluates which sequences can serve as good scrambled sequences.
+				</p>
+
+				<div class="form-group">
+						{{ form.custom_id.label(class="form-control-label", style="font-weight: bold;") }}
+						<p>Please select a unique custom ID to store the result</p>
+						{% if form.custom_id.errors %}
+							{{ form.custom_id(class="form-control form-control-lg is-invalid") }}
+							<div class="invalid-feedback">
+								{% for error in form.custom_id.errors %}
+									<span>{{ error }}</span>
+								{% endfor %}
+							</div>
+						{% else %}
+							{{ form.custom_id(class="form-control form-control-lg") }}
+						{% endif %}
+				</div>
+				<br>
+				<div class="form-group">
+					{{ form.presets.label(class="form-control-label", style="font-weight: bold;") }}
+					<p>Select one of the preset genomes or use "Own files" to upload your own genome.</p>
+					<p> Select the preset genomes of <i> Salmonella </i> (substr. SL1344) (<a href="../static/data/presets/s_typhi.fa">FASTA</a>,
+						<a href="../static/data/presets/s_typhi.gff">GFF</a>), <i> E. coli </i> (K12) (<a href="../static/data/presets/e_coli_K12.fna">FASTA</a>,
+						<a href="../static/data/presets/e_coli_K12.gff">GFF</a>), <i> Clostridium difficile </i> 630 (<a href="../static/data/presets/c_diffi630.fasta">FASTA</a>,
+						<a href="../static/data/presets/c_diffi630.gff3">GFF</a>) and
+					<i> Fusobacterium nucleatum </i> (ATCC 23726) (<a href="../static/data/presets/Fuso.fasta">FASTA</a>,
+						<a href="../static/data/presets/Fuso.gff3">GFF</a>).
+						Other genomes (FASTA) and their annotations (GFF) can be downloaded from the <a href="https://www.ncbi.nlm.nih.gov/">NCBI </a>website
+					and uploaded using the "Own files" option. For more details on  how to download custom genomes, have a look at our
+						<a href="{{ url_for('help') }}">help page</a></p>
+					{% if form.presets.errors %}
+						{{ form.presets(class="form-control form-control-lg is-invalid") }}
+						{% for error in form.presets.errors %}
+							<span class="text-danger">{{ error }}</span><br>
+						{% endfor %}
+					{% else %}
+						{{ form.presets(class="form-control form-control-lg") }}
+					{% endif %}
+				</div>
+
+
+
+				<script>
+					let select_presets = document.getElementById('presets');
+
+					select_presets.onchange = function() {
+						value = select_presets.value;
+						first = document.getElementById('div_genome');
+						second = document.getElementById('div_gff');
+						if (value == 'upload') {
+							first.style.display = 'block';
+							second.style.display = 'block';
+						} else {
+							first.style.display = 'none';
+							second.style.display = 'none';
+						}
+					}
+				</script>
+
+				<br>
+
+
+				<div class="form-group row" id="div_genome">
+				<p class="col-md-12"> Below, custom FASTA and GFF files of a bacterium of interest can be uploaded (can be downloaded from
+						<a href="https://www.ncbi.nlm.nih.gov/genome/">NCBI</a>): </p>
+				<div class="col-md-6" id="div_genome" >
+					{{ form.genome.label(class="form-control-label") }}
+					{% if form.genome.errors %}
+						{{ form.genome(class="form-control form-control-lg is-invalid") }}
+						{% for error in form.genome.errors %}
+							<span class="text-danger">{{ error }}</span><br>
+						{% endfor %}
+					{% else %}
+						{{ form.genome(class="form-control form-control-lg") }}
+					{% endif %}
+				</div>
+				<div class="col-md-6" id="div_gff" >
+					{{ form.gff.label(class="form-control-label") }}
+					{% if form.gff.errors %}
+						{{ form.gff(class="form-control form-control-lg is-invalid") }}
+						{% for error in form.gff.errors %}
+							<span class="text-danger">{{ error }}</span><br>
+						{% endfor %}
+					{% else %}
+						{{ form.gff(class="form-control form-control-lg") }}
+					{% endif %}
+				</div>
+				</div>
+
+
+				<br>
+					<div class="form-group">
+						{{ form.seq_input.label(class="form-control-label", style="font-weight: bold;") }}
+						<p>Please add an ASO-sequence (ATGC-alphabet) of the ASO that you want to scramble below:</p>
+							{{ form.seq_input(class="form-control form-control-lg") }}
+					</div>
+
+
+
+					<div class="form-group">
+						{{ form.submit_scr(class="btn btn-outline-info float-left") }}
+					</div>
+
+			</fieldset>
+		</form>
+	</div>
+
+
+
+{% endblock %}

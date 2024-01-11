@@ -23,4 +23,14 @@ def start_calculation(mason, fasta, gff, targets, length, mismatches, b_before, 
     print("finished mason calculation!")
 
 
+def start_scrambler(scrambler, fasta, gff, id, result_id, pna_input):
+    """ This function starts the calculation of scrambler
+    """
+
+    subprocess.run(["bash", scrambler, "-f", fasta, "-g", gff, "-i", id, "-p", pna_input])
+    print(result_id)
+    f = open("./pnag/static/data/" + result_id + "/done.txt", "w+")
+    f.close()
+    print("finished scrambler calculation!")
+
 

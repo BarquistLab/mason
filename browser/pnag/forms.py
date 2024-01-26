@@ -68,7 +68,7 @@ class ScrambledForm(FlaskForm):
                             validators=[InputRequired(), Regexp("^[ATGC]+", message="use DNA alphabet only (A,T,G,C)"),
                                         Length(min=8, max=14, message="choose sequence with 8-14 nucleotides!")])
     presets = SelectField('Genome of target organism', choices=[], validators=[InputRequired()])
-    submit_scr = SubmitField('Submit & start scrambler')
+    submit_scr = SubmitField('Submit & start Scrambler')
     #submit = SubmitField('Submit & start MASON')
 
     def validate_presets(self, presets):

@@ -189,5 +189,8 @@ python ./pnag/summarize_offtargets.py "$OUT" "$screen" >> logfile_masonscript.lo
 
 touch "$RES/$target"
 
+rm -rf "$OUT/offtargets_fulltranscripts_sorted.tab"
+rm -rf "$OUT/offtargets_startregions_sorted.csv"
+
 echo "MASON finished" >> logfile_masonscript.log 
 

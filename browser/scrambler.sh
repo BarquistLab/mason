@@ -71,7 +71,7 @@ echo ">PNA" > "$REF/PNA_sequence.fasta"
 echo "$pna_input" >> "$REF/PNA_sequence.fasta"
 
 echo "start shuffling!"
-esl-shuffle -N 200 -o "$REF/shuffled_sequences.fasta" "$REF/PNA_sequence.fasta"
+esl-shuffle -N 300 -o "$REF/shuffled_sequences.fasta" "$REF/PNA_sequence.fasta"
 
 # use sed to change all -shuffled- to _scr_
 sed -i 's/-shuffled-/_scr_/g' "$REF/shuffled_sequences.fasta"
@@ -161,6 +161,7 @@ python ./pnag/summarize_ots_scrambler.py "$OUT" # >> logfile_masonscript.log 2>&
 touch "$RES/$target"
 # remove offtargets_fulltranscripts_sorted.tab
 rm -rf "$OUT/offtargets_fulltranscripts_sorted.tab"
+rm -rf "$OUT/offtargets_startregions_sorted.csv"
 
 echo "MASON finished" >> logfile_masonscript.log
 

@@ -77,6 +77,22 @@ class ScrambledForm(FlaskForm):
                 raise ValidationError('Please select a preset or upload both files, genome and gff.')
 
 
+class CheckerForm(FlaskForm):
+    custom_id = StringField('Custom ID for result recognition', validators=[InputRequired(), Length(min=3, max=25)])
+    genome = FileField('FASTA File', validators=[FileAllowed(['fasta', 'fa', 'fna'])])
+    gff = FileField('GFF File', validators=[FileAllowed(['gff', 'gff3', 'gff2', 'gff1', 'gtf'])])
+    seq_input = StringField("ASO-sequence (5' to 3'):",
+                            validators=[InputRequired(), Regexp("^[ATGC]+", message="use DNA alphabet only (A,T,G,C)"),
+                                        Length(min=8, max=14, message="choose sequence with 8-14 nucleotides!")])
+    presets = SelectField('Genome of target organism', choices=[], validators=[InputRequired()])
+    submit_scr = SubmitField('Submit & start Checker')
+
+    def validate_presets(self, presets):
+        if presets.data == 'upload':
+            if not self.genome.data or not self.gff.data:
+                raise ValidationError('Please select a preset or upload both files, genome and gff.')
+
+
 
 class startautoForm(FlaskForm):
     custom_id = StringField('Custom ID for result recognition', validators=[InputRequired(), Length(min=3, max=25)],

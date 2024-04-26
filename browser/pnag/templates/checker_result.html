@@ -1,10 +1,118 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "layout.html" %}
+{% block head %}
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+{% endblock %}
 
-</body>
-</html>
+
+{% block content %}
+	<h1>ASO-Checker - results for {{ custom_id }}</h1>
+	<article class="content-section">
+		<div class="article-metadata">
+			<h3 >Input data </h3>
+		<h3 class="article-title">{{ result_id }}</h3>
+			</div>
+		{% if rfin %}
+		<button id="btn_right" type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal"><i class="material-icons">delete_forever</i></button>
+		{% else %}
+		<meta http-equiv="refresh" content="15" >
+		{% endif %}
+		<p>{{ time }}</p>
+		<p>Used genome file (FASTA): <a href="{{ genome_file }}"><i class="material-icons">cloud_download</i></a></p>
+		<p>Used annotation file (GFF): <a href="{{ gff_file }}"><i class="material-icons">cloud_download</i></a></p>
+		<p> Input ASO-sequence: {{ pnaseq }}</p>
+
+	</article>
+
+	{% if rfin %}
+			<h2 id="res">ASO-checker results:</h2>
+			<!-- Modal -->
+			<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+			  <div class="modal-dialog" role="document">
+				<div class="modal-content">
+				  <div class="modal-header">
+					<h5 class="modal-title" id="exampleModalLabel">Delete Result</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					  <span aria-hidden="true">&times;</span>
+					</button>
+				  </div>
+				  <div class="modal-body">
+					  <p>Are you sure you want to delete the result? This process cannot be undone.</p>
+				  </div>
+				  <div class="modal-footer">
+					  <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="material-icons">clear</i></button>
+					  <a href="{{ url_for('delete_result', result_id=result) }}"><button type="button" class="btn btn-primary"><i class="material-icons">check</i></button></a>
+				  </div>
+				</div>
+			  </div>
+			</div>
+			<div class="content-section">
+
+						<h3 class="border-bottom mb-4"> Predicted off-targets for ASO </h3>
+								<p>The predicted off-targets (OT) of ASOs are shown in the barplots below. OTs in the
+									translation initiation regions (TIRs) of genes of the targeted organism are visualized
+									below in different shades of red. OTs in the whole transcriptome of the targeted bacterium are visualized below in different
+									shades of blue in the second plot.
+									The lighter the color, the more mismatches the OT has.
+									OTs in the TIR of transcripts are defined as binding regions with the
+									first base in the region between -20 and +5 bases relative to the annotated
+									start site of the CDS. For deails and explanations of the detailed off-target table
+									see <a href="../help">help page</a>. </p>
+						<img src="{{ dir_out + "/" +  'outputs/plot_ots_start_regions.png'}}" >
+					<br>
+					<br>
+					<p>Download barplot: &nbsp<a href="{{ dir_out + "/" + 'outputs/plot_ots_start_regions.svg' }}">SVG <i class="material-icons">cloud_download</i></a>
+						&nbsp&nbsp <a href="{{ dir_out + "/" + 'outputs/plot_ots_start_regions.png' }}"> PNG <i class="material-icons">cloud_download</i></a></p>
+
+				        <img src="{{ dir_out + "/" +  'outputs/plot_ots_whole_transcriptome.png'}}" >
+					<br>
+					<br>
+
+
+					<p>Download barplot: &nbsp<a href="{{ dir_out + "/" + 'outputs/plot_ots_whole_transcriptome.svg' }}">SVG <i class="material-icons">cloud_download</i></a>
+						&nbsp&nbsp
+					<a href="{{ dir_out + "/" + 'outputs/plot_ots_whole_transcriptome.png' }}"> PNG <i class="material-icons">cloud_download</i></a></p>
+						<p>Download detailed critical-off-target table: &nbsp <a href="{{ dir_out + "/" +
+							'outputs/offtargets_fulltranscripts_sorted.csv' }}">CSV <i class="material-icons">
+								cloud_download</i></a>
+							&nbsp&nbsp
+							<a href="{{ dir_out + "/" +
+							'outputs/offtargets_fulltranscripts_sorted.xlsx' }}">Excel <i class="material-icons">cloud_download</i></a>
+						</p>
+					<br>
+					<br>
+						<h3 class="border-bottom mb-4"> Summary table for {{ result.custom_id }} - ASOs </h3>
+								<p> Summary for each ASO sequence. meanings of column names: <br>
+									location = location (start and end) of the ASO-binding site, measured from the CDS start site <br>
+									SC_bases = maximum stretch of self-complementary bases <br>
+									pur_perc = percentage of purine bases in ASO sequence (too high % should be avoided) <br>
+									long_pur_stretch = longest purine stretch (too long purine stretches should be avoided) <br>
+									Tm = Melting temperature<br>
+									OT_tot = critical off-targets in the whole transcriptome<br>
+									OT_TIR = critical off-targets in translation initiation regions<br>
+									{% if add_screen == "microbiome" %}
+										OT_HMP = off-targets in translation initiation regions of genes in the microbiome<br>
+									{% endif %}
+									{% if add_screen == "human" %}
+										OT_GRCh38 = off-targets in coding regions of the human genome<br>
+									{% endif %}
+
+								</p>
+						<img src="{{ dir_out + "/" + 'outputs' + '/result_table.png' }}" class="larger">
+					<br>
+					<br>
+					<p>Download table: &nbsp<a href="{{ dir_out + "/" + 'outputs' +
+						'/result_table.csv' }}">CSV <i class="material-icons">cloud_download</i></a>
+						&nbsp&nbsp
+						<a href="{{ dir_out + "/" +
+						'outputs/result_table.xlsx' }}">Excel <i class="material-icons">
+							cloud_download</i></a>
+					</p>
+					<p>Download table (graphic): &nbsp<a href="{{ dir_out + "/" + 'outputs/result_table.png' }}">PNG <i class="material-icons">cloud_download</i></a>
+			</div>
+
+
+	{% else %}
+		<p>ASO-Checker is running ... The webpage automatically refreshes after 30 seconds and shows the results when finished</p>
+	{% endif %}
+
+{% endblock %}

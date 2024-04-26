@@ -3,12 +3,13 @@
 # I start with assigning the flags (user inputs):
 
 
-while getopts ":f:g:p:i:" flag; do
+while getopts ":f:g:p:i:m:" flag; do
     case "${flag}" in
         f) fasta=${OPTARG} ;;
         g) gff=${OPTARG} ;;
         i) result_id=${OPTARG} ;;
         p) pna_input=${OPTARG} ;;
+        m) mode=${OPTARG} ;;
         \?) echo "Invalid option: -$OPTARG" >&2
             exit 1 ;;
         :) echo "Option -$OPTARG requires an argument." >&2
@@ -70,26 +71,40 @@ echo "PNA $pna_input put in"
 echo ">PNA" > "$REF/PNA_sequence.fasta"
 echo "$pna_input" >> "$REF/PNA_sequence.fasta"
 
-echo "start shuffling!"
-esl-shuffle -N 300 -o "$REF/shuffled_sequences.fasta" "$REF/PNA_sequence.fasta"
+# shuffle if there is no input "checker" in the -m flag
 
-# use sed to change all -shuffled- to _scr_
-sed -i 's/-shuffled-/_scr_/g' "$REF/shuffled_sequences.fasta"
-# add a 0 to all single digit numbers:
-sed -Ei 's/_scr_([0-9])$/_scr_0\1/g' "$REF/shuffled_sequences.fasta"
-# add a 0 to all double digit numbers:
-sed -Ei 's/_scr_([0-9][0-9])$/_scr_0\1/g' "$REF/shuffled_sequences.fasta"
-
-echo "modify PNAS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-python "./pnag/scrambler_modify_pnas.py" "$REF/shuffled_sequences.fasta" "$RES" "$REF/PNA_sequence.fasta" #>> logfile_masonscript.log 2>&1
-
-# check if aso_targets.fasta has less than 3 lines:
-if [ $(wc -l < "$REF/aso_targets.fasta") -lt 3 ]
+if [ -z "$mode" ]
 then
-  echo "No PNAs created!"
-  touch "$RES/../done.txt"
-  echo  "No PNAs created!" >> "$RES/../error.txt"
+  echo "start shuffling!"
+  esl-shuffle -N 500 -o "$REF/shuffled_sequences.fasta" "$REF/PNA_sequence.fasta"
+  # use sed to change all -shuffled- to _scr_
+  sed -i 's/-shuffled-/_scr_/g' "$REF/shuffled_sequences.fasta"
+  # add a 0 to all single digit numbers:
+  sed -Ei 's/_scr_([0-9])$/_scr_0\1/g' "$REF/shuffled_sequences.fasta"
+  # add a 0 to all double digit numbers:
+  sed -Ei 's/_scr_([0-9][0-9])$/_scr_0\1/g' "$REF/shuffled_sequences.fasta"
+
+  echo "modify PNAS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+  python "./pnag/scrambler_modify_pnas.py" "$REF/shuffled_sequences.fasta" "$RES" "$REF/PNA_sequence.fasta" #>> logfile_masonscript.log 2>&1
+
+  # check if aso_targets.fasta has less than 3 lines:
+  if [ "$(wc -l < "$REF/aso_targets.fasta")" -lt 3 ]
+  then
+    echo "No PNAs created!"
+    touch "$RES/../done.txt"
+    echo  "No PNAs created!" >> "$RES/../error.txt"
+  fi
+elif [ "$mode" == "checker" ]
+then
+  echo "no shuffling!"
+  echo "modify PNAS!!"
+  python "./pnag/checker_modify_pnas.py" "$REF/PNA_sequence.fasta" "$RES" #>> logfile_masonscript.log 2>&1
+else
+  echo "Somethings wrong!"
 fi
+
+
+
 
 
 #Now I run seqmap on start regions and whole transcriptome:

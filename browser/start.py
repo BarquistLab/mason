@@ -34,3 +34,14 @@ def start_scrambler(scrambler, fasta, gff, id, result_id, pna_input):
     print("finished scrambler calculation!")
 
 
+def start_checker(checker, fasta, gff, id, result_id, pna_input, checker_input):
+    """ This function starts the calculation of scrambler
+    """
+
+    subprocess.run(["bash", checker, "-f", fasta, "-g", gff, "-i", id, "-p", pna_input, "-m", checker_input])
+    print(result_id)
+    f = open("./pnag/static/data/" + result_id + "/done.txt", "w+")
+    f.close()
+    print("finished ASO-Checker calculation!")
+
+

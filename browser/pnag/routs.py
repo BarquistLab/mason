@@ -13,13 +13,13 @@ import pandas as pd
 from flask import render_template, url_for, flash, redirect, request, send_file, Markup
 # import needed things from other files in this package
 from pnag import app, bcrypt, mail
-from pnag.forms import startForm, startautoForm, ScrambledForm
+from pnag.forms import startForm, startautoForm, ScrambledForm, CheckerForm
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_mail import Message
 import base64
 import json
 import threading
-from start import start_calculation, start_scrambler
+from start import start_calculation, start_scrambler, start_checker
 from pathlib import Path
 
 path_parent = Path(app.root_path).parent
@@ -226,6 +226,7 @@ def result_scrambler(result_id):
     f = open('./pnag/static/data/' + result_id + "/inputs.txt")
     lines = f.readlines()
     custom_id = lines[1]
+    pnaseq = lines[2]
     genome_file, gff_file = lines[0].split(sep=",")
     f.close()
 
@@ -245,7 +246,40 @@ def result_scrambler(result_id):
     # show results page
     return render_template("scrambler_result.html", title="Result", result=result_id, dir_out=dir_out,
                            all_output_dirs=all_output_dirs,
-                           rfin=rfinished, genome_file=ffile, gff_file=gfffile, custom_id=custom_id,
+                           rfin=rfinished, genome_file=ffile, gff_file=gfffile, custom_id=custom_id, pnaseq=pnaseq,
+                           time=time, errs=errs)
+
+
+@app.route("/result_checker/<result_id>")
+def result_checker(result_id):
+    # each result gets its own page to access it. Just by calling .../result/<id of result>.
+    time = re.sub("([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)",
+                  "Date: \\1-\\2-\\3 | Time: \\4:\\5:\\6 h", result_id)
+    # get download paths:
+    f = open('./pnag/static/data/' + result_id + "/inputs.txt")
+    lines = f.readlines()
+    custom_id = lines[1]
+    genome_file, gff_file = lines[0].split(sep=",")
+    pnaseq = lines[2]
+    f.close()
+
+    dir_out = "../static/data/" + result_id
+    rfinished = os.path.isfile("./pnag/static/data/" + result_id + "/done.txt")
+
+    efilename = './pnag/static/data/' + result_id + "/error.txt"
+    ltags_noPNAs = open(efilename).read().splitlines()
+    errs = ltags_noPNAs
+
+    all_output_dirs = []
+    for dirs in os.listdir("./pnag/static/data/" + result_id):
+        if "." not in dirs:
+            all_output_dirs += [dirs]
+    ffile = "../" + "/".join(genome_file.split(sep="/")[-4:])
+    gfffile = "../" + "/".join(gff_file.split(sep="/")[-4:])
+    # show results page
+    return render_template("checker_result.html", title="Result ASO-Checker", result=result_id, dir_out=dir_out,
+                           all_output_dirs=all_output_dirs,
+                           rfin=rfinished, genome_file=ffile, gff_file=gfffile, custom_id=custom_id, pnaseq=pnaseq,
                            time=time, errs=errs)
 
 
@@ -328,13 +362,64 @@ def scrambler():
                          args=[path_parent.__str__() + "/scrambler.sh", paths['genome'],
                                paths['gff'], time_string, time_string, pna_seq]).start()
         with open("./pnag/static/data/" + time_string + "/inputs.txt", "a") as inputfile:
-            inputfile.write("\n" + result_custom_id)
+            inputfile.write("\n" + result_custom_id + "\n" + pna_seq)
 
         return redirect(url_for('result_scrambler', result_id=time_string))
     return render_template("scrambler.html", title="Scrambler", essential=ESSENTIAL_GENES, form=form)
 
 
+@app.route("/ASO_checker", methods=['GET', 'POST'])
+def checker():
+    form = CheckerForm()
+    choices = [('upload', 'Own files')]
+    choices += [(key, PRESETS[key][2]) for key in PRESETS.keys()]
+    print(choices)
+    form.presets.choices = choices
+    if form.validate_on_submit():
+        paths = {}
+        time_string = datetime.utcnow().strftime('%Y_%m_%d_%H_%M_%S')
+        print(time_string)
+        # create directory for result:
+        os.mkdir("./pnag/static/data/" + time_string)
+        # save uploaded data with timestring attached:
+        if form.presets.data == 'upload':
+            genome_file = os.path.join(app.root_path, 'static/data/', time_string + "/", form.genome.data.filename)
+            gff_file = os.path.join(app.root_path, 'static/data/', time_string + "/", form.gff.data.filename)
+            form.genome.data.save(genome_file)
+            form.gff.data.save(gff_file)
+            paths['genome'] = genome_file
+            paths['gff'] = gff_file
+        else:
+            # genome first value in list
+            files = PRESETS[form.presets.data]
+            paths['genome'] = files[0]
+            paths['gff'] = files[1]
+        with open("./pnag/static/data/" + time_string + "/inputs.txt", "w+") as input_file:
+            input_file.write(paths['genome'] + "," + paths['gff'])
+        result_custom_id = form.custom_id.data
+        pna_seq = form.seq_input.data
+        pna_file_string = "./pnag/static/data/"+time_string+ "/pna_input.fasta"
 
+        # add input PNA file:
+        print("PNA sequence:")
+        print(pna_seq)
+        with open(pna_file_string, "w") as pna_file:
+            pna_file.write(">PNA\n" + pna_seq)
+
+
+        # add selfcomp_errorfile
+        efilename = './pnag/static/data/' + time_string + "/error.txt"
+        open(efilename, "w").close()
+
+        # Now run checker as background process while continuing with checker.html and showing the "waiting" html:
+        threading.Thread(target=start_checker, name="checkers",
+                         args=[path_parent.__str__() + "/scrambler.sh", paths['genome'],
+                               paths['gff'], time_string, time_string, pna_seq, "checker"]).start()
+        with open("./pnag/static/data/" + time_string + "/inputs.txt", "a") as inputfile:
+            inputfile.write("\n" + result_custom_id + "\n" + pna_seq)
+
+        return redirect(url_for('result_checker', result_id=time_string))
+    return render_template("checker.html", title="ASO-Checker", essential=ESSENTIAL_GENES, form=form)
 
 @app.route("/help")
 def help():

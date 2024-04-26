@@ -9,7 +9,7 @@ input_pna = sys.argv[3]
 
 seqs = []
 aso_seqs = []
-output_df = pd.DataFrame(columns=["ASO", "ASO_seq", "SC_bases", "long_pur_stretch", "OT_TIR_0mm", "OT_TIR_1mm",
+output_df = pd.DataFrame(columns=["ASO", "ASO_seq", "SC_bases", "pur_perc", "long_pur_stretch", "OT_TIR_0mm", "OT_TIR_1mm",
                                   "OT_TIR_2mm", "OT_TIR_3mm", "OT_tot_0mm", "OT_tot_1mm", "OT_tot_2mm", "OT_tot_3mm"])
 
 # frst, check for input PNA sequence (fasta file) and add it to the output_df:
@@ -33,7 +33,8 @@ for record in SeqIO.parse(input_pna, "fasta"):
         else:
             curstretch = 0
 
-    added_row = pd.Series([aso_name, aso_raw.__str__(), maxcomp_raw, longest_purine_stretch_raw, None, None, None, None,
+    pur_perc = "{:.2f}".format((pur / len(aso_raw.__str__())) * 100)
+    added_row = pd.Series([aso_name, aso_raw.__str__(), maxcomp_raw,pur_perc, longest_purine_stretch_raw, None, None, None, None,
                             None, None, None, None],
                           index=output_df.columns)
     # do this but using contat and not append: output_df = output_df.append(added_row, ignore_index=True)

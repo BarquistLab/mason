@@ -14,3 +14,5 @@ browser/pnag/static/data/**
 browser/pnag/site.db
 *__pycache__*
 browser/logfile_masonscript.log
+*/.idea**
+*/.idea*

@@ -9,9 +9,9 @@
 				<div class="border-bottom mb-4 pb-3">
 					<img src="{{ url_for('static', filename='checker.png') }}" width="30%" class="mx-auto d-block"/>
 				</div>
-				<p>Scrambler is an accompanying tool to MASON which can be used to check different attributes of a pre-
-					selected ASO. The tool takes a sequence of an ASO and checks for several important sequence- and
-					target-species related attributes. Similar to the MASON algorithm, it then screens for off-targets
+				<p>ASO-Checker is an accompanying tool to MASON which can be used to check different attributes of a pre-
+					selected ASO. The tool takes a sequence of ASOs and checks for several important sequence- and
+					target-species related attributes. Similar to the MASON algorithm, it screens for off-targets
 					and evaluates whether the sequence is suitable for further use.
 				</p>
 
@@ -105,8 +105,10 @@
 				<br>
 					<div class="form-group">
 						{{ form.seq_input.label(class="form-control-label", style="font-weight: bold;") }}
-						<p>Please add an ASO-sequence (ATGC-alphabet) of the ASO that you want to scramble below:</p>
-							{{ form.seq_input(class="form-control form-control-lg") }}
+						<p>Please add ASO-sequences (ATGC-alphabet) of the ASOs that you want to be checked below.
+							Use <a href="http://bioinformatics.intec.ugent.be/MotifSuite/fastaformat.php">FASTA</a> format
+							if you want to add more than one sequence (max. 10 sequences allowed, length 8-14 bases):</p>
+							{{ form.seq_input(class="form-control form-control-lg", rows=4) }}
 					</div>
 
 

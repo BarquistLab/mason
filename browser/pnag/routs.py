@@ -10,12 +10,11 @@ from datetime import datetime
 import re
 import shutil
 import pandas as pd
-from flask import render_template, url_for, flash, redirect, request, send_file, Markup
+from flask import render_template, url_for, flash, redirect, request, send_file
 # import needed things from other files in this package
 from pnag import app, bcrypt, mail
 from pnag.forms import startForm, startautoForm, ScrambledForm, CheckerForm
-from flask_login import login_user, current_user, logout_user, login_required
-from flask_mail import Message
+from flask_login import current_user
 import base64
 import json
 import threading
@@ -260,7 +259,9 @@ def result_checker(result_id):
     lines = f.readlines()
     custom_id = lines[1]
     genome_file, gff_file = lines[0].split(sep=",")
-    pnaseq = lines[2]
+    # get fasta pna sequence (make 1 string from list)
+    pnaseq = lines[2:]
+    pnaseq = "".join(pnaseq)
     f.close()
 
     dir_out = "../static/data/" + result_id
@@ -321,6 +322,7 @@ def scrambler():
     choices += [(key, PRESETS[key][2]) for key in PRESETS.keys()]
     print(choices)
     form.presets.choices = choices
+    form.seq_input
     if form.validate_on_submit():
         paths = {}
         time_string = datetime.utcnow().strftime('%Y_%m_%d_%H_%M_%S')
@@ -365,7 +367,7 @@ def scrambler():
             inputfile.write("\n" + result_custom_id + "\n" + pna_seq)
 
         return redirect(url_for('result_scrambler', result_id=time_string))
-    return render_template("scrambler.html", title="Scrambler", essential=ESSENTIAL_GENES, form=form)
+    return render_template("scrambler.html", title="Scrambler", form=form)
 
 
 @app.route("/ASO_checker", methods=['GET', 'POST'])
@@ -374,6 +376,9 @@ def checker():
     choices = [('upload', 'Own files')]
     choices += [(key, PRESETS[key][2]) for key in PRESETS.keys()]
     print(choices)
+    print("seqinput:")
+    print(form.seq_input.data)
+    print("done")
     form.presets.choices = choices
     if form.validate_on_submit():
         paths = {}
@@ -419,7 +424,7 @@ def checker():
             inputfile.write("\n" + result_custom_id + "\n" + pna_seq)
 
         return redirect(url_for('result_checker', result_id=time_string))
-    return render_template("checker.html", title="ASO-Checker", essential=ESSENTIAL_GENES, form=form)
+    return render_template("checker.html", title="ASO-Checker", form=form)
 
 @app.route("/help")
 def help():

@@ -1,6 +1,6 @@
 import sys
 from Bio import SeqIO
-from difflib import SequenceMatcher
+from cdifflib import CSequenceMatcher
 from Bio.SeqIO import SeqRecord
 import re
 import numpy as np
@@ -47,7 +47,8 @@ for r in range(len(target_regions)):
         s = seq[i:i+length]
         aso = s.reverse_complement()
 
-        maxcomp = SequenceMatcher(None, aso, s).find_longest_match(0, len(aso), 0, len(s)).size
+        maxcomp = CSequenceMatcher(None, aso, s).find_longest_match(0, len(aso), 0, len(s)).size
+        print(maxcomp, "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
 
         # design PNA for regions overlapping SC or SD region:
         if maxcomp < length*0.6:
@@ -70,7 +71,9 @@ for r in range(len(target_regions)):
             added_row = pd.Series([aso_name, aso.__str__(), s.transcribe().__str__(), str(i-30) + ";" + str(i-30+length),
                                    maxcomp, pur_perc, longest_purine_stretch, None, None, None, None, None, None],
                                   index=output_df.columns)
-            output_df = output_df.append(added_row, ignore_index=True)
+            #output_df = output_df.append(added_row, ignore_index=True)
+            # change above to concat and not append:
+            output_df = pd.concat([output_df, added_row.to_frame().transpose()], ignore_index=True)
             # save ASO sequences:
             list_aso_sequences += [SeqRecord(aso, id=aso_name, description="")]
             # for fasta with reverse as well to get mismatches with seqmap:
@@ -93,6 +96,9 @@ for r in range(len(target_regions)):
     subprocess.run(["Rscript", "./pnag/melting.R", res_path + "/outputs/result_table.tsv"])
 
     # seaborn:
+    print(np.array(heatmap_annot))
+    print(heatmap_array)
+
     fig, ax = plt.subplots(figsize=(15, count/3))
     ax = sns.heatmap(heatmap_array, linewidths=.2, linecolor="black",
                      annot=np.array(heatmap_annot), fmt="", cmap="Blues",

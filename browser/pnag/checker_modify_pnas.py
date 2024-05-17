@@ -18,7 +18,7 @@ for record in SeqIO.parse(input_pna, "fasta"):
     aso_target = record.seq.reverse_complement()
     maxcomp_raw = SequenceMatcher(None, aso_raw, aso_target).find_longest_match(0, len(aso_raw), 0, len(aso_target)).size
 
-    aso_name = "input PNA"
+    aso_name =  record.id
     # check for longest purine stretch and purine perc:
     pur = 0
     longest_purine_stretch_raw = 0

@@ -7,11 +7,11 @@ This sets the Forms used on the Website. These variables can be called in the ht
 import os
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, SelectMultipleField, RadioField, \
+from wtforms import StringField, SubmitField, BooleanField, SelectField, SelectMultipleField, RadioField, \
     TextAreaField
+from wtforms.widgets import TextArea
 from wtforms.fields import IntegerField
-from wtforms.validators import Length, Email, EqualTo, ValidationError, NumberRange, InputRequired, Regexp
-from flask_login import current_user
+from wtforms.validators import Length, ValidationError, NumberRange, InputRequired, Regexp
 from pnag import app
 import re
 
@@ -65,7 +65,7 @@ class ScrambledForm(FlaskForm):
     genome = FileField('FASTA File', validators=[FileAllowed(['fasta', 'fa', 'fna'])])
     gff = FileField('GFF File', validators=[FileAllowed(['gff', 'gff3', 'gff2', 'gff1', 'gtf'])])
     seq_input = StringField("ASO-sequence (5' to 3'):",
-                            validators=[InputRequired(), Regexp("^[ATGC]+", message="use DNA alphabet only (A,T,G,C)"),
+                            validators=[InputRequired(), Regexp("^[ATGC]+$", message="use DNA alphabet only (A,T,G,C)"),
                                         Length(min=8, max=14, message="choose sequence with 8-14 nucleotides!")])
     presets = SelectField('Genome of target organism', choices=[], validators=[InputRequired()])
     submit_scr = SubmitField('Submit & start Scrambler')
@@ -76,14 +76,25 @@ class ScrambledForm(FlaskForm):
             if not self.genome.data or not self.gff.data:
                 raise ValidationError('Please select a preset or upload both files, genome and gff.')
 
+    def validate_seq_input(self, seq_input):
+        if not re.match("^[ATGC]+$", seq_input.data):
+            raise ValidationError("use DNA alphabet only (A,T,G,C)")
+
+
 
 class CheckerForm(FlaskForm):
     custom_id = StringField('Custom ID for result recognition', validators=[InputRequired(), Length(min=3, max=25)])
     genome = FileField('FASTA File', validators=[FileAllowed(['fasta', 'fa', 'fna'])])
     gff = FileField('GFF File', validators=[FileAllowed(['gff', 'gff3', 'gff2', 'gff1', 'gtf'])])
-    seq_input = StringField("ASO-sequence (5' to 3'):",
-                            validators=[InputRequired(), Regexp("^[ATGC]+", message="use DNA alphabet only (A,T,G,C)"),
-                                        Length(min=8, max=14, message="choose sequence with 8-14 nucleotides!")])
+    seq_input = StringField("ASO-sequence(s) (5' to 3'):", widget=TextArea(),
+                            validators=[InputRequired(),
+                                        # add a regex to check for either fasta format or one line with only sequence.
+                                        # The regex should allow for a fasta header with a '>' at the beginning and a sequence
+                                        # and maximal 10 > sequence lines.
+                                        #Regexp("^(>[^\n]*\n[ATGC]+\n){1,10}$",
+                                        #       message="use DNA alphabet only (A,T,G,C)"),
+                                        ])
+                                        #Length(min=8, max=14, message="choose sequence with 8-14 nucleotides!")])
     presets = SelectField('Genome of target organism', choices=[], validators=[InputRequired()])
     submit_scr = SubmitField('Submit & start Checker')
 
@@ -91,6 +102,9 @@ class CheckerForm(FlaskForm):
         if presets.data == 'upload':
             if not self.genome.data or not self.gff.data:
                 raise ValidationError('Please select a preset or upload both files, genome and gff.')
+
+
+
 
 
 

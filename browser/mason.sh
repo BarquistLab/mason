@@ -80,11 +80,12 @@ Rscript pnag/modify_gff.R "$REF/full_transcripts_$GFF_NEW" "$REF/genelengths.tsv
 
 echo "start running bedtools"
 # I extract the fasta files from the gff using bedtools:
-bedtools getfasta -s -fi $fasta -bed "$REF/full_transcripts_$GFF_NEW"  \
+bedtools getfasta -s -fi "$fasta" -bed "$REF/full_transcripts_$GFF_NEW"  \
 	 -name+ -fo "$REF/full_transcripts_$FASTA_NEW" >> logfile_masonscript.log 2>&1
 
 echo "starting if statement"
-echo $pna_input
+echo "$pna_input"
+
 
 if [ -z  "$pna_input" ];
 then
@@ -99,7 +100,7 @@ then
 
 else
     echo "PNA $pna_input put in"
-    python ./pnag/modify_PNAs.py $pna_input >> logfile_masonscript.log 2>&1
+    python ./pnag/modify_PNAs.py "$pna_input" >> logfile_masonscript.log 2>&1
 fi
 
 if [ ! -s "$REF/aso_targets.fasta" ]

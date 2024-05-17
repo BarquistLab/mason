@@ -68,13 +68,14 @@ bedtools getfasta -s -fi $fasta -bed "$REF/full_transcripts_$GFF"  \
 	 -name+ -fo "$REF/full_transcripts_$FASTA"
 
 echo "PNA $pna_input put in"
-echo ">PNA" > "$REF/PNA_sequence.fasta"
-echo "$pna_input" >> "$REF/PNA_sequence.fasta"
+
 
 # shuffle if there is no input "checker" in the -m flag
 
 if [ -z "$mode" ]
 then
+  echo ">PNA" > "$REF/PNA_sequence.fasta"
+  echo "$pna_input" >> "$REF/PNA_sequence.fasta"
   echo "start shuffling!"
   esl-shuffle -N 500 -o "$REF/shuffled_sequences.fasta" "$REF/PNA_sequence.fasta"
   # use sed to change all -shuffled- to _scr_
@@ -97,6 +98,7 @@ then
 elif [ "$mode" == "checker" ]
 then
   echo "no shuffling!"
+  echo "$pna_input" > "$REF/PNA_sequence.fasta"
   echo "modify PNAS!!"
   python "./pnag/checker_modify_pnas.py" "$REF/PNA_sequence.fasta" "$RES" #>> logfile_masonscript.log 2>&1
 else
@@ -158,7 +160,7 @@ do
 	     $7=mm
 	     $8=longest_stretch
 	     $9=longest_binding_sequence
-	     #$2=$2-32
+	     $2=$2-32
 	     print $0
 	}' |  sed -E 's/^([^;:]*)::/\1;\1::/'| \
 	    sed -E 's/^([^;:]*);([^:]*)::[^\(]*\(([\+\-])\)/\1\t\2\t\3/'| \
@@ -171,7 +173,16 @@ done
 rm -rf $OUT/*_sorted_sorted.tab
 
 echo "summarize off-targets"
-python ./pnag/summarize_ots_scrambler.py "$OUT" # >> logfile_masonscript.log 2>&1
+
+if [ -z "$mode" ]
+then
+  python ./pnag/summarize_ots_scrambler.py "$OUT" # >> logfile_masonscript.log 2>&1
+elif [ "$mode" == "checker" ]
+then
+  Rscript ./pnag/summarize_ots_checker.R "$OUT" # >> logfile_masonscript.log 2>&1
+else
+  echo "Somethings wrong!"
+fi
 
 touch "$RES/$target"
 # remove offtargets_fulltranscripts_sorted.tab

@@ -1,6 +1,6 @@
 import sys
 from Bio import SeqIO
-from difflib import SequenceMatcher
+from cdifflib import CSequenceMatcher
 import pandas as pd
 
 seq_path = sys.argv[1]
@@ -9,7 +9,7 @@ input_pna = sys.argv[3]
 
 seqs = []
 aso_seqs = []
-output_df = pd.DataFrame(columns=["ASO", "ASO_seq", "SC_bases", "pur_perc", "long_pur_stretch", "OT_TIR_0mm", "OT_TIR_1mm",
+output_df = pd.DataFrame(columns=["ASO", "ASO_seq", "SC_bases",  "long_pur_stretch", "OT_TIR_0mm", "OT_TIR_1mm",
                                   "OT_TIR_2mm", "OT_TIR_3mm", "OT_tot_0mm", "OT_tot_1mm", "OT_tot_2mm", "OT_tot_3mm"])
 
 # frst, check for input PNA sequence (fasta file) and add it to the output_df:
@@ -17,7 +17,7 @@ for record in SeqIO.parse(input_pna, "fasta"):
     aso_raw = record.seq
 
     aso_target = record.seq.reverse_complement()
-    maxcomp_raw = SequenceMatcher(None, aso_raw, aso_target).find_longest_match(0, len(aso_raw), 0, len(aso_target)).size
+    maxcomp_raw = CSequenceMatcher(None, aso_raw, aso_target).find_longest_match(0, len(aso_raw), 0, len(aso_target)).size
 
     aso_name = "input PNA"
     # check for longest purine stretch and purine perc:
@@ -34,7 +34,7 @@ for record in SeqIO.parse(input_pna, "fasta"):
             curstretch = 0
 
     pur_perc = "{:.2f}".format((pur / len(aso_raw.__str__())) * 100)
-    added_row = pd.Series([aso_name, aso_raw.__str__(), maxcomp_raw,pur_perc, longest_purine_stretch_raw, None, None, None, None,
+    added_row = pd.Series([aso_name, aso_raw.__str__(), maxcomp_raw, longest_purine_stretch_raw, None, None, None, None,
                             None, None, None, None],
                           index=output_df.columns)
     # do this but using contat and not append: output_df = output_df.append(added_row, ignore_index=True)
@@ -48,9 +48,9 @@ for record in SeqIO.parse(seq_path, "fasta"):
     aso = record.seq
 
     aso_target = record.seq.reverse_complement()
-    maxcomp = SequenceMatcher(None, aso, aso_target).find_longest_match(0, len(aso), 0, len(aso_target)).size
+    maxcomp = CSequenceMatcher(None, aso, aso_target).find_longest_match(0, len(aso), 0, len(aso_target)).size
     # get identity between input PNA and current ASO:
-    max_similarity_raw = SequenceMatcher(None, aso_raw, aso).find_longest_match(0, len(aso_raw), 0, len(aso)).size
+    max_similarity_raw = CSequenceMatcher(None, aso_raw, aso).find_longest_match(0, len(aso_raw), 0, len(aso)).size
     perc_similarity_raw = (max_similarity_raw / len(aso_raw)) * 100
     aso_name = record.id
     # check for longest purine stretch and purine perc:
@@ -66,10 +66,12 @@ for record in SeqIO.parse(seq_path, "fasta"):
         else:
             curstretch = 0
 
+
     # add to output_df. but ony if perc_similarity_raw < 50 and maxcomp_raw +- 1 of maxcomp and
     # longest_purine_stretch < longest_purine_stretch_raw+1
     if perc_similarity_raw < 30 and maxcomp_raw in [maxcomp, maxcomp-1, maxcomp+1] and \
             longest_purine_stretch < longest_purine_stretch_raw+1:
+        print(output_df.columns)
         added_row = pd.Series([aso_name, aso.__str__(), maxcomp, longest_purine_stretch, None, None, None, None, None,
                                  None, None, None],
                               index=output_df.columns)

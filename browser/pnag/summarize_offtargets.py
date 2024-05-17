@@ -96,16 +96,25 @@ for i in all_off_targets["ASO"].unique():
     ot_aso = all_off_targets[all_off_targets["ASO"] == i]
     num_tot_ot = ot_aso.shape[0]-1
     num_tir_ot = ot_aso[ot_aso["TIR"] == "TIR"].shape[0]-1
-    df_plot = df_plot.append(pd.Series([aso_n, "OT in transcriptome", "whole transcriptome", num_tot_ot,
-                                        target_seq], index=df_plot.columns), ignore_index=True)
-    df_plot = df_plot.append(pd.Series([aso_n, "OT in TIR regions", "start regions", num_tir_ot,
-                                        target_seq], index=df_plot.columns), ignore_index=True)
+    # df_plot = df_plot.append(pd.Series([aso_n, "OT in transcriptome", "whole transcriptome", num_tot_ot,
+    #                                     target_seq], index=df_plot.columns), ignore_index=True)
+    # df_plot = df_plot.append(pd.Series([aso_n, "OT in TIR regions", "start regions", num_tir_ot,
+    #                                     target_seq], index=df_plot.columns), ignore_index=True)
+    # rewrite append to concat and not append:
+    df_plot = pd.concat([df_plot, pd.Series([aso_n, "OT in transcriptome", "whole transcriptome", num_tot_ot,
+                                             target_seq], index=df_plot.columns).to_frame().transpose()], ignore_index=True)
+    df_plot = pd.concat([df_plot, pd.Series([aso_n, "OT in TIR regions", "start regions", num_tir_ot,
+                                             target_seq], index=df_plot.columns).to_frame().transpose()], ignore_index=True)
+
 
     if other_ots == "human" or other_ots == "microbiome":
         ots_screen = screen_ot[screen_ot["ASO"] == i]
         num_scr_ot = ots_screen.shape[0]
-        df_plot = df_plot.append(pd.Series([aso_n, "OT in " + colname, colname, num_scr_ot,
-                                            target_seq], index=df_plot.columns), ignore_index=True)
+        # df_plot = df_plot.append(pd.Series([aso_n, "OT in " + colname, colname, num_scr_ot,
+        #                                     target_seq], index=df_plot.columns), ignore_index=True)
+        # rewrite append to concat and not append:
+        df_plot = pd.concat([df_plot, pd.Series([aso_n, "OT in " + colname, colname, num_scr_ot,
+                                                    target_seq], index=df_plot.columns).to_frame().transpose()], ignore_index=True)
         if other_ots == "human":
             output_df.loc[i, "OT_GRCh38"] = int(num_scr_ot)
         elif other_ots == "microbiome":

@@ -1,6 +1,5 @@
 library(ggplot2)
 library(dplyr)
-# install.packages("ggpubr")
 library(ggpubr)
 
 print("hello world")

@@ -19,7 +19,8 @@
 		<p>{{ time }}</p>
 		<p>Used genome file (FASTA): <a href="{{ genome_file }}"><i class="material-icons">cloud_download</i></a></p>
 		<p>Used annotation file (GFF): <a href="{{ gff_file }}"><i class="material-icons">cloud_download</i></a></p>
-		<p> Input ASO-sequence: {{ pnaseq }}</p>
+		<p> Input ASO-sequence(s):</p>
+		<pre>{{ pnaseq }}</pre>
 
 	</article>
 
@@ -57,19 +58,20 @@
 									first base in the region between -20 and +5 bases relative to the annotated
 									start site of the CDS. For deails and explanations of the detailed off-target table
 									see <a href="../help">help page</a>. </p>
-						<img src="{{ dir_out + "/" +  'outputs/plot_ots_start_regions.png'}}" >
+						<img src="{{ dir_out + "/" +  'outputs/plot_ots_start_regions.png'}}" class="center_7" >
 					<br>
 					<br>
 					<p>Download barplot: &nbsp<a href="{{ dir_out + "/" + 'outputs/plot_ots_start_regions.svg' }}">SVG <i class="material-icons">cloud_download</i></a>
 						&nbsp&nbsp <a href="{{ dir_out + "/" + 'outputs/plot_ots_start_regions.png' }}"> PNG <i class="material-icons">cloud_download</i></a></p>
 
-				        <img src="{{ dir_out + "/" +  'outputs/plot_ots_whole_transcriptome.png'}}" >
+				        <img src="{{ dir_out + "/" +  'outputs/plot_ots_whole_transcriptome.png'}}" class="center_7" >
 					<br>
 					<br>
 
 
 					<p>Download barplot: &nbsp<a href="{{ dir_out + "/" + 'outputs/plot_ots_whole_transcriptome.svg' }}">SVG <i class="material-icons">cloud_download</i></a>
 						&nbsp&nbsp
+
 					<a href="{{ dir_out + "/" + 'outputs/plot_ots_whole_transcriptome.png' }}"> PNG <i class="material-icons">cloud_download</i></a></p>
 						<p>Download detailed critical-off-target table: &nbsp <a href="{{ dir_out + "/" +
 							'outputs/offtargets_fulltranscripts_sorted.csv' }}">CSV <i class="material-icons">
@@ -97,9 +99,11 @@
 									{% endif %}
 
 								</p>
-						<img src="{{ dir_out + "/" + 'outputs' + '/result_table.png' }}" class="larger">
+						<object type="text/html" data="{{ dir_out + "/" + 'outputs/result_table.html' }}" width="100%" height="250px"> </object>
+
 					<br>
 					<br>
+					<p> Full table in HTML format: &nbsp<a href="{{ dir_out + "/" + 'outputs/result_table.html' }}">HTML <i class="material-icons">cloud_download</i></a>
 					<p>Download table: &nbsp<a href="{{ dir_out + "/" + 'outputs' +
 						'/result_table.csv' }}">CSV <i class="material-icons">cloud_download</i></a>
 						&nbsp&nbsp
@@ -107,7 +111,6 @@
 						'outputs/result_table.xlsx' }}">Excel <i class="material-icons">
 							cloud_download</i></a>
 					</p>
-					<p>Download table (graphic): &nbsp<a href="{{ dir_out + "/" + 'outputs/result_table.png' }}">PNG <i class="material-icons">cloud_download</i></a>
 			</div>
 
 

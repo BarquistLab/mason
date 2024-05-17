@@ -1,10 +1,11 @@
 import sys
 from Bio import SeqIO
-from difflib import SequenceMatcher
+from cdifflib import CSequenceMatcher
 import pandas as pd
 
 seq_path = sys.argv[1]
 res_path = sys.argv[2]
+print(seq_path, "HIHIHIIHIH")
 
 seqs = []
 output_df = pd.DataFrame(columns=["ASO", "ASO_seq", "SC_bases", "pur_perc", "long_pur_stretch", "OT_tot", "OT_TIR"])
@@ -15,7 +16,7 @@ for record in SeqIO.parse(seq_path, "fasta"):
     aso = record.seq
 
     aso_target = record.seq.reverse_complement()
-    maxcomp = SequenceMatcher(None, aso, aso_target).find_longest_match(0, len(aso), 0, len(aso_target)).size
+    maxcomp = CSequenceMatcher(None, aso, aso_target).find_longest_match(0, len(aso), 0, len(aso_target)).size
     
     aso_name = record.id
     # check for longest purine stretch and purine perc:

@@ -1,3 +1,7 @@
+
+Sys.setenv(HOME = "/home/jakob")
+
+
 library(ggplot2)
 library(dplyr)
 library(readr)
@@ -155,6 +159,8 @@ output_df <- output_df %>% select(ASO, ASO_seq, SC_bases, `%_SC_bases`, `Tm (°C
                                   OT_tot_2mm, OT_tot_3mm)
 
 
+
+print("before making tabls")
 # make table with kableextra
 table_out <- kable(output_df, format = "html", escape = FALSE) %>%
   kable_styling(bootstrap_options = c("bordered","hover", "condensed"),) %>%
@@ -174,16 +180,19 @@ table_out <- kable(output_df, format = "html", escape = FALSE) %>%
                                                                "yellow")))
 
 
+print("before saving html")
 # save table as html
+
+
 table_out %>% save_kable(paste0(path_output, "/result_table.html"))
 
 
-
+print("before saving csv")
 # Save dataframe as CSV
 write.csv(output_df, file = paste0(path_output, "/result_table.csv"), row.names = FALSE)
-
+print("after")
 write_xlsx(output_df, paste0(path_output, "/result_table.xlsx"))
-
+print("after saving xlsx")
 
 # Create bar plot using ggplot2
 df_plot$counts <- as.numeric(df_plot$counts)

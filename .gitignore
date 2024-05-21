@@ -16,3 +16,4 @@ browser/pnag/site.db
 browser/logfile_masonscript.log
 */.idea**
 */.idea*
+*.log

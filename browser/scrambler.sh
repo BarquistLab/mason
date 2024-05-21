@@ -76,7 +76,7 @@ if [ -z "$mode" ]
 then
   echo ">PNA" > "$REF/PNA_sequence.fasta"
   echo "$pna_input" >> "$REF/PNA_sequence.fasta"
-  echo "start shuffling!"
+  echo "start shuffling!" >> logfile_manuscript.log >> logfile_masonscript.log 2>&1
   esl-shuffle -N 500 -o "$REF/shuffled_sequences.fasta" "$REF/PNA_sequence.fasta"
   # use sed to change all -shuffled- to _scr_
   sed -i 's/-shuffled-/_scr_/g' "$REF/shuffled_sequences.fasta"
@@ -176,10 +176,10 @@ echo "summarize off-targets"
 
 if [ -z "$mode" ]
 then
-  python ./pnag/summarize_ots_scrambler.py "$OUT" # >> logfile_masonscript.log 2>&1
+  python ./pnag/summarize_ots_scrambler.py "$OUT"  >> logfile_masonscript.log 2>&1
 elif [ "$mode" == "checker" ]
 then
-  Rscript ./pnag/summarize_ots_checker.R "$OUT" # >> logfile_masonscript.log 2>&1
+  Rscript ./pnag/summarize_ots_checker.R "$OUT"  >> logfile_masonscript.log 2>&1
 else
   echo "Somethings wrong!"
 fi

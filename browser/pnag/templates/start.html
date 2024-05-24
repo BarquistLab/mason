@@ -4,9 +4,12 @@
 		<form method="POST" action="" enctype="multipart/form-data">
 			{{ form.hidden_tag() }}
 			<fieldset class="form-group">
+				<legend class="border-bottom mb-4">MASON</legend>
+				<div class="border-bottom mb-4 pb-3">
+					<img src="{{ url_for('static', filename='mason_overview.png') }}" width="60%"  class="mx-auto d-block"/>
+				</div>
 				<a href="/startauto" class="btn btn-primary float-right"
 				   role="button">Autofill fields</a>
-				<legend class="border-bottom mb-4">MASON</legend>
 				For description of parameters, see <a href="{{ url_for('help') }}">help page</a>.
 				Use the button on the right to autofill the form with example data,
 				designing 10-mer sequences targeting two genes

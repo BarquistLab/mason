@@ -3,8 +3,9 @@
 	<div class="content-section">
 		<!-- here I add the logo of MASON and centre it to the middle -->
 		<div class="border-bottom mb-4 pb-3">
-			<img src="{{ url_for('static', filename='mason.png') }}" width="400px" class="mx-auto d-block"/>
+			<img src="{{ url_for('static', filename='mason.png') }}" width="300px" class="mx-auto d-block"/>
 		</div>
+		<div class="border-bottom mb-4 pb-3">
 		<p>MASON (<b>M</b>ake <b>A</b>nti<b>S</b>ense <b>O</b>ligomers <b>N</b>ow) is a web-tool which guides the
 			design of bacterial antisense oligonucleotides (ASOs). We initially developed it for peptide nucleic acids
 			(PNAs), although it can also be used for designing other ASOs such as PMOs or LNAs. All you need is a genome and the gene you
@@ -20,6 +21,22 @@
 			<a href="mailto:jakobjung@tutanota.com?subject=MASON&body=Message"> jakobjung@tutanota.com <i class="material-icons">email</i></a></p>
 		<p>Start designing ASOs for targeting any bacterial gene:
 			<a href="{{ url_for('start') }}">start MASON <i class="material-icons">fast_forward</i></a></p>
-	</div>
+		</div>
+
+		<h2>MASON update - 2024-05</h2>
+		<p>We have updated the MASON webserver with two new features:
+			<a href="{{ url_for('checker') }}"><b>ASO-checker</b></a> and
+			<a href="{{ url_for('scrambler') }}"><b>Scrambler</b></a>.
+			<a href="{{ url_for('checker') }}"><b>ASO-checker</b></a>
+			validates your ASO design by checking for off-targets in the genome as while
+			checking for different ASO-specific features.
+			<a href="{{ url_for('scrambler') }}"><b>Scrambler</b></a>
+			scrambles the sequence of your ASO to generate the best negative control ASO sequence for your experiment.
+			Therefore, there are now three options available on the MASON homepage: </p>
+		<br>
+		<img src="{{ url_for('static', filename='mason_all_features.png') }}" width="90%" class="mx-auto d-block"/>
+		<br>
+		</div>
+
 
 {% endblock %}

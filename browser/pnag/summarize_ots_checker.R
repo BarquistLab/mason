@@ -210,7 +210,7 @@ p <- ggplot(df_plot[df_plot$off_target_type == "OT in TIR regions", ],
   labs(x = "ASO sequence", y = "Number of off-targets") +
   theme_classic() +
 # define title of legend
-    guides(fill = guide_legend(title = "# off-targets")) +
+    guides(fill = guide_legend(title = "# mismatches")) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1, size=13),
         axis.text.y = element_text(size=15),
         axis.title = element_text(size=20),

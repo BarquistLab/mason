@@ -65,11 +65,10 @@ fasta="$REF/$FASTA_NEW"
 # same for full regions (change to whole CDS and 30 nt upstream):
 grep -P "\tCDS\t|\tsRNA\t|\tncRNA\t|\tgene\t" $gff |\
         awk -F'\t' 'BEGIN { OFS="\t" } {if ($7=="-") {$5=$5+30} else { $4=$4-30} print $0}'| \
-    sed -E 's/([^\t]*\t[^\t]*\t)([^\t]*)(.*;locus_tag=([^;]+).*)/\1\4\3/' | \
-    sed -E 's/([^\t]*\t[^\t]*\t)([^\t]*)(.*;gene=([^;]+).*)/\1\2;\4\3/' |
+    sed -E 's/([^\t]*\t[^\t]*\t)([^\t]*)(.*;locus_tag=([A-Za-z0-9_]+).*)/\1\4\3/' | \
+    sed -E 's/([^\t]*\t[^\t]*\t)([^\t]*)(.*;gene=([A-Za-z0-9_]+).*)/\1\2;\4\3/' |
     grep ";locus_tag="> \
     "$REF/full_transcripts_$GFF_NEW"
-
 
 bioawk -c fastx '{ print $name, length($seq) }' < "$fasta"  > "$REF/genelengths.tsv"
 

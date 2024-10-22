@@ -161,6 +161,7 @@ def show_on_single_plot(ax, maxlen):
 
 def create_ot_barplot(dataframe, title, filepath):
     # get the number of asos:
+    plt.figure()
     sns.set_style("whitegrid")
     plt.figure(figsize=(16, 11))
     plt.xlabel('xlabel', fontsize=20, fontweight='bold')

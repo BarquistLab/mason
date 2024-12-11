@@ -50,10 +50,12 @@ scp "$fasta" "$REF/$FASTA"
 # extract the full transcripts from the gff (-30/+30):
 grep -P "\tCDS\t|\tsRNA\t|\tncRNA\t|\tgene\t" $gff |\
         awk -F'\t' 'BEGIN { OFS="\t" } {if ($7=="-") {$5=$5+30} else { $4=$4-30} print $0}'| \
-    sed -E 's/([^\t]*\t[^\t]*\t)([^\t]*)(.*;locus_tag=([A-Za-z0-9_]+).*)/\1\4\3/' | \
-    sed -E 's/([^\t]*\t[^\t]*\t)([^\t]*)(.*;gene=([A-Za-z0-9_]+).*)/\1\2;\4\3/' |
-    grep ";locus_tag=">\
-    "$REF/full_transcripts_$GFF"
+        # if theres no locus_tag, extract ID=(...) and add the extracted ID as locus_tag=... in the end of the line. use awk
+        awk -F'\t' 'BEGIN { OFS="\t" } { if ($9 ~ /locus_tag=/) { print $0 } else if ($9 ~ /ID=[^;]*/) { match($9, /ID=[^;]*/); print $0 ";locus_tag=" substr($9, RSTART+3, RLENGTH-3) } }' | \
+        sed -E 's/([^\t]*\t[^\t]*\t)([^\t]*)(.*;locus_tag=([A-Za-z0-9_-]+).*)/\1\4\3/' | \
+        sed -E 's/([^\t]*\t[^\t]*\t)([^\t]*)(.*;gene=([A-Za-z0-9_-]+).*)/\1\2;\4\3/' |
+        grep ";locus_tag=">\
+        "$REF/full_transcripts_$GFF"
 
 # extract the gene lengths:
 bioawk -c fastx '{ print $name, length($seq) }' < "$fasta"  > "$REF/genelengths.tsv"

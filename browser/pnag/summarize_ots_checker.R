@@ -211,30 +211,29 @@ p <- ggplot(df_plot[df_plot$off_target_type == "OT in TIR regions", ],
   theme_classic() +
 # define title of legend
     guides(fill = guide_legend(title = "# mismatches")) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1, size=13),
-        axis.text.y = element_text(size=15),
-        axis.title = element_text(size=20),
-        plot.title = element_text(size= 25, hjust = 0.5, face = "bold"),
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),#, size=13),
+        #axis.text.y = element_text(size=15),
+        #axis.title = element_text(size=20),
+        plot.title = element_text(hjust = 0.5, face = "bold"),
         # add increased legend fontsize and adjust position (topright of plot inside plot area
-        legend.text = element_text(size=12),
+        #legend.text = element_text(size=12),
         legend.background = element_rect(fill="white", linewidth = .5),
         legend.direction = "horizontal",
-        legend.title = element_text(size=12),
+        #legend.title = element_text(size=12),
         # make legend above plot, not inside plot area
         legend.position = "top",
         legend.margin = margin(6, 10, 6, 6)) +
   # reverse viridis
   scale_fill_viridis(discrete = TRUE, direction = -1, option = "inferno") +
   # add counts to bars
-    geom_text(aes(label = counts), position = position_dodge(width = 0.9), vjust = -0.25, size = 5)
+    geom_text(aes(label = counts), position = position_dodge(width = 0.9), vjust = -0.25)
 
 
-# make width as much as nr ow rows in output_df
-wplot <- nrow(output_df) + 5
-
-ggsave(paste0(path_output, "/plot_ots_start_regions.png"), p, width = wplot,
+ggsave(paste0(path_output, "/plot_ots_start_regions.png"), p,
        limitsize = FALSE)
-ggsave(paste0(path_output, "/plot_ots_start_regions.svg"), p, width = wplot,
+ggsave(paste0(path_output, "/plot_ots_start_regions.svg"), p,
+       limitsize = FALSE)
+ggsave(paste0(path_output, "/plot_ots_start_regions.pdf"), p,
        limitsize = FALSE)
 
 # do plot for ots in whole transcriptome
@@ -244,30 +243,30 @@ p_whole <- ggplot(df_plot[df_plot$off_target_type == "OT in transcriptome", ],
   labs(x = "ASO sequence", y = "Number of off-targets") +
   theme_classic() +
   ggtitle("Number of off-targets in whole transcriptome") +
-  guides(fill = guide_legend(title = "# off-targets")) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1, size=13),
-        axis.text.y = element_text(size=15),
-        axis.title = element_text(size=20),
+  guides(fill = guide_legend(title = "# mismatches")) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
         # put title in the middle of the plot and make bigger and bold
-        plot.title = element_text(size= 25, hjust = 0.5, face = "bold"),
-        legend.text = element_text(size=12),
+        plot.title = element_text(hjust = 0.5, face = "bold"),
+       # legend.text = element_text(size=12),
         legend.background = element_rect(fill=alpha('white', 0.7), linewidth = .5),
-        legend.title = element_text(size=12),
+       # legend.title = element_text(size=12),
         # make legend above plot, not inside plot area
         legend.position = "top",
         legend.direction = "horizontal",
         legend.margin = margin(6, 10, 6, 6)) +
   scale_fill_viridis(discrete = TRUE, direction = -1, option = "viridis") +
-    geom_text(aes(label = counts), position = position_dodge(width = 0.9), vjust = -0.25, size = 5)
+    geom_text(aes(label = counts), position = position_dodge(width = 0.9), vjust = -0.25)
 
 
 
 wplot <- nrow(output_df) + 6
 
 
-ggsave(paste0(path_output, "/plot_ots_whole_transcriptome.png"), p_whole, width = wplot,
+ggsave(paste0(path_output, "/plot_ots_whole_transcriptome.png"), p_whole,
        limitsize = FALSE)
-ggsave(paste0(path_output, "/plot_ots_whole_transcriptome.svg"), p_whole, width = wplot,
+ggsave(paste0(path_output, "/plot_ots_whole_transcriptome.svg"), p_whole,
+         limitsize = FALSE)
+ggsave(paste0(path_output, "/plot_ots_whole_transcriptome.pdf"), p_whole,
          limitsize = FALSE)
 
 

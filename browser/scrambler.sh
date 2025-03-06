@@ -168,11 +168,11 @@ do
 	    sed -E 's/^([^;:]*);([^:]*)::[^\(]*\(([\+\-])\)/\1\t\2\t\3/'| \
 	     sed -E 's/^([A-Z][A-Z]_[^ ]+) ([^\t]+)/\1\t\2\tU/'| \
 	     sed -E 's/^([A-Z][A-Z]_[^_]+)_([^\(]+)\(([\+\-])\)/\1\t\2\t\3/'  >> "$NEWNAME"
-    rm "$NAME"
+    #rm "$NAME"
 
 done
 
-rm -rf $OUT/*_sorted_sorted.tab
+#rm -rf $OUT/*_sorted_sorted.tab
 
 echo "summarize off-targets"
 
@@ -188,8 +188,8 @@ fi
 
 touch "$RES/$target"
 # remove offtargets_fulltranscripts_sorted.tab
-rm -rf "$OUT/offtargets_fulltranscripts_sorted.tab"
-rm -rf "$OUT/offtargets_startregions_sorted.csv"
+#rm -rf "$OUT/offtargets_fulltranscripts_sorted.tab"
+#rm -rf "$OUT/offtargets_startregions_sorted.csv"
 
 echo "MASON finished" >> logfile_masonscript.log
 

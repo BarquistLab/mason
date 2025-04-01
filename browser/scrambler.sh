@@ -100,8 +100,17 @@ then
 elif [ "$mode" == "checker" ]
 then
   echo "no shuffling!"
-  echo "$pna_input" > "$REF/PNA_sequence.fasta"
-  echo "modify PNAS!!"
+  # if input $pna_input is a string starting with >
+  if [[ $pna_input == ">"* ]]
+  then
+      echo "$pna_input" > "$REF/PNA_sequence.fasta"
+    echo "modify PNAS!!"
+
+  else
+    echo ">PNA" > "$REF/PNA_sequence.fasta"
+    echo "$pna_input" >> "$REF/PNA_sequence.fasta"
+    # else write it to PNA_sequence.fasta with >PNA as header
+  fi
   python "./pnag/checker_modify_pnas.py" "$REF/PNA_sequence.fasta" "$RES" #>> logfile_masonscript.log 2>&1
 else
   echo "Somethings wrong!"

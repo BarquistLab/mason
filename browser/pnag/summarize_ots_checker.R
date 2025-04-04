@@ -11,16 +11,15 @@ library(viridis)
 library(writexl)
 
 
-
-
-print("hello world")
-
 path_output <- commandArgs(trailingOnly = TRUE)[1]
 #path_output <- "./browser/pnag/static/data/2024_05_05_09_49_00/outputs"
 
 
 # Load data
 ot_table <- paste0(path_output, "/offtargets_fulltranscripts_sorted.tab")
+
+print("ot_table")
+print(ot_table)
 
 all_off_targets <- read_table(ot_table, col_names = TRUE)
 
@@ -31,6 +30,7 @@ print(head(all_off_targets))
 # change probe_id colname to ASO_id
 colnames(all_off_targets)[6] <- "ASO"
 colnames(all_off_targets)[4] <- "position_from_CDS_start"
+
 
 # Filter mismatches with >+7 cons. matches. use dplyr::filter
 all_off_targets <- all_off_targets %>% filter(longest_stretch > 6) %>%

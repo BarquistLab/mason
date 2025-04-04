@@ -9,6 +9,7 @@
 				<div class="border-bottom mb-4 pb-3">
 					<img src="{{ url_for('static', filename='checker_overview.png') }}" width="60%" class="mx-auto d-block"/>
 				</div>
+
 				<p>ASO-Checker is an accompanying tool to MASON which can be used to check different attributes of a
 					pre-selected ASO. The tool takes ASO sequences and checks for several important sequence- and
 					target-species related attributes. Similar to the MASON algorithm, it screens for off-targets
@@ -16,6 +17,7 @@
 				</p>
 
 				<div class="form-group">
+					<a href="/checkerauto" class="btn btn-primary float-right" role="button">Autofill fields</a>
 						{{ form.custom_id.label(class="form-control-label", style="font-weight: bold;") }}
 						<p>Please select a unique custom ID to store the result</p>
 						{% if form.custom_id.errors %}

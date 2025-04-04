@@ -3,7 +3,8 @@
 	<div class="content-section">
 		<form method="POST" action="" enctype="multipart/form-data">
 			{{ form.hidden_tag() }}
-			<fieldset class="form-group">
+						<fieldset class="form-group">
+
 				<legend class="border-bottom mb-4">Scrambler</legend>
 						<!-- here I add the logo of SCRAMBLER and centre it to the middle -->
 				<div class="border-bottom mb-4 pb-3">
@@ -16,6 +17,8 @@
 				</p>
 
 				<div class="form-group">
+					<a href="/scramblerauto" class="btn btn-primary float-right" role="button">Autofill fields</a>
+
 						{{ form.custom_id.label(class="form-control-label", style="font-weight: bold;") }}
 						<p>Please select a unique custom ID to store the result</p>
 						{% if form.custom_id.errors %}

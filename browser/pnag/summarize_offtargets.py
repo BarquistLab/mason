@@ -7,6 +7,9 @@ import seaborn as sns
 import numpy as np
 import sys
 import six
+#import sklearn
+import pickle
+
 
 
 other_ots = sys.argv[2]
@@ -212,6 +215,26 @@ output_df_fig = copy.deepcopy(output_df)
 ax = render_mpl_table(output_df_fig, header_columns=0, col_width=4.0, row_height=4)
 ax.figure.savefig(sys.argv[1] + "/result_table.png", bbox_inches='tight')
 ax.figure.savefig(sys.argv[1] + "/result_table.svg", bbox_inches='tight')
+
+
+# get CAI value from gene in output folder. file contains only that value
+with open(sys.argv[1] + "/cai_value.txt", "r") as f:
+    cai = f.read()
+    cai = float(cai)
+
+
+# add cai (same for all rows):
+output_df["CAI"] = cai
+
+print(output_df)
+
+# get ML model (static/rf_optimized_model_mason.pkl) using pickle:
+model_rf = pickle.load(open("./pnag/static/rf_optimized_model_mason.sav", 'rb'))
+print(model_rf)
+
+# get only columns Tm, OT_TIR,
+
+
 
 # save df for download/visualization:
 output_df.to_csv(sys.argv[1] + "/result_table.csv", sep=",")

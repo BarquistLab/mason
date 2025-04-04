@@ -8,8 +8,7 @@
 				<div class="border-bottom mb-4 pb-3">
 					<img src="{{ url_for('static', filename='mason_overview.png') }}" width="60%"  class="mx-auto d-block"/>
 				</div>
-				<a href="/startauto" class="btn btn-primary float-right"
-				   role="button">Autofill fields</a>
+
 				For description of parameters, see <a href="{{ url_for('help') }}">help page</a>.
 				Use the button on the right to autofill the form with example data,
 				designing 10-mer sequences targeting two genes
@@ -17,6 +16,7 @@
 				<br><br>
 
 				<div class="form-group">
+					<a href="/startauto" class="btn btn-primary float-right" role="button">Autofill fields</a>
 					{{ form.custom_id.label(class="form-control-label", style="font-weight: bold;") }}
 					<p>Please select a unique custom ID to store the result</p>
 					{% if form.custom_id.errors %}
@@ -110,6 +110,13 @@
 							second.style.display = 'none';
 						}
 					}
+				</script>
+				<script>
+				  // Trigger update once on page load
+				  window.addEventListener('DOMContentLoaded', () => {
+					// This forces the dropdown to refresh the right fields
+					select_presets.dispatchEvent(new Event('change'));
+				  });
 				</script>
 				<br>
 				<div class="form-group row" id="div_genome">

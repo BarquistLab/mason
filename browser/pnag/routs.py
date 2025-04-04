@@ -110,35 +110,32 @@ def start():
 
 @app.route("/startauto", methods=['GET', 'POST'])
 def startauto():
-    # form to upload the input files
-    form = startautoForm()
-    choices = []
-    choices += [(key, PRESETS[key][2]) for key in PRESETS.keys()]
-    choices += [('upload', 'Own files')]
-
+    form = startForm()  # use the regular form
+    choices = [('upload', 'Own files')] + [(key, PRESETS[key][2]) for key in PRESETS.keys()]
     form.presets.choices = choices
+
+    # Autofill only on initial GET
+    if request.method == 'GET':
+        form.custom_id.data = "example_auto_001"
+        form.presets.data = "e_coli"
+        form.genes.data = "b0081"
+        form.len_PNA.data = 10
+        form.mismatches.data = 2
+        form.bases_before.data = ""
+        form.essential.data = []  # optional
+
     if form.validate_on_submit():
         paths = {}
         time_string = datetime.utcnow().strftime('%Y_%m_%d_%H_%M_%S')
-
-        print(time_string)
         additional_screen = request.form['add_screen']
-        target_genes = form.genes.data
-        target_genes = [x.strip() for x in target_genes.split(',')]
-        if "" in target_genes:
-            target_genes.remove("")
-        print(target_genes)
+        target_genes = [x.strip() for x in form.genes.data.split(',') if x.strip()]
         b_before = form.bases_before.data
 
-        if len(target_genes) > 1:
-            if form.essential.data is not None:
-                target_genes += [form.essential.data]  # add space only if a lt exists:
-        else:
-            if form.essential.data is not None:
-                target_genes += [form.essential.data]
-        # create directory for result:
-        os.mkdir("./pnag/static/data/"+time_string)
-        # save uploaded data with timestring attached:
+        if form.essential.data:
+            target_genes += [form.essential.data]
+
+        os.mkdir("./pnag/static/data/" + time_string)
+
         if form.presets.data == 'upload':
             genome_file = os.path.join(app.root_path, 'static/data/', time_string + "/", form.genome.data.filename)
             gff_file = os.path.join(app.root_path, 'static/data/', time_string + "/", form.gff.data.filename)
@@ -147,33 +144,97 @@ def startauto():
             paths['genome'] = genome_file
             paths['gff'] = gff_file
         else:
-            # genome first value in list
             files = PRESETS[form.presets.data]
             paths['genome'] = files[0]
             paths['gff'] = files[1]
-        with open("./pnag/static/data/"+time_string+"/inputs.txt", "w+") as input_file:
-            input_file.write(paths['genome'] + "," + paths['gff'])
-        result_custom_id = form.custom_id.data
 
-        # add selfcomp_errorfile
-        efilename = './pnag/static/data/' +time_string+ "/error.txt"
+        with open(f"./pnag/static/data/{time_string}/inputs.txt", "w+") as input_file:
+            input_file.write(paths['genome'] + "," + paths['gff'])
+
+        result_custom_id = form.custom_id.data
+        efilename = f'./pnag/static/data/{time_string}/error.txt'
         open(efilename, "w").close()
 
-        # Now run MASON as background process while continuing with start.html and showing the "waiting" html:
         for tgene in target_genes:
-            resultid = time_string + "/" + tgene
-            threading.Thread(target=start_calculation, name="masons", args=[path_parent.__str__() + "/mason.sh", paths['genome'],
-                                                                            paths['gff'], tgene, str(form.len_PNA.data),
-                                                                            str(form.mismatches.data), str(b_before),
-                                                                            resultid, resultid, additional_screen]).start()
-        with open("./pnag/static/data/"+time_string + "/inputs.txt", "a") as inputfile:
+            resultid = f"{time_string}/{tgene}"
+            threading.Thread(target=start_calculation, name="masons",
+                             args=[str(path_parent) + "/mason.sh", paths['genome'], paths['gff'], tgene,
+                                   str(form.len_PNA.data), str(form.mismatches.data), str(b_before),
+                                   resultid, resultid, additional_screen]).start()
+
+        with open(f"./pnag/static/data/{time_string}/inputs.txt", "a") as inputfile:
             inputfile.write("\n" + result_custom_id)
             inputfile.write("\n" + "; ".join(target_genes))
             inputfile.write("\n" + str(form.mismatches.data))
             inputfile.write("\n" + additional_screen)
 
         return redirect(url_for('result', result_id=time_string))
-    return render_template("startauto.html", title="Start", essential=ESSENTIAL_GENES, form=form)
+
+    return render_template("start.html", title="Start", essential=ESSENTIAL_GENES, form=form)
+
+
+@app.route("/checkerauto", methods=['GET', 'POST'])
+def checkerauto():
+    form = CheckerForm()
+    choices = [('upload', 'Own files')] + [(key, PRESETS[key][2]) for key in PRESETS.keys()]
+    form.presets.choices = choices
+
+    if request.method == 'GET':
+        # Autofill only on first load
+        form.custom_id.data = "example_checker_001"
+        form.presets.data = "e_coli"
+        form.seq_input.data = """>ASO_1
+ATGCTGCTGC
+>ASO_2
+CGATACGTGA
+>ASO_3
+ATATATATA"""
+
+    if form.validate_on_submit():
+        paths = {}
+        time_string = datetime.utcnow().strftime('%Y_%m_%d_%H_%M_%S')
+
+        os.mkdir("./pnag/static/data/" + time_string)
+
+        # Handle preset or upload
+        if form.presets.data == 'upload':
+            genome_file = os.path.join(app.root_path, 'static/data/', time_string + "/", form.genome.data.filename)
+            gff_file = os.path.join(app.root_path, 'static/data/', time_string + "/", form.gff.data.filename)
+            form.genome.data.save(genome_file)
+            form.gff.data.save(gff_file)
+            paths['genome'] = genome_file
+            paths['gff'] = gff_file
+        else:
+            files = PRESETS[form.presets.data]
+            paths['genome'] = files[0]
+            paths['gff'] = files[1]
+
+        with open("./pnag/static/data/" + time_string + "/inputs.txt", "w+") as input_file:
+            input_file.write(paths['genome'] + "," + paths['gff'])
+
+        result_custom_id = form.custom_id.data
+        pna_seq = form.seq_input.data
+        pna_file_string = "./pnag/static/data/" + time_string + "/pna_input.fasta"
+
+        with open(pna_file_string, "w") as pna_file:
+            pna_file.write(">PNA\n" + pna_seq)
+
+        # error file
+        efilename = './pnag/static/data/' + time_string + "/error.txt"
+        open(efilename, "w").close()
+
+        # background run
+        threading.Thread(target=start_checker, name="checkers",
+                         args=[path_parent.__str__() + "/scrambler.sh", paths['genome'],
+                               paths['gff'], time_string, time_string, pna_seq, "checker"]).start()
+
+        with open("./pnag/static/data/" + time_string + "/inputs.txt", "a") as inputfile:
+            inputfile.write("\n" + result_custom_id + "\n" + pna_seq)
+
+        return redirect(url_for('result_checker', result_id=time_string))
+
+    return render_template("checker.html", title="ASO-Checker", form=form)
+
 
 
 @app.route("/result/<result_id>")
@@ -367,6 +428,62 @@ def scrambler():
             inputfile.write("\n" + result_custom_id + "\n" + pna_seq)
 
         return redirect(url_for('result_scrambler', result_id=time_string))
+    return render_template("scrambler.html", title="Scrambler", form=form)
+
+
+@app.route("/scramblerauto", methods=['GET', 'POST'])
+def scramblerauto():
+    form = ScrambledForm()
+    choices = [('upload', 'Own files')] + [(key, PRESETS[key][2]) for key in PRESETS]
+    form.presets.choices = choices
+
+    # Autofill only on GET
+    if request.method == 'GET':
+        form.custom_id.data = "example_scramble"
+        form.presets.data = "e_coli"
+        form.seq_input.data = "ATCTCGCAT"
+
+    # Handle submission (same logic as in scrambler())
+    if form.validate_on_submit():
+        paths = {}
+        time_string = datetime.utcnow().strftime('%Y_%m_%d_%H_%M_%S')
+        os.mkdir("./pnag/static/data/" + time_string)
+
+        if form.presets.data == 'upload':
+            genome_file = os.path.join(app.root_path, 'static/data/', time_string + "/", form.genome.data.filename)
+            gff_file = os.path.join(app.root_path, 'static/data/', time_string + "/", form.gff.data.filename)
+            form.genome.data.save(genome_file)
+            form.gff.data.save(gff_file)
+            paths['genome'] = genome_file
+            paths['gff'] = gff_file
+        else:
+            files = PRESETS[form.presets.data]
+            paths['genome'] = files[0]
+            paths['gff'] = files[1]
+
+        with open(f"./pnag/static/data/{time_string}/inputs.txt", "w+") as input_file:
+            input_file.write(paths['genome'] + "," + paths['gff'])
+
+        result_custom_id = form.custom_id.data
+        pna_seq = form.seq_input.data
+        pna_file_string = f"./pnag/static/data/{time_string}/pna_input.fasta"
+
+        with open(pna_file_string, "w") as pna_file:
+            pna_file.write(">PNA\n" + pna_seq)
+
+        # error file
+        efilename = f'./pnag/static/data/{time_string}/error.txt'
+        open(efilename, "w").close()
+
+        threading.Thread(target=start_scrambler, name="scramblers",
+                         args=[str(path_parent) + "/scrambler.sh", paths['genome'],
+                               paths['gff'], time_string, time_string, pna_seq]).start()
+
+        with open(f"./pnag/static/data/{time_string}/inputs.txt", "a") as inputfile:
+            inputfile.write("\n" + result_custom_id + "\n" + pna_seq)
+
+        return redirect(url_for('result_scrambler', result_id=time_string))
+
     return render_template("scrambler.html", title="Scrambler", form=form)
 
 

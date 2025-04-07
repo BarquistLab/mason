@@ -91,8 +91,11 @@
 							<p>
 								The predicted secondary structure of the mRNA around the translation initiation region (TIR),
 								as calculated with <a href="https://www.tbi.univie.ac.at/RNA/RNAfold.1.html" >RNAfold</a> (v2.6.4),
-								and visualized using  <a href="https://varna.lisn.upsaclay.fr/index.php?lang=en&page=command&css=varna" >VARNA</a> v3.9. Structures like hairpins or high base-pairing in this region
-								may influence translation initiation and ASO accessibility.
+								and visualized using  <a href="https://varna.lisn.upsaclay.fr/index.php?lang=en&page=command&css=varna" >VARNA</a> v3.9.
+								High base-pairing or stucture in the region of the start codon (red) Shine-Dalgarno region (SD)
+								(orange) may influence translation initiation and ASO accessibility. <span style="color: red">Red:</span> denotes the start codon.
+								<span style="color: orange">Orange:</span> denotes the area where usually a SD-region is located (-17 to -5 bases from start codon).
+								The secondary structure is shown in 5' to 3' orientation.
 							</p>
 							<img src="{{ dir_out + "/" + res +'/outputs/varna_plot.png' }}" "  width ="50%" class="centered-image">
 							<br>

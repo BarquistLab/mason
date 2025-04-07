@@ -23,6 +23,10 @@ done
 . /home/jakob/miniconda3/etc/profile.d/conda.sh
 conda activate browser
 
+# if bases_before is not set, set it to length - 3
+if [ -z "$bases_before" ]; then
+    bases_before=$((length - 3))
+fi
 
 # I print them out to be sure it worked out:
 echo "bases_before= $bases_before"
@@ -133,16 +137,36 @@ then
 	    sed -E 's/^([A-Z]{46}).*/\1/' > "$REF/targetgene_startreg.fasta" # select -30 to + 16 region
 	  # do same but get -30 to +30 region
 	  grep -A 1 $target "$REF/full_transcripts_$FASTA_NEW" | \
-      sed -E 's/^([A-Z]{76}).*/\1/' > "$REF/targetgene_mfe.fasta"
+      sed -E 's/^([A-Z]{60}).*/\1/' > "$REF/targetgene_mfe.fasta"
 
     # calculate MFE for target gene start region w rnafold
-    RNAfold -i "$REF/targetgene_mfe.fasta" | \
-      awk -F'[()]' '{print $(NF-1)}' > "$OUT/mfe_values.txt" #>> logfile_masonscript.log 2>&1
+    RNAfold -i "$REF/targetgene_mfe.fasta" --noPS > "$REF/intarna_output.fold" #>> logfile_masonscript.log 2>&1
+
+    FOLD_FILE="$REF/intarna_output.fold"
+    SEQ=$(awk 'NR==2' "$FOLD_FILE")
+    STRUCT=$(awk 'NR==3 {print $1}' "$FOLD_FILE")
+    MFE=$(grep -o '[(][[:space:]]*[-][0-9.]\+' "$FOLD_FILE" | tail -1 | tr -d '()[:space:]')
+
+    varna -sequenceDBN "$SEQ" \
+      -structureDBN "$STRUCT" \
+      -highlightRegion "15-26:fill=#FFA500,outline=black;31-33:fill=#FF0000,outline=black" \
+      -title "Secondary structure of $target (MFE = $MFE kcal/mol)" \
+      -titleSize 10 \
+      -o "$OUT/varna_plot.svg"
+
+    # same but output a png file
+    varna -sequenceDBN "$SEQ" \
+      -structureDBN "$STRUCT" \
+      -highlightRegion "15-26:fill=#FFA500,outline=black;31-33:fill=#FF0000,outline=black" \
+      -title "Sec. structure of $target (MFE = $MFE kcal/mol)" \
+      -titleSize 10 \
+      -resolution "3.0" \
+      -o "$OUT/varna_plot.png"
 
     # Now I run the python script which I wrote to design PNAs:
     echo "$length"
     echo "$result_id"
-    python ./pnag/make_pnas.py $length $RES $bases_before >> logfile_masonscript.log 2>&1
+    python ./pnag/make_pnas.py "$length" "$RES" "$bases_before" >> logfile_masonscript.log 2>&1
 
 else
     echo "PNA $pna_input put in"

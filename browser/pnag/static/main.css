@@ -97,6 +97,14 @@ img {
   width: 80%;
 }
 
+.centered-image {
+  display: block; /* Ensures the image behaves as a block element */
+  margin-left: auto; /* Pushes the image to the left side */
+  margin-right: auto; /* Pushes the image to the right side */
+  /* Optional: Set a width to control the image size */
+  width: 60%; /* Example: 50% width of the container */
+}
+
 .center_7 {
   display: block;
   margin-left: auto;

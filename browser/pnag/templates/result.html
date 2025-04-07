@@ -82,11 +82,29 @@
 								i.e. from 5' to 3' is used.
 							</p>
 							<img src="{{ dir_out + "/" + res + '/outputs/heatmap.png' }}" >
-						<p>Download ASO sequences: &nbsp <a href="{{ dir_out + "/" + res + '/reference_sequences/aso_sequences.fasta' }}">FASTA<i class="material-icons">cloud_download</i></a></p>
-						<p>Download heatmap: &nbsp<a href="{{ dir_out + "/" + res + '/outputs/heatmap.svg' }}">SVG <i class="material-icons">cloud_download</i></a>
-							&nbsp&nbsp
-						<a href="{{ dir_out + "/" + res + '/outputs/heatmap.png' }}"> PNG <i class="material-icons">cloud_download</i></a></p>
-						<br>
+							<p>Download ASO sequences: &nbsp <a href="{{ dir_out + "/" + res + '/reference_sequences/aso_sequences.fasta' }}">FASTA<i class="material-icons">cloud_download</i></a></p>
+							<p>Download heatmap: &nbsp<a href="{{ dir_out + "/" + res + '/outputs/heatmap.svg' }}">SVG <i class="material-icons">cloud_download</i></a>
+								&nbsp&nbsp
+							<a href="{{ dir_out + "/" + res + '/outputs/heatmap.png' }}"> PNG <i class="material-icons">cloud_download</i></a></p>
+							<br>
+							<h3 class="border-bottom mb-4">Secondary structure of translation initiation region (TIR)</h3>
+							<p>
+								The predicted secondary structure of the mRNA around the translation initiation region (TIR),
+								as calculated with <a href="https://www.tbi.univie.ac.at/RNA/RNAfold.1.html" >RNAfold</a> (v2.6.4),
+								and visualized using  <a href="https://varna.lisn.upsaclay.fr/index.php?lang=en&page=command&css=varna" >VARNA</a> v3.9. Structures like hairpins or high base-pairing in this region
+								may influence translation initiation and ASO accessibility.
+							</p>
+							<img src="{{ dir_out + "/" + res +'/outputs/varna_plot.png' }}" "  width ="50%" class="centered-image">
+							<br>
+							<p>
+								Download secondary structure: &nbsp
+								<a href="{{ dir_out + "/" + res + '/outputs/varna_plot.svg' }}">SVG <i class="material-icons">cloud_download</i></a>
+								&nbsp&nbsp
+								<a href="{{ dir_out + "/" + res + '/outputs/varna_plot.png' }}"> PNG <i class="material-icons">cloud_download</i></a>
+							</p>
+							<br>
+
+
 
 							<h3 class="border-bottom mb-4"> Predicted melting temperature (Tm, in °C) for ASOs </h3>
 									<p>The predicterd Tm of ASOs are shown in the barplot below. For Tm prediction, we used the R

@@ -150,7 +150,7 @@ calculate_pna_mw <- function(seq) {
 output_df[["Mw"]] <- sapply(output_df$ASO_seq, calculate_pna_mw)
 
 
-output_df[["%_SC_bases"]] <- round(output_df$SC_bases / nchar(output_df$ASO_seq) * 100, 2)
+output_df[["%_SC_bases"]] <- round(output_df$SC_bases / nchar(output_df$ASO_seq) , 2)
 
 # re-arrange output df by ASO 	ASO_seq	SC_bases  % SC bases  Tm (°C)	pur_perc 	long_pur_stretch 	OT_TIR_0mm 	OT_TIR_1mm
 # OT_TIR_2mm 	OT_TIR_3mm 	OT_tot_0mm 	OT_tot_1mm 	OT_tot_2mm 	OT_tot_3mm

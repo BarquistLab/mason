@@ -66,7 +66,7 @@ class ScrambledForm(FlaskForm):
     gff = FileField('GFF File', validators=[FileAllowed(['gff', 'gff3', 'gff2', 'gff1', 'gtf'])])
     seq_input = StringField("ASO-sequence (5' to 3'):",
                             validators=[InputRequired(), Regexp("^[ATGC]+$", message="use DNA alphabet only (A,T,G,C)"),
-                                        Length(min=8, max=14, message="choose sequence with 8-14 nucleotides!")])
+                                        Length(min=8, max=15, message="choose sequence with 8-14 nucleotides!")])
     presets = SelectField('Genome of target organism', choices=[], validators=[InputRequired()])
     submit_scr = SubmitField('Submit & start Scrambler')
     #submit = SubmitField('Submit & start MASON')

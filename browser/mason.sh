@@ -149,7 +149,7 @@ then
 
     varna -sequenceDBN "$SEQ" \
       -structureDBN "$STRUCT" \
-      -highlightRegion "15-26:fill=#FFA500,outline=black;31-33:fill=#FF0000,outline=black" \
+      -highlightRegion "15-26:fill=#FFA500,outline=#FFA500;31-33:fill=#FF0000,outline=#FFA500" \
       -title "Secondary structure of $target (MFE = $MFE kcal/mol)" \
       -titleSize 10 \
       -o "$OUT/varna_plot.svg"
@@ -157,7 +157,7 @@ then
     # same but output a png file
     varna -sequenceDBN "$SEQ" \
       -structureDBN "$STRUCT" \
-      -highlightRegion "15-26:fill=#FFA500,outline=black;31-33:fill=#FF0000,outline=black" \
+      -highlightRegion "15-26:fill=#FFA500,outline=#FFA500;31-33:fill=#FF0000,outline=#FFA500" \
       -title "Sec. structure of $target (MFE = $MFE kcal/mol)" \
       -titleSize 10 \
       -resolution "3.0" \

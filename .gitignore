@@ -18,4 +18,4 @@ browser/logfile_masonscript.log
 */.idea*
 *.log
 *.ps
-
+.idea/**

@@ -12,11 +12,9 @@ import pandas as pd
 # import used gene length:
 length = int(sys.argv[1])
 res_path = sys.argv[2]
-try:
-    bases_before = int(sys.argv[3])
-except IndexError:
-    bases_before = length-3
+bases_before = int(sys.argv[3])
 
+print("BASES BEFORE:")
 print(bases_before)
 
 # import fasta file:
@@ -25,7 +23,20 @@ target_regions = list(SeqIO.parse(res_path + "/reference_sequences" + "/targetge
 list_aso_sequences = []
 list_aso_targets = []
 count = 1
-sd = "GAGG"
+sd = r"AGGAGG|GGAGG|GGAG|AAGGA|AGGA|GAGG|AGG|GGA"  # Shine Dalgarno sequence
+
+# Longest-to-shortest order is still good style, but not sufficient by itself
+SD_PATTERN = r"(AGGAGG|GGAGG|AAGGA|AGGA|GAGG|GGAG|AGG|GGA)"
+
+def best_sd_match(seq_slice: str):
+    # Overlapping matches via lookahead; capture the motif in group(1)
+    pat = r"(?=(" + SD_PATTERN + r"))"
+    matches = [(m.group(1), m.start()) for m in re.finditer(pat, seq_slice)]
+    if not matches:
+        return None
+    # Pick the longest; if tied, pick the leftmost
+    motif, start = max(matches, key=lambda t: (len(t[0]), -t[1]))
+    return motif, start
 
 # go through target regions and
 for r in range(len(target_regions)):
@@ -40,18 +51,76 @@ for r in range(len(target_regions)):
                                       "OT_tot", "OT_TIR", "OT_GRCh38", "OT_HMP", "OT_cust"])
     # identify location of SD regions:
 
-    if seq[15:28].find(sd) != -1:
-        sd_pos = seq[15:28].find(sd) + 15
+    if best_sd_match(str(seq[18:28])):
+        sd_pos = best_sd_match(str(seq[18:28]))[1] + 18
+        print("SD found in region:", str(seq[18:28]))
+        print("SD position at:", sd_pos)
+        print("SD sequence:", best_sd_match(str(seq[18:28]))[0])
+        sd = best_sd_match(str(seq[18:28]))[0]
 
-    for i in range(30-bases_before, 31):   # 30 is start of cds
+        if bases_before != 0:
+            print("designing PNA in region before SD, as specified by user. bases:" , bases_before)
+        else:
+            for i in range(sd_pos - (length - len(sd)), sd_pos + 1):
+                print("designing PNA overlapping SD region at pos:", i)
+                s = seq[i:i + length]
+                print(s, "=========================")
+                aso = s.reverse_complement()
+
+                maxcomp = CSequenceMatcher(None, aso, s).find_longest_match(0, len(aso), 0, len(s)).size
+
+                if maxcomp < length+1:
+                    aso_name = gene + "_ASO_" + str(count).zfill(3)
+                    # check for longest purine stretch and purine perc:
+                    pur = 0
+                    longest_purine_stretch = 0
+                    curstretch = 0
+                    for base in aso.__str__():
+                        if base in ["A", "G"]:
+                            curstretch += 1
+                            pur += 1
+                            if curstretch > longest_purine_stretch:
+                                longest_purine_stretch += 1
+                        else:
+                            curstretch = 0
+                    pur_perc = "{:.2f}".format((pur / len(aso.__str__())) * 100)
+
+                    # add to dataframe:
+                    added_row = pd.Series([aso_name, aso.__str__(), s.transcribe().__str__(),
+                                           str(i - 30) + ";" + str(i - 30 + length),
+                                           maxcomp, pur_perc, longest_purine_stretch, None, None, None, None, None,
+                                           None],
+                                          index=output_df.columns)
+                    # output_df = output_df.append(added_row, ignore_index=True)
+                    # change above to concat and not append:
+                    output_df = pd.concat([output_df, added_row.to_frame().transpose()], ignore_index=True)
+                    # save ASO sequences:
+                    list_aso_sequences += [SeqRecord(aso, id=aso_name, description="")]
+                    # for fasta with reverse as well to get mismatches with seqmap:
+                    list_aso_targets += [SeqRecord(s, id=aso_name, description="")]
+
+                    heatmap_list += [i * [0] + length * [1] + (len(seq) - i - length) * [0]]
+                    heatmap_list[count - 1][30:33] = [0.4 + i for i in heatmap_list[count - 1][30:33]]
+                    heatmap_list[count - 1][sd_pos:sd_pos + len(sd)] = [0.2 + i for i in
+                                                                        heatmap_list[count - 1][sd_pos:sd_pos + len(sd)]]
+                    heatmap_annot += [i * [""] + seqlist_pnas[i:i + length] + (len(seq) - i - length) * [""]]
+                    count += 1
+    else:
+        print("No SD found in region:", str(seq[18:28]))
+
+
+
+
+
+
+    for i in range(30-(length-3), 31):   # 30 is start of cds
         s = seq[i:i+length]
         aso = s.reverse_complement()
 
         maxcomp = CSequenceMatcher(None, aso, s).find_longest_match(0, len(aso), 0, len(s)).size
-        print(maxcomp, "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
 
         # design PNA for regions overlapping SC or SD region:
-        if maxcomp < length*0.6:
+        if maxcomp < length+1:
             aso_name = gene+"_ASO_"+str(count).zfill(3)
             # check for longest purine stretch and purine perc:
             pur = 0

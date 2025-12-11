@@ -25,7 +25,7 @@ conda activate browser
 
 # if bases_before is not set, set it to length - 3
 if [ -z "$bases_before" ]; then
-    bases_before=$((length - 3))
+    bases_before=$((0))
 fi
 
 # I print them out to be sure it worked out:
@@ -146,6 +146,8 @@ then
     SEQ=$(awk 'NR==2' "$FOLD_FILE")
     STRUCT=$(awk 'NR==3 {print $1}' "$FOLD_FILE")
     MFE=$(grep -o '[(][[:space:]]*[-][0-9.]\+' "$FOLD_FILE" | tail -1 | tr -d '()[:space:]')
+    # save MFE value as mfe_values.txt
+    echo "$MFE" > "$OUT/mfe_values.txt"
 
     varna -sequenceDBN "$SEQ" \
       -structureDBN "$STRUCT" \

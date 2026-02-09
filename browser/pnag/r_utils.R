@@ -1,12 +1,14 @@
 # r_utils.R — shared utility functions for R scripts in MASON
 
 calculate_pna_mw <- function(seq) {
-  # Calculate the molecular weight of a PNA n-mer of nucleobases connected with a peptide bond.
-  # The peptide bond contains 9 H, 2 N, 2 O and 4 C atoms.
-  mw_nucleotide <- c(A=135.13, T=125.06, G=152.12, C=111.07)
-  mw_peptidebond <- 9*1.01 + 2*14.01 + 2*16.00 + 4*12.01
+  # Calculate average molecular weight of an aegPNA oligomer (H-PNA-NH2 form).
+  # Monomer residue masses = full monomer - H2O (condensation), derived from:
+  #   backbone: N-(2-aminoethyl)glycine + methylenecarbonyl linker
+  #   nucleobase: attached at N9 (purines) or N1 (pyrimidines)
+  mw_residue <- c(A=275.27, C=251.25, G=291.27, T=266.26)
   nucleotides <- strsplit(seq, "")[[1]]
-  mw <- sum(mw_nucleotide[nucleotides]) + mw_peptidebond * (length(nucleotides) - 1) + 1.01*2
+  # Terminal groups: H (N-terminus) + NH2 (C-terminus) = 17.03
+  mw <- sum(mw_residue[nucleotides]) + 17.03
   return(mw)
 }
 

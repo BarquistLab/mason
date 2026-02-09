@@ -2,6 +2,7 @@ import sys
 from Bio import SeqIO
 from cdifflib import CSequenceMatcher
 import pandas as pd
+from pna_utils import calculate_purine_stats, calculate_self_complementarity
 
 seq_path = sys.argv[1]
 res_path = sys.argv[2]
@@ -15,23 +16,10 @@ for record in SeqIO.parse(seq_path, "fasta"):
     print(record.seq)
     aso = record.seq
 
-    aso_target = record.seq.reverse_complement()
-    maxcomp = CSequenceMatcher(None, aso, aso_target).find_longest_match(0, len(aso), 0, len(aso_target)).size
-    
+    maxcomp, aso_target = calculate_self_complementarity(aso)
+    pur_perc, longest_purine_stretch = calculate_purine_stats(aso)
+
     aso_name = record.id
-    # check for longest purine stretch and purine perc:
-    pur = 0
-    longest_purine_stretch = 0
-    curstretch = 0
-    for base in aso.__str__():
-        if base in ["A", "G"]:
-            curstretch += 1
-            pur += 1
-            if curstretch > longest_purine_stretch:
-                longest_purine_stretch += 1
-        else:
-            curstretch = 0
-    pur_perc = "{:.2f}".format((pur / len(aso.__str__())) * 100)
 
     added_row = pd.Series([aso_name, aso.__str__(), maxcomp, pur_perc, longest_purine_stretch, None, None],
                           index=output_df.columns)
@@ -39,10 +27,7 @@ for record in SeqIO.parse(seq_path, "fasta"):
 
     print(maxcomp)
     seqs.append(SeqIO.SeqRecord(aso_target, record.id, description=""))
-    
+
 
 SeqIO.write(seqs, res_path + "/reference_sequences/aso_targets.fasta", "fasta")
 output_df.to_csv(res_path + "/outputs/result_table.tsv", sep="\t", index=False)
-
-
-

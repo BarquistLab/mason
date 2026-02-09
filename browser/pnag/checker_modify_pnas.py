@@ -1,7 +1,7 @@
 import sys
 from Bio import SeqIO
-from difflib import SequenceMatcher
 import pandas as pd
+from pna_utils import calculate_purine_stats, calculate_self_complementarity
 
 res_path = sys.argv[2]
 input_pna = sys.argv[1]
@@ -15,24 +15,11 @@ output_df = pd.DataFrame(columns=["ASO", "ASO_seq", "SC_bases", "pur_perc", "lon
 for record in SeqIO.parse(input_pna, "fasta"):
     aso_raw = record.seq
 
-    aso_target = record.seq.reverse_complement()
-    maxcomp_raw = SequenceMatcher(None, aso_raw, aso_target).find_longest_match(0, len(aso_raw), 0, len(aso_target)).size
+    maxcomp_raw, aso_target = calculate_self_complementarity(aso_raw)
+    pur_perc, longest_purine_stretch_raw = calculate_purine_stats(aso_raw)
 
     aso_name =  record.id
-    # check for longest purine stretch and purine perc:
-    pur = 0
-    longest_purine_stretch_raw = 0
-    curstretch = 0
-    for base in aso_raw.__str__():
-        if base in ["A", "G"]:
-            curstretch += 1
-            pur += 1
-            if curstretch > longest_purine_stretch_raw:
-                longest_purine_stretch_raw += 1
-        else:
-            curstretch = 0
 
-    pur_perc = "{:.2f}".format((pur / len(aso_raw.__str__())) * 100)
     added_row = pd.Series([aso_name, aso_raw.__str__(), maxcomp_raw, pur_perc, longest_purine_stretch_raw, None, None, None, None,
                             None, None, None, None],
                           index=output_df.columns)
@@ -48,4 +35,3 @@ SeqIO.write(aso_seqs, res_path + "/reference_sequences/shuffled_sequences.fasta"
 output_df.to_csv(res_path + "/outputs/result_table.tsv", sep="\t", index=False)
 
 print("finished modift_PNAs script!")
-

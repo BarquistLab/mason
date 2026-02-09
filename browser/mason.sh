@@ -23,6 +23,10 @@ done
 . /home/jakob/miniconda3/etc/profile.d/conda.sh
 conda activate browser
 
+# Source shared pipeline functions
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/common_pipeline.sh"
+
 # if bases_before is not set, set it to length - 3
 if [ -z "$bases_before" ]; then
     bases_before=$((0))
@@ -34,16 +38,8 @@ echo "fasta: $fasta";
 echo "gff: $gff";
 echo "screen: $screen";
 
-mkdir "./pnag/static/data/$result_id"
-
-RES="./pnag/static/data/$result_id"
-REF="$RES/reference_sequences"
-PRESETS="./pnag/static/data/presets"
-OUT="$RES/outputs"
-GFF="$(basename -- "$gff")"
-FASTA="$(basename -- "$fasta")"  # get base names of files wo paths
-WARNINGS="$RES/warnings.txt"
-
+# Setup directories using shared function
+setup_directories
 
 echo "$REF"
 echo "$OUT"
@@ -53,28 +49,12 @@ FASTA_NEW="$(echo "$FASTA" | tr ' ' '_')"
 echo "$GFF $GFF_NEW"
 echo "$FASTA $FASTA_NEW"
 
-find ./pnag/static/data/""20*  -mtime +30  -delete
-
-mkdir -p $REF $OUT
-touch "$WARNINGS"
-
-scp "$gff" "$REF/$GFF_NEW"
-scp "$fasta" "$REF/$FASTA_NEW"
-
-gff="$REF/$GFF_NEW"
-fasta="$REF/$FASTA_NEW"
-
+# Copy reference files using shared function (uses GFF_NEW/FASTA_NEW for mason)
+copy_reference_files
 
 
 # extract full regions (change to whole CDS and 30 nt upstream):
-grep -P "\tCDS\t|\tsRNA\t|\tncRNA\t|\tgene\t" $gff |\
-        awk -F'\t' 'BEGIN { OFS="\t" } {if ($7=="-") {$5=$5+30} else { $4=$4-30} print $0}'| \
-        # if theres no locus_tag, extract ID=(...) and add the extracted ID as locus_tag=... in the end of the line. use awk
-        awk -F'\t' 'BEGIN { OFS="\t" } { if ($9 ~ /locus_tag=/) { print $0 } else if ($9 ~ /ID=[^;]*/) { match($9, /ID=[^;]*/); print $0 ";locus_tag=" substr($9, RSTART+3, RLENGTH-3) } }' | \
-        sed -E 's/([^\t]*\t[^\t]*\t)([^\t]*)(.*;locus_tag=([A-Za-z0-9_-]+).*)/\1\4\3/' | \
-        sed -E 's/([^\t]*\t[^\t]*\t)([^\t]*)(.*;gene=([A-Za-z0-9_-]+).*)/\1\2;\4\3/' |
-        grep ";locus_tag="> \
-        "$REF/full_transcripts_$GFF_NEW"
+extract_gff_transcripts "$gff" "$REF/full_transcripts_$GFF_NEW"
 
 # extract only raw cds/genes, without -30/+30:
 grep -P "\tCDS\t|\tsRNA\t|\tncRNA\t|\tgene\t" $gff |\
@@ -203,63 +183,8 @@ then
        /forward_strand /output_statistics /available_memory:5000 >> logfile_masonscript.log 2>&1
 fi
 
-echo "determine mismatch positions"
-# I use awk to determine the mismatch positions:
-for NAME in "$OUT"/offtargets*.tab
-do
-    echo "$NAME"
-    NEWNAME=${NAME%.tab}_sorted.tab
-    head -1 $NAME | sed -E "s/(.*)/\\1\tmismatch_positions\tlongest_stretch\tbinding_sequence/" |
-    sed -E  's/^trans_id/locus_tag\tgene_name\tstrand/' > $NEWNAME
-
-    echo "$NEWNAME"
-    sed 1d $NAME |\
-	sort -t "$(printf "\t")"  -k4 |\
-	awk -F'\t' 'BEGIN {OFS="\t"; pos=0} 
-	{
-	    max=length($3)
-	    mm="none"
-	    stretch=0
-	    longest_stretch=0
-	    binding_sequence=""
-	    longest_binding_sequence=""
-	     for(i=1; pos == 0 && i <= max; i++) 
-	     {
-		    v1=substr($3, i, 1) 
-		    v2=substr($5, i, 1)
-		    if(v1 != v2)
-		     {
-		       stretch=0
-		       binding_sequence=""
-		       if(mm=="none") {mm=i} else {mm=mm ";" i}
-		     }
-		     else 
-		     {
-		      binding_sequence=binding_sequence v1
-          stretch++
-          if(stretch > longest_stretch)
-          {
-          longest_stretch=stretch
-          longest_binding_sequence=binding_sequence
-          }
-		     }
-	     } 
-	     $7=mm
-	     $8=longest_stretch
-	     $9=longest_binding_sequence
-	     #$2=$2-32
-	     print $0
-	}' |  sed -E 's/^([^;:]*)::/\1;\1::/'| \
-	    sed -E 's/^([^;:]*);([^:]*)::[^\(]*\(([\+\-])\)/\1\t\2\t\3/'| \
-	     sed -E 's/^([A-Z][A-Z]_[^ ]+) ([^\t]+)/\1\t\2\tU/'| \
-	     sed -E 's/^([A-Z][A-Z]_[^_]+)_([^\(]+)\(([\+\-])\)/\1\t\2\t\3/'  >> "$NEWNAME"
-    rm "$NAME"
-    
-done
-
-rm -rf $OUT/*_sorted_sorted.tab
-
-# python ./pnag/summarize_offtargets.py "$OUT" "$screen" >> logfile_masonscript.log 2>&1
+# Process mismatches using shared function (offset=0 for mason)
+run_seqmap_and_process_mismatches 0
 
 Rscript ./pnag/summarize_ots.R "$OUT" "$target" "$screen" >> logfile_masonscript.log 2>&1
 
@@ -269,8 +194,6 @@ Rscript ./pnag/make_final_table_mason.R "$OUT" >> logfile_masonscript.log 2>&1
 
 touch "$RES/$target"
 
-#rm -rf "$OUT/offtargets_fulltranscripts_sorted.tab"
 rm -rf "$OUT/offtargets_startregions_sorted.csv"
 
-echo "MASON finished" >> logfile_masonscript.log 
-
+echo "MASON finished" >> logfile_masonscript.log

@@ -10,7 +10,8 @@ library(rmelting)
 library(viridis)
 library(writexl)
 
-
+# Source shared utilities
+source("./pnag/r_utils.R")
 
 
 print("hello world")
@@ -62,72 +63,10 @@ write_xlsx(all_off_targets, paste0(path_output, "/offtargets_fulltranscripts_sor
 output_df <- read.table(paste0(path_output, "/result_table.tsv"), sep = "\t", header = TRUE)
 
 
-
-# columns of output_df are : ASO	ASO_seq	SC_bases	pur_perc	long_pur_stretch	OT_TIR_0mm	OT_TIR_1mm	OT_TIR_2mm	OT_TIR_3mm
-# OT_tot_0mm	OT_tot_1mm	OT_tot_2mm	OT_tot_3mm
-
-# Add columns for df_plot
-df_plot <- data.frame(ASO = character(0), "off_target_type" = character(0),
-                      "transcripts" = character(0), counts = numeric(0),
-                      "target_sequence" = character(0), "nr_mismatches" = numeric(0))
-
-for (i in unique(all_off_targets$ASO)) {
-  target_seq <- all_off_targets[all_off_targets$ASO == i, ]$probe_seq[1]
-  aso_n <-  i
-  ot_aso <- all_off_targets[all_off_targets$ASO == i, ]
-
-  num_tot_ot_0mm <- nrow(ot_aso[ot_aso$num_mismatch == 0, ])
-  num_tot_ot_1mm <- nrow(ot_aso[ot_aso$num_mismatch == 1, ])
-  num_tot_ot_2mm <- nrow(ot_aso[ot_aso$num_mismatch == 2, ])
-  num_tot_ot_3mm <- nrow(ot_aso[ot_aso$num_mismatch == 3, ])
-
-  num_tir_ot_0mm <- nrow(ot_aso[ot_aso$TIR == "TIR" & ot_aso$num_mismatch == 0, ])
-  num_tir_ot_1mm <- nrow(ot_aso[ot_aso$TIR == "TIR" & ot_aso$num_mismatch == 1, ])
-  num_tir_ot_2mm <- nrow(ot_aso[ot_aso$TIR == "TIR" & ot_aso$num_mismatch == 2, ])
-  num_tir_ot_3mm <- nrow(ot_aso[ot_aso$TIR == "TIR" & ot_aso$num_mismatch == 3, ])
-
-  df_plot <- rbind(df_plot, data.frame(ASO = aso_n, "off_target_type" = "OT in transcriptome",
-                                        "transcripts" = "whole transcriptome", counts = num_tot_ot_0mm,
-                                        "target sequence" = target_seq, "nr_mismatches" =0))
-    df_plot <- rbind(df_plot, data.frame(ASO = aso_n, "off_target_type" = "OT in transcriptome",
-                                        "transcripts" = "whole transcriptome", counts = num_tot_ot_1mm,
-                                        "target sequence" = target_seq,"nr_mismatches" = 1))
-    df_plot <- rbind(df_plot, data.frame(ASO = aso_n, "off_target_type" = "OT in transcriptome",
-                                        "transcripts" = "whole transcriptome", counts = num_tot_ot_2mm,
-                                        "target sequence" = target_seq, "nr_mismatches" =2))
-    df_plot <- rbind(df_plot, data.frame(ASO = aso_n, "off_target_type" = "OT in transcriptome",
-                                        "transcripts" = "whole transcriptome", counts = num_tot_ot_3mm,
-                                        "target sequence" = target_seq, "nr_mismatches" =3))
-
-
-
-  df_plot <- rbind(df_plot, data.frame(ASO = aso_n, "off_target_type" = "OT in TIR regions",
-                                        "transcripts" = "start regions", counts = num_tir_ot_0mm,
-                                        "target sequence" = target_seq,"nr_mismatches" = 0))
-    df_plot <- rbind(df_plot, data.frame(ASO = aso_n, "off_target_type" = "OT in TIR regions",
-                                        "transcripts" = "start regions", counts = num_tir_ot_1mm,
-                                        "target sequence" = target_seq, "nr_mismatches" =1))
-    df_plot <- rbind(df_plot, data.frame(ASO = aso_n, "off_target_type" = "OT in TIR regions",
-                                        "transcripts" = "start regions", counts = num_tir_ot_2mm,
-                                        "target sequence" = target_seq, "nr_mismatches" =2))
-    df_plot <- rbind(df_plot, data.frame(ASO = aso_n, "off_target_type" = "OT in TIR regions",
-                                        "transcripts" = "start regions", counts = num_tir_ot_3mm,
-                                        "target sequence" = target_seq,"nr_mismatches" = 3))
-
-
-  # assign values to output_df
-  print(aso_n)
-  print(i)
-  output_df[aso_n, "OT_TIR_0mm"] <- num_tir_ot_0mm
-    output_df[aso_n, "OT_TIR_1mm"] <- num_tir_ot_1mm
-    output_df[aso_n, "OT_TIR_2mm"] <- num_tir_ot_2mm
-    output_df[aso_n, "OT_TIR_3mm"] <- num_tir_ot_3mm
-
-  output_df[aso_n, "OT_tot_0mm"] <- num_tot_ot_0mm
-    output_df[aso_n, "OT_tot_1mm"] <- num_tot_ot_1mm
-    output_df[aso_n, "OT_tot_2mm"] <- num_tot_ot_2mm
-    output_df[aso_n, "OT_tot_3mm"] <- num_tot_ot_3mm
-}
+# Count off-targets using shared function (index_by_name=TRUE for mason)
+ot_results <- count_offtargets_by_mismatch(all_off_targets, output_df, index_by_name = TRUE)
+output_df <- ot_results$output_df
+df_plot <- ot_results$df_plot
 
 print(output_df)
 print(df_plot)
@@ -135,18 +74,6 @@ print(df_plot)
 
 
 # calculate Mw for each ASO
-calculate_pna_mw <- function(seq) {
-  # Define the molecular weight of each nucleotide (nucleobase only)
-  mw_nucleotide <- c(A=135.13, T=125.06, G=152.12, C=111.07)
-  # Define the molecular weight of the peptide bond
-  mw_peptidebond <- 9*1.01 + 2*14.01 + 2*16.00 + 4*12.01
-  # Split the DNA sequence into individual nucleotides
-  nucleotides <- strsplit(seq, "")[[1]]
-  # Calculate the molecular weight of the sequence, accounting for the peptide bond
-  mw <- sum(mw_nucleotide[nucleotides]) + mw_peptidebond * (length(nucleotides) - 1) + 1.01*2
-  return(mw)
-}
-
 output_df[["Mw"]] <- sapply(output_df$ASO_seq, calculate_pna_mw)
 
 

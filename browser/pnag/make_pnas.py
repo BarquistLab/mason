@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import subprocess
 import pandas as pd
+from pna_utils import calculate_purine_stats, calculate_self_complementarity
 
 # import used gene length:
 length = int(sys.argv[1])
@@ -67,23 +68,11 @@ for r in range(len(target_regions)):
                 print(s, "=========================")
                 aso = s.reverse_complement()
 
-                maxcomp = CSequenceMatcher(None, aso, s).find_longest_match(0, len(aso), 0, len(s)).size
+                maxcomp, _ = calculate_self_complementarity(aso)
 
                 if maxcomp < length+1:
                     aso_name = gene + "_ASO_" + str(count).zfill(3)
-                    # check for longest purine stretch and purine perc:
-                    pur = 0
-                    longest_purine_stretch = 0
-                    curstretch = 0
-                    for base in aso.__str__():
-                        if base in ["A", "G"]:
-                            curstretch += 1
-                            pur += 1
-                            if curstretch > longest_purine_stretch:
-                                longest_purine_stretch += 1
-                        else:
-                            curstretch = 0
-                    pur_perc = "{:.2f}".format((pur / len(aso.__str__())) * 100)
+                    pur_perc, longest_purine_stretch = calculate_purine_stats(aso)
 
                     # add to dataframe:
                     added_row = pd.Series([aso_name, aso.__str__(), s.transcribe().__str__(),
@@ -112,29 +101,16 @@ for r in range(len(target_regions)):
 
 
 
-
     for i in range(30-(length-3), 31):   # 30 is start of cds
         s = seq[i:i+length]
         aso = s.reverse_complement()
 
-        maxcomp = CSequenceMatcher(None, aso, s).find_longest_match(0, len(aso), 0, len(s)).size
+        maxcomp, _ = calculate_self_complementarity(aso)
 
         # design PNA for regions overlapping SC or SD region:
         if maxcomp < length+1:
             aso_name = gene+"_ASO_"+str(count).zfill(3)
-            # check for longest purine stretch and purine perc:
-            pur = 0
-            longest_purine_stretch = 0
-            curstretch = 0
-            for base in aso.__str__():
-                if base in ["A", "G"]:
-                    curstretch += 1
-                    pur += 1
-                    if curstretch > longest_purine_stretch:
-                        longest_purine_stretch += 1
-                else:
-                    curstretch = 0
-            pur_perc = "{:.2f}".format((pur/len(aso.__str__()))*100)
+            pur_perc, longest_purine_stretch = calculate_purine_stats(aso)
 
             # add to dataframe:
             added_row = pd.Series([aso_name, aso.__str__(), s.transcribe().__str__(), str(i-30) + ";" + str(i-30+length),
@@ -183,7 +159,3 @@ for r in range(len(target_regions)):
     plt.savefig(res_path + '/outputs/heatmap.svg')
 
     count = 0
-
-
-
-

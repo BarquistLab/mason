@@ -172,6 +172,18 @@
 							</p>
 						{% endif %}
 						{% if add_screen == "human" %}
+						<br>
+						<br>
+							<h3 class="border-bottom mb-4"> Off-targets in human genome </h3>
+									<p>The predicted off-targets (OT) of ASOs in the human genome (GRCh38)
+										are shown below. Only exact matches (0 mismatches) are considered for
+										human genome off-target screening.</p>
+							<img src="{{ dir_out + "/" + res + '/outputs/plot_ots_human.png'}}" >
+						<br>
+						<br>
+							<p>Download barplot: &nbsp<a href="{{ dir_out + "/" + res + '/outputs/plot_ots_human.svg' }}">SVG <i class="material-icons">cloud_download</i></a>
+								&nbsp&nbsp
+							<a href="{{ dir_out + "/" + res + '/outputs/plot_ots_human.png' }}"> PNG <i class="material-icons">cloud_download</i></a></p>
 							<p>Download detailed human genome off-target table:
 								<a href="{{ dir_out + "/" + res + '/outputs/offtargets_human_sorted.csv' }}">CSV
 								<i class="material-icons">cloud_download</i></a>

@@ -74,6 +74,9 @@ ot_levels <- c("OT in transcriptome", "OT in TIR regions")
 if ("OT in HMP microbiome" %in% df_plot$off_target_type) {
   ot_levels <- c(ot_levels, "OT in HMP microbiome")
 }
+if ("OT in human genome" %in% df_plot$off_target_type) {
+  ot_levels <- c(ot_levels, "OT in human genome")
+}
 df_plot$off_target_type <- factor(df_plot$off_target_type, levels = ot_levels)
 
 # plot for only ots in TIR regions
@@ -166,4 +169,26 @@ if (!is.na(screen) && screen == "microbiome" && "OT in HMP microbiome" %in% df_p
   wplot_hmp <- nrow(output_df) + 5
   ggsave(paste0(path_output, "/plot_ots_hmp.png"), p_hmp, width = wplot_hmp, limitsize = FALSE)
   ggsave(paste0(path_output, "/plot_ots_hmp.svg"), p_hmp, width = wplot_hmp, limitsize = FALSE)
+}
+
+# Human genome off-target plot
+if (!is.na(screen) && screen == "human" && "OT in human genome" %in% df_plot$off_target_type) {
+  df_human <- df_plot[df_plot$off_target_type == "OT in human genome", ]
+  df_human$counts <- as.numeric(df_human$counts)
+  df_human$ASO <- factor(gsub(".*_(ASO_\\d+)", "\\1", df_human$ASO), levels = unique(output_df$ASO))
+
+  p_human <- ggplot(df_human, aes(x = ASO, y = counts)) +
+    geom_bar(stat = "identity", fill = "#31688e") +
+    ggtitle("Number of off-targets in human genome (0 mismatches)") +
+    labs(x = "ASO sequence", y = "Number of off-targets") +
+    theme_classic() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1, size = 13),
+          axis.text.y = element_text(size = 15),
+          axis.title = element_text(size = 20),
+          plot.title = element_text(size = 25, hjust = 0.5, face = "bold")) +
+    geom_text(aes(label = counts), vjust = -0.25, size = 5)
+
+  wplot_human <- nrow(output_df) + 5
+  ggsave(paste0(path_output, "/plot_ots_human.png"), p_human, width = wplot_human, limitsize = FALSE)
+  ggsave(paste0(path_output, "/plot_ots_human.svg"), p_human, width = wplot_human, limitsize = FALSE)
 }

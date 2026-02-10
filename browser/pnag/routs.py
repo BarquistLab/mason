@@ -43,8 +43,14 @@ def _resolve_genome_paths(form, time_string):
     """Handle preset-or-upload file logic. Returns dict with 'genome' and 'gff' paths."""
     paths = {}
     if form.presets.data == 'upload':
-        genome_file = os.path.join(app.root_path, 'static/data/', time_string + "/", form.genome.data.filename)
-        gff_file = os.path.join(app.root_path, 'static/data/', time_string + "/", form.gff.data.filename)
+        # Create directory first using proper path joining
+        base_dir = os.path.join(app.root_path, 'static/data', time_string)
+        os.makedirs(base_dir, exist_ok=True)
+
+        # Now save files to the created directory
+        genome_file = os.path.join(base_dir, form.genome.data.filename)
+        gff_file = os.path.join(base_dir, form.gff.data.filename)
+
         form.genome.data.save(genome_file)
         form.gff.data.save(gff_file)
         paths['genome'] = genome_file
@@ -58,31 +64,30 @@ def _resolve_genome_paths(form, time_string):
 
 def _init_run_directory(time_string, paths):
     """Create timestamped result directory, write inputs.txt and error.txt."""
-    base_dir = "./pnag/static/data/" + time_string
-    os.mkdir(base_dir)
-    with open(base_dir + "/inputs.txt", "w+") as input_file:
+    base_dir = os.path.join(app.root_path, 'static/data', time_string)
+    os.makedirs(base_dir, exist_ok=True)
+    with open(os.path.join(base_dir, "inputs.txt"), "w+") as input_file:
         input_file.write(paths['genome'] + "," + paths['gff'])
-    open(base_dir + "/error.txt", "w").close()
+    open(os.path.join(base_dir, "error.txt"), "w").close()
     return base_dir
 
 
 def _read_result_context(result_id):
     """Read shared result page context: inputs.txt, done status, output dirs, file paths."""
-    base_dir = './pnag/static/data/' + result_id
+    base_dir = os.path.join(app.root_path, 'static/data', result_id)
     time = re.sub("([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)",
                   "Date: \\1-\\2-\\3 | Time: \\4:\\5:\\6 h", result_id)
 
-    f = open(base_dir + "/inputs.txt")
-    lines = f.readlines()
-    f.close()
+    with open(os.path.join(base_dir, "inputs.txt")) as f:
+        lines = f.readlines()
 
     genome_file, gff_file = lines[0].split(sep=",")
     custom_id = lines[1]
 
     dir_out = "../static/data/" + result_id
-    rfinished = os.path.isfile(base_dir + "/done.txt")
+    rfinished = os.path.isfile(os.path.join(base_dir, "done.txt"))
 
-    errs = open(base_dir + "/error.txt").read().splitlines()
+    errs = open(os.path.join(base_dir, "error.txt")).read().splitlines()
 
     all_output_dirs = []
     for dirs in os.listdir(base_dir):
@@ -136,7 +141,7 @@ def start():
             target_genes += [form.essential.data]
 
         paths = _resolve_genome_paths(form, time_string)
-        _init_run_directory(time_string, paths)
+        base_dir = _init_run_directory(time_string, paths)
 
         result_custom_id = form.custom_id.data
 
@@ -148,7 +153,7 @@ def start():
                                    str(b_before),
                                    resultid, resultid, additional_screen]).start()
 
-        with open("./pnag/static/data/" + time_string + "/inputs.txt", "a") as inputfile:
+        with open(os.path.join(base_dir, "inputs.txt"), "a") as inputfile:
             inputfile.write("\n" + result_custom_id)
             inputfile.write("\n" + "; ".join(target_genes))
             inputfile.write("\n" + additional_screen)
@@ -172,11 +177,11 @@ def scrambler():
     if form.validate_on_submit():
         time_string = datetime.utcnow().strftime('%Y_%m_%d_%H_%M_%S')
         paths = _resolve_genome_paths(form, time_string)
-        _init_run_directory(time_string, paths)
+        base_dir = _init_run_directory(time_string, paths)
 
         result_custom_id = form.custom_id.data
         pna_seq = form.seq_input.data
-        pna_file_string = "./pnag/static/data/" + time_string + "/pna_input.fasta"
+        pna_file_string = os.path.join(base_dir, "pna_input.fasta")
 
         with open(pna_file_string, "w") as pna_file:
             pna_file.write(">PNA\n" + pna_seq)
@@ -185,7 +190,7 @@ def scrambler():
                          args=[str(path_parent) + "/scrambler.sh", paths['genome'],
                                paths['gff'], time_string, time_string, pna_seq]).start()
 
-        with open("./pnag/static/data/" + time_string + "/inputs.txt", "a") as inputfile:
+        with open(os.path.join(base_dir, "inputs.txt"), "a") as inputfile:
             inputfile.write("\n" + result_custom_id + "\n" + pna_seq)
 
         return redirect(url_for('result_scrambler', result_id=time_string))
@@ -212,11 +217,11 @@ ATATATATA"""
     if form.validate_on_submit():
         time_string = datetime.utcnow().strftime('%Y_%m_%d_%H_%M_%S')
         paths = _resolve_genome_paths(form, time_string)
-        _init_run_directory(time_string, paths)
+        base_dir = _init_run_directory(time_string, paths)
 
         result_custom_id = form.custom_id.data
         pna_seq = form.seq_input.data
-        pna_file_string = "./pnag/static/data/" + time_string + "/pna_input.fasta"
+        pna_file_string = os.path.join(base_dir, "pna_input.fasta")
 
         with open(pna_file_string, "w") as pna_file:
             pna_file.write(">PNA\n" + pna_seq)
@@ -225,7 +230,7 @@ ATATATATA"""
                          args=[str(path_parent) + "/scrambler.sh", paths['genome'],
                                paths['gff'], time_string, time_string, pna_seq, "checker"]).start()
 
-        with open("./pnag/static/data/" + time_string + "/inputs.txt", "a") as inputfile:
+        with open(os.path.join(base_dir, "inputs.txt"), "a") as inputfile:
             inputfile.write("\n" + result_custom_id + "\n" + pna_seq)
 
         return redirect(url_for('result_checker', result_id=time_string))
@@ -274,7 +279,7 @@ def result_checker(result_id):
 
 @app.route("/delete_result/<result_id>")
 def delete_result(result_id):
-    shutil.rmtree("./pnag/static/data/" + result_id)
+    shutil.rmtree(os.path.join(app.root_path, 'static/data', result_id))
     return redirect(url_for('home'))
 
 

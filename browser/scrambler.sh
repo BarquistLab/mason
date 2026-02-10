@@ -25,30 +25,37 @@ conda activate browser
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/common_pipeline.sh"
 
-# I print them out to be sure it worked out:
-echo "fasta: $fasta";
-echo "gff: $gff";
 
 # Setup directories using shared function
 setup_directories
+
+# I print them out to be sure it worked out:
+echo "fasta: $fasta";
+echo "gff: $gff";
+# change gff and fasta names to replace spaces with underscores (for mason, because mason doesn't like spaces in file names)
+GFF_NEW="$(echo "$GFF" | tr ' ' '_')"
+FASTA_NEW="$(echo "$FASTA" | tr ' ' '_')"
+
+echo "$GFF $GFF_NEW"
+echo "$FASTA $FASTA_NEW"
 
 # Copy reference files using shared function (scrambler doesn't rename, so GFF_NEW/FASTA_NEW not set)
 copy_reference_files
 
 # extract the full transcripts from the gff (-30/+30):
-extract_gff_transcripts "$gff" "$REF/full_transcripts_$GFF"
+extract_gff_transcripts "$gff" "$REF/full_transcripts_$GFF_NEW"
 
 # extract the gene lengths:
 bioawk -c fastx '{ print $name, length($seq) }' < "$fasta"  > "$REF/genelengths.tsv"
 
 # change the gff entries that go too far:
-Rscript pnag/modify_gff.R "$REF/full_transcripts_$GFF" "$REF/genelengths.tsv" "$WARNINGS"
+Rscript pnag/modify_gff.R "$REF/full_transcripts_$GFF_NEW" "$REF/genelengths.tsv" "$WARNINGS"
 echo "adjusted gff successfully"
 
 echo "start running bedtools"
 # I extract the fasta files from the gff using bedtools:
-bedtools getfasta -s -fi $fasta -bed "$REF/full_transcripts_$GFF"  \
-	 -name+ -fo "$REF/full_transcripts_$FASTA"
+bedtools getfasta -s -fi "$fasta" -bed "$REF/full_transcripts_$GFF_NEW"  \
+	 -name+ -fo "$REF/full_transcripts_$FASTA_NEW"
 
 echo "PNA $pna_input put in"
 
@@ -69,7 +76,7 @@ then
   sed -Ei 's/_scr_([0-9][0-9])$/_scr_0\1/g' "$REF/shuffled_sequences.fasta"
 
   echo "modify PNAS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-  python "./pnag/scrambler_modify_pnas.py" "$REF/shuffled_sequences.fasta" "$RES" "$REF/PNA_sequence.fasta" #>> logfile_masonscript.log 2>&1
+  python "./pnag/scrambler_modify_pnas.py" "$REF/shuffled_sequences.fasta" "$RES" "$REF/PNA_sequence.fasta" >> logfile_masonscript.log 2>&1
 
   # check if aso_targets.fasta has less than 3 lines:
   if [ "$(wc -l < "$REF/aso_targets.fasta")" -lt 3 ]
@@ -101,7 +108,7 @@ fi
 
 #Now I run seqmap on start regions and whole transcriptome:
 echo "run seqmap"
-seqmap 3 "$REF/aso_targets.fasta" "$REF/full_transcripts_$FASTA" \
+seqmap 3 "$REF/aso_targets.fasta" "$REF/full_transcripts_$FASTA_NEW" \
        "$OUT/offtargets_fulltranscripts.tab" /output_all_matches \
        /forward_strand /output_statistics /available_memory:5000 >> logfile_masonscript.log 2>&1
 

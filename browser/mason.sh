@@ -42,6 +42,7 @@ setup_directories
 
 echo "$REF"
 echo "$OUT"
+# change gff and fasta names to replace spaces with underscores (for mason, because mason doesn't like spaces in file names)
 GFF_NEW="$(echo "$GFF" | tr ' ' '_')"
 FASTA_NEW="$(echo "$FASTA" | tr ' ' '_')"
 

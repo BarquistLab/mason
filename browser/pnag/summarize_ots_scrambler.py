@@ -9,6 +9,7 @@ import sys
 import six
 
 ot_table = sys.argv[1] + "/offtargets_fulltranscripts_sorted.tab"
+#ot_table = "./browser/pnag/static/data/2026_02_10_15_27_21/outputs/offtargets_fulltranscripts_sorted.tab"
 all_off_targets = pd.read_table(ot_table, sep='\t', index_col=False)
 
 
@@ -26,6 +27,9 @@ all_off_targets = all_off_targets[all_off_targets["longest_stretch"] >= 7]
 
 # add output df used for other things, e.g. Tm:
 output_df = pd.read_csv(sys.argv[1] + "/result_table.tsv", sep="\t", index_col=None)
+#output_df = pd.read_csv("./browser/pnag/static/data/2026_02_10_15_27_21/outputs/result_table.tsv", sep="\t", index_col=None)
+
+# remove first row of output_df
 
 # add variable for whether it is in the TIR (-20 to +5 start)
 all_off_targets.loc[all_off_targets["trans_coord"].isin(range(-20, 5)), "TIR"] = "TIR"
@@ -38,7 +42,7 @@ all_off_targets[all_off_targets["TIR"] == "TIR"].to_csv(sys.argv[1] + "/offtarge
 
 df_plot = pd.DataFrame(columns=["ASO", "off-target type", "transcripts", "counts", "target sequence", "num_mismatch"])
 
-print(all_off_targets)
+
 # create dataframe:
 for i in all_off_targets["ASO"].unique():
     target_seq = all_off_targets[all_off_targets["ASO"] == i].iloc[0, ]["mRNA_target_seq"]
@@ -188,7 +192,7 @@ output_df = output_df.sort_values(by=["OT_TIR_0mm", "OT_TIR_1mm", "OT_TIR_2mm", 
 
 
 # move input PNA to the top. use concat instead of append:
-output_df = pd.concat([output_df[output_df["ASO"] == "input PNA"], output_df[output_df["ASO"] != "input PNA"]])
+output_df = pd.concat([output_df[output_df["ASO"] == "input_PNA"], output_df[output_df["ASO"] != "input_PNA"]])
 # reset row indexes:
 output_df = output_df.reset_index(drop=True)
 

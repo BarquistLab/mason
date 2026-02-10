@@ -20,7 +20,7 @@ for record in SeqIO.parse(input_pna, "fasta"):
     maxcomp_raw, aso_target = calculate_self_complementarity(aso_raw)
     _, longest_purine_stretch_raw = calculate_purine_stats(aso_raw)
 
-    aso_name = "input PNA"
+    aso_name = "input_PNA"
 
     added_row = pd.Series([aso_name, aso_raw.__str__(), maxcomp_raw, longest_purine_stretch_raw, None, None, None, None,
                             None, None, None, None],

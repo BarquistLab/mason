@@ -14,8 +14,6 @@ library(writexl)
 source("./pnag/r_utils.R")
 
 
-print("hello world")
-
 path_output <- commandArgs(trailingOnly = TRUE)[1]
 target_gene <- commandArgs(trailingOnly = TRUE)[2]
 
@@ -98,17 +96,17 @@ output_df <- output_df %>% select(ASO, gene, ASO_seq, SC_bases, `%_SC_bases`, `T
 # get CAI from gene (a file with just this number)
 cai <- read.csv(paste0(path_output, "/cai_value.txt"), header = FALSE) %>% as.numeric() %>% unlist()
 
-mfe <- read.csv(paste0(path_output, "/mfe_values.txt"), header = FALSE) [3,1] %>% as.numeric() %>% unlist()
+mfe <- read.csv(paste0(path_output, "/mfe_values.txt"), header = FALSE) [1,1] %>% as.numeric() %>% unlist()
 
 saved_table_ml <- output_df %>%
   mutate(CAI = cai) %>%
     mutate(MFE = mfe) %>%
-  # select only Tm, % SC bases, pur_perc, OT_TIR_1mm, CAI, MFE
-    select(`Tm`, `%_SC_bases`, CAI, OT_TIR_1mm, MFE, pur_perc)
+  # select only ASO, Tm, % SC bases, pur_perc, OT_TIR_1mm, CAI, MFE
+    select(ASO, `Tm`, `%_SC_bases`, CAI, OT_TIR_1mm, MFE, pur_perc)
 
 # rename columns to 'Tm', 'sc_bases', 'CAI', 'upec_tir_off_targets_1mm',
 #                      'MFE_UPEC', 'purine_percentage'
-colnames(saved_table_ml) <- c("Tm", "sc_bases", "CAI", "upec_tir_off_targets_1mm",
+colnames(saved_table_ml) <- c("ASO", "Tm", "sc_bases", "CAI", "upec_tir_off_targets_1mm",
                               "MFE_UPEC", "purine_percentage")
 # write as csv file
 write.csv(saved_table_ml, file = paste0(path_output, "/saved_table_ml.csv"), row.names = FALSE)

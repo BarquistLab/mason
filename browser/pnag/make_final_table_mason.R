@@ -9,15 +9,15 @@ library(writexl)
 
 print("before making tabls")
 # Load data
-# path_output <- commandArgs(trailingOnly = TRUE)[1]
-path_output <- "./browser/pnag/static/data/2024_11_18_16_12_24/b0185/outputs"
+path_output <- commandArgs(trailingOnly = TRUE)[1]
+#path_output <- "./browser/pnag/static/data/2026_02_10_10_44_13/b0185/outputs"
 
 output_df <- read_csv(paste0(path_output, "/result_table.csv"))
 df_plot <- read_csv(paste0(path_output, "/df_plot.csv"))
 ml_res <- read_csv(paste0(path_output, "/saved_table_ml.csv"))
 
 
-output_df$MIC_pred <- ml_res$MIC_pred[c(2,5,3,1,4,8,7,6)]
+output_df$MIC_pred <- ml_res$MIC_pred
 # rank MIC_pred from low to high
 output_df$MIC_ranked <- rank(output_df$MIC_pred, ties.method = "min")
 
@@ -27,13 +27,13 @@ output_df$MIC_ranked <- rank(output_df$MIC_pred, ties.method = "min")
 # [13] "OT_TIR_3mm"       "OT_tot_0mm"       "OT_tot_1mm"       "OT_tot_2mm"
 # [17] "OT_tot_3mm"       "MIC_pred"         "MIC_ranked"
 
-output_df <- output_df[, c(1:9, 14, 15, 10:13, 16:18)]
+#output_df <- output_df[, c(1:9, 14, 15, 10:13, 16:18)]
 
 # make table with kableextra
 table_out <- kable(output_df, format = "html", escape = FALSE) %>%
   kable_styling(bootstrap_options = c("bordered","hover", "condensed", "centered")) %>%
   column_spec(1, bold = TRUE) %>%
-  # if column 3 is <5, make it red
+  # if column 4 is <5, make it red
   column_spec(4:5, color = "black",
               background = ifelse(output_df[["%_SC_bases"]] > 60, "red",
                                                       ifelse(output_df[["%_SC_bases"]] > 50, "salmon",
@@ -46,8 +46,9 @@ table_out <- kable(output_df, format = "html", escape = FALSE) %>%
     column_spec(7, color = "black", background = ifelse(output_df$pur_perc < 30, "lightgreen",
                                                         ifelse(output_df$pur_perc < 51, "white",
                                                                "yellow"))) %>%
-  # make ranked MIC column colored by rank. use viridis
-    column_spec(11, color = "black", background = viridis(10, option = "mako", direction = -1)[output_df$MIC_ranked])
+  # make ranked MIC column colored by rank (19). use coloring green to yellow to red, with 100 breaks, and reverse the order so that low MIC is green and high MIC is red
+    column_spec(19, color = "black", background = colorRampPalette(c("green", "yellow", "red"))(100)[as.numeric(cut(output_df$MIC_ranked, breaks = 100))])
+
 
 
 print("before saving html")

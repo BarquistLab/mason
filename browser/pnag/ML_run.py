@@ -20,15 +20,17 @@ out_path = sys.argv[1]
 
 # load the data
 data = pd.read_csv(out_path + "/saved_table_ml.csv")
-# exclude MIC_pred column
-#data = data.drop('MIC_pred', axis=1)
+# exclude the "ASO" column. save it before dropping for later use:
+asos = data["ASO"]
+data =data.drop(columns=["ASO"])
 
 # run model on data
 y_pred = rf.predict(data)
 
 data['MIC_pred'] = np.exp2(y_pred)
 
-# save the data
+# save the data. first add the ASO column back to the data (first column):
+data.insert(0, "ASO", asos)
 data.to_csv(out_path + "/saved_table_ml.csv", index=False)
 
 

@@ -189,9 +189,13 @@
 										{% endif %}
 
 									</p>
-							<img src="{{ dir_out + "/" + res + '/outputs' + '/result_table.png' }}" class="larger">
+                    <object type="text/html" data="{{ dir_out + "/" + res + '/outputs/result_table.html' }}" width="100%" height="250px"> </object>
+
+					<br>
+					<br>
+					<p> Full table in HTML format: &nbsp<a href="{{ dir_out + "/" + res + '/outputs/result_table.html' }}">HTML <i class="material-icons">cloud_download</i></a>
 						<br>
-						<br>
+
 						<p>Download ASO summary table: &nbsp<a href="{{ dir_out + "/" + res + '/outputs' +
 							'/result_table.csv' }}">CSV <i class="material-icons">cloud_download</i></a>
 							&nbsp&nbsp
@@ -199,7 +203,6 @@
 							'/outputs/result_table.xlsx' }}">Excel <i class="material-icons">
 								cloud_download</i></a>
 						</p>
-						<p>Download table (graphic): &nbsp<a href="{{ dir_out + "/" + res + '/outputs/result_table.png' }}">PNG <i class="material-icons">cloud_download</i></a>
 
 					{% else %}
 						<h5 style="background-color:rgba(128, 0, 0, 1.0);color:white;">No sequence could be designed!

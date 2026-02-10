@@ -5,8 +5,29 @@ calculate_pna_mw <- function(seq) {
   # Monomer residue masses = full monomer - H2O (condensation), derived from:
   #   backbone: N-(2-aminoethyl)glycine + methylenecarbonyl linker
   #   nucleobase: attached at N9 (purines) or N1 (pyrimidines)
-  mw_residue <- c(A=275.27, C=251.25, G=291.27, T=266.26)
-  nucleotides <- strsplit(seq, "")[[1]]
+  #
+  # Args:
+  #   seq: character string of nucleotides (A, C, G, T only)
+  #
+  # Returns:
+  #   numeric molecular weight in Da, or NA if invalid nucleotides present
+
+  if (!is.character(seq) || length(seq) != 1 || nchar(seq) == 0) {
+    warning("Invalid input: seq must be a non-empty character string")
+    return(NA_real_)
+  }
+
+  mw_residue <- c(A = 275.27, C = 251.25, G = 291.27, T = 266.26)
+  nucleotides <- strsplit(toupper(seq), "")[[1]]
+
+
+  # Validate nucleotides
+  invalid <- nucleotides[!nucleotides %in% names(mw_residue)]
+  if (length(invalid) > 0) {
+    warning(sprintf("Invalid nucleotide(s) in sequence: %s", paste(unique(invalid), collapse = ", ")))
+    return(NA_real_)
+  }
+
   # Terminal groups: H (N-terminus) + NH2 (C-terminus) = 17.03
   mw <- sum(mw_residue[nucleotides]) + 17.03
   return(mw)
@@ -24,70 +45,61 @@ count_offtargets_by_mismatch <- function(all_off_targets, output_df, index_by_na
   # Returns:
   #   list(output_df, df_plot)
 
-  df_plot <- data.frame(ASO = character(0), "off_target_type" = character(0),
-                        "transcripts" = character(0), counts = numeric(0),
-                        "target_sequence" = character(0), "nr_mismatches" = numeric(0))
+  # Input validation
+  required_cols <- c("ASO", "num_mismatch", "TIR", "probe_seq")
+  missing_cols <- setdiff(required_cols, names(all_off_targets))
+  if (length(missing_cols) > 0) {
+    stop(sprintf("Missing required columns in all_off_targets: %s", paste(missing_cols, collapse = ", ")))
+  }
 
-  for (i in unique(all_off_targets$ASO)) {
-    target_seq <- all_off_targets[all_off_targets$ASO == i, ]$probe_seq[1]
-    aso_n <- i
-    ot_aso <- all_off_targets[all_off_targets$ASO == i, ]
+  unique_asos <- unique(all_off_targets$ASO)
+  n_asos <- length(unique_asos)
+  mismatch_levels <- 0:3
 
-    num_tot_ot_0mm <- nrow(ot_aso[ot_aso$num_mismatch == 0, ])
-    num_tot_ot_1mm <- nrow(ot_aso[ot_aso$num_mismatch == 1, ])
-    num_tot_ot_2mm <- nrow(ot_aso[ot_aso$num_mismatch == 2, ])
-    num_tot_ot_3mm <- nrow(ot_aso[ot_aso$num_mismatch == 3, ])
+  # Pre-allocate df_plot: 8 rows per ASO (4 mismatch levels × 2 regions)
+  n_rows <- n_asos * 8
+  df_plot <- data.frame(
+    ASO = character(n_rows),
+    off_target_type = character(n_rows),
+    transcripts = character(n_rows),
+    counts = numeric(n_rows),
+    target.sequence = character(n_rows),
+    nr_mismatches = numeric(n_rows),
+    stringsAsFactors = FALSE
+  )
 
-    num_tir_ot_0mm <- nrow(ot_aso[ot_aso$TIR == "TIR" & ot_aso$num_mismatch == 0, ])
-    num_tir_ot_1mm <- nrow(ot_aso[ot_aso$TIR == "TIR" & ot_aso$num_mismatch == 1, ])
-    num_tir_ot_2mm <- nrow(ot_aso[ot_aso$TIR == "TIR" & ot_aso$num_mismatch == 2, ])
-    num_tir_ot_3mm <- nrow(ot_aso[ot_aso$TIR == "TIR" & ot_aso$num_mismatch == 3, ])
+  row_idx <- 1
+  for (aso_n in unique_asos) {
+    ot_aso <- all_off_targets[all_off_targets$ASO == aso_n, ]
+    target_seq <- ot_aso$probe_seq[1]
 
-    df_plot <- rbind(df_plot, data.frame(ASO = aso_n, "off_target_type" = "OT in transcriptome",
-                                          "transcripts" = "whole transcriptome", counts = num_tot_ot_0mm,
-                                          "target sequence" = target_seq, "nr_mismatches" = 0))
-    df_plot <- rbind(df_plot, data.frame(ASO = aso_n, "off_target_type" = "OT in transcriptome",
-                                          "transcripts" = "whole transcriptome", counts = num_tot_ot_1mm,
-                                          "target sequence" = target_seq, "nr_mismatches" = 1))
-    df_plot <- rbind(df_plot, data.frame(ASO = aso_n, "off_target_type" = "OT in transcriptome",
-                                          "transcripts" = "whole transcriptome", counts = num_tot_ot_2mm,
-                                          "target sequence" = target_seq, "nr_mismatches" = 2))
-    df_plot <- rbind(df_plot, data.frame(ASO = aso_n, "off_target_type" = "OT in transcriptome",
-                                          "transcripts" = "whole transcriptome", counts = num_tot_ot_3mm,
-                                          "target sequence" = target_seq, "nr_mismatches" = 3))
+    # Count off-targets for each mismatch level (vectorized)
+    num_tot_ot <- sapply(mismatch_levels, function(mm) sum(ot_aso$num_mismatch == mm))
+    num_tir_ot <- sapply(mismatch_levels, function(mm) sum(ot_aso$TIR == "TIR" & ot_aso$num_mismatch == mm))
 
-    df_plot <- rbind(df_plot, data.frame(ASO = aso_n, "off_target_type" = "OT in TIR regions",
-                                          "transcripts" = "start regions", counts = num_tir_ot_0mm,
-                                          "target sequence" = target_seq, "nr_mismatches" = 0))
-    df_plot <- rbind(df_plot, data.frame(ASO = aso_n, "off_target_type" = "OT in TIR regions",
-                                          "transcripts" = "start regions", counts = num_tir_ot_1mm,
-                                          "target sequence" = target_seq, "nr_mismatches" = 1))
-    df_plot <- rbind(df_plot, data.frame(ASO = aso_n, "off_target_type" = "OT in TIR regions",
-                                          "transcripts" = "start regions", counts = num_tir_ot_2mm,
-                                          "target sequence" = target_seq, "nr_mismatches" = 2))
-    df_plot <- rbind(df_plot, data.frame(ASO = aso_n, "off_target_type" = "OT in TIR regions",
-                                          "transcripts" = "start regions", counts = num_tir_ot_3mm,
-                                          "target sequence" = target_seq, "nr_mismatches" = 3))
+    # Fill df_plot rows for transcriptome off-targets (4 rows)
+    for (mm in mismatch_levels) {
+      df_plot[row_idx, ] <- list(aso_n, "OT in transcriptome", "whole transcriptome",
+                                  num_tot_ot[mm + 1], target_seq, mm)
+      row_idx <- row_idx + 1
+    }
 
-    # assign values to output_df
+    # Fill df_plot rows for TIR off-targets (4 rows)
+    for (mm in mismatch_levels) {
+      df_plot[row_idx, ] <- list(aso_n, "OT in TIR regions", "start regions",
+                                  num_tir_ot[mm + 1], target_seq, mm)
+      row_idx <- row_idx + 1
+    }
+
+    # Update output_df with OT counts
+    ot_cols <- c("OT_TIR_0mm", "OT_TIR_1mm", "OT_TIR_2mm", "OT_TIR_3mm",
+                 "OT_tot_0mm", "OT_tot_1mm", "OT_tot_2mm", "OT_tot_3mm")
+    ot_values <- c(num_tir_ot, num_tot_ot)
+
     if (index_by_name) {
-      output_df[aso_n, "OT_TIR_0mm"] <- num_tir_ot_0mm
-      output_df[aso_n, "OT_TIR_1mm"] <- num_tir_ot_1mm
-      output_df[aso_n, "OT_TIR_2mm"] <- num_tir_ot_2mm
-      output_df[aso_n, "OT_TIR_3mm"] <- num_tir_ot_3mm
-      output_df[aso_n, "OT_tot_0mm"] <- num_tot_ot_0mm
-      output_df[aso_n, "OT_tot_1mm"] <- num_tot_ot_1mm
-      output_df[aso_n, "OT_tot_2mm"] <- num_tot_ot_2mm
-      output_df[aso_n, "OT_tot_3mm"] <- num_tot_ot_3mm
+      output_df[aso_n, ot_cols] <- ot_values
     } else {
-      output_df[output_df$ASO == aso_n, "OT_TIR_0mm"] <- num_tir_ot_0mm
-      output_df[output_df$ASO == aso_n, "OT_TIR_1mm"] <- num_tir_ot_1mm
-      output_df[output_df$ASO == aso_n, "OT_TIR_2mm"] <- num_tir_ot_2mm
-      output_df[output_df$ASO == aso_n, "OT_TIR_3mm"] <- num_tir_ot_3mm
-      output_df[output_df$ASO == aso_n, "OT_tot_0mm"] <- num_tot_ot_0mm
-      output_df[output_df$ASO == aso_n, "OT_tot_1mm"] <- num_tot_ot_1mm
-      output_df[output_df$ASO == aso_n, "OT_tot_2mm"] <- num_tot_ot_2mm
-      output_df[output_df$ASO == aso_n, "OT_tot_3mm"] <- num_tot_ot_3mm
+      output_df[output_df$ASO == aso_n, ot_cols] <- ot_values
     }
   }
 

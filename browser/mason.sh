@@ -190,7 +190,7 @@ Rscript ./pnag/summarize_ots.R "$OUT" "$target" "$screen" >> logfile_masonscript
 
 python ./pnag/ML_run.py "$OUT" >> logfile_masonscript.log 2>&1
 
-Rscript ./pnag/make_final_table_mason.R "$OUT" >> logfile_masonscript.log 2>&1
+Rscript ./pnag/make_final_table_mason.R "$OUT" "$screen" >> logfile_masonscript.log 2>&1
 
 touch "$RES/$target"
 

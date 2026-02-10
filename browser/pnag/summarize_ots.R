@@ -16,6 +16,7 @@ source("./pnag/r_utils.R")
 
 path_output <- commandArgs(trailingOnly = TRUE)[1]
 target_gene <- commandArgs(trailingOnly = TRUE)[2]
+screen <- commandArgs(trailingOnly = TRUE)[3]
 
 
 # path_output <- "./browser/pnag/static/data/2024_11_18_16_12_24/b0185/outputs"
@@ -66,6 +67,41 @@ ot_results <- count_offtargets_by_mismatch(all_off_targets, output_df, index_by_
 output_df <- ot_results$output_df
 df_plot <- ot_results$df_plot
 
+## Microbiome off-targets (0mm exact matches against HMP database)
+if (!is.na(screen) && screen == "microbiome") {
+  hmp_file <- paste0(path_output, "/offtargets_microbiome_sorted.tab")
+  if (file.exists(hmp_file)) {
+    hmp_ot <- read_table(hmp_file, col_names = TRUE)
+
+    # Count 0mm off-targets per ASO and add to output_df
+    unique_asos <- unique(hmp_ot$probe_id)
+    output_df[["OT_HMP_0mm"]] <- 0
+    for (aso_n in unique_asos) {
+      ot_aso <- hmp_ot[hmp_ot$probe_id == aso_n, ]
+      n_0mm <- sum(ot_aso$num_mismatch == 0)
+      output_df[aso_n, "OT_HMP_0mm"] <- n_0mm
+
+      # Append to df_plot for microbiome
+      df_plot <- rbind(df_plot, data.frame(
+        ASO = aso_n,
+        off_target_type = "OT in HMP microbiome",
+        transcripts = "HMP microbiome",
+        counts = n_0mm,
+        target.sequence = ot_aso$probe_seq[1],
+        nr_mismatches = 0,
+        stringsAsFactors = FALSE
+      ))
+    }
+
+    # Export cleaned microbiome table
+    hmp_ot_clean <- hmp_ot %>%
+      mutate(ASO = probe_id) %>%
+      select(-probe_id)
+    write_csv(hmp_ot_clean, file = paste0(path_output, "/offtargets_hmp_sorted.csv"))
+    write_xlsx(hmp_ot_clean, paste0(path_output, "/offtargets_hmp_sorted.xlsx"))
+  }
+}
+
 print(output_df)
 print(df_plot)
 # remove location column if no target gene was given
@@ -88,10 +124,13 @@ rownames(output_df) <- NULL
 output_df <- as_tibble(output_df)
 
 
-output_df <- output_df %>% select(ASO, gene, ASO_seq, SC_bases, `%_SC_bases`, `Tm`, pur_perc, long_pur_stretch,
-                                  Mw,
-                                  OT_TIR_0mm, OT_TIR_1mm, OT_TIR_2mm, OT_TIR_3mm, OT_tot_0mm, OT_tot_1mm,
-                                  OT_tot_2mm, OT_tot_3mm)
+base_cols <- c("ASO", "gene", "ASO_seq", "SC_bases", "%_SC_bases", "Tm", "pur_perc", "long_pur_stretch",
+               "Mw", "OT_TIR_0mm", "OT_TIR_1mm", "OT_TIR_2mm", "OT_TIR_3mm",
+               "OT_tot_0mm", "OT_tot_1mm", "OT_tot_2mm", "OT_tot_3mm")
+if ("OT_HMP_0mm" %in% names(output_df)) {
+  base_cols <- c(base_cols, "OT_HMP_0mm")
+}
+output_df <- output_df %>% select(all_of(base_cols))
 
 # get CAI from gene (a file with just this number)
 cai <- read.csv(paste0(path_output, "/cai_value.txt"), header = FALSE) %>% as.numeric() %>% unlist()

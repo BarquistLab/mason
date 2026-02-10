@@ -139,6 +139,9 @@
 							<img src="{{ dir_out + "/" + res + '/outputs/plot_ots_whole_transcriptome.png'}}" >
 						<br>
 						<br>
+						<p>Download barplot: &nbsp<a href="{{ dir_out + "/" + res + '/outputs/plot_ots_whole_transcriptome.svg' }}">SVG <i class="material-icons">cloud_download</i></a>
+							&nbsp&nbsp
+						<a href="{{ dir_out + "/" + res + '/outputs/plot_ots_whole_transcriptome.png' }}"> PNG <i class="material-icons">cloud_download</i></a></p>
 							<p>Download detailed critical-off-target table: &nbsp <a href="{{ dir_out + "/" + res +
 								'/outputs/offtargets_fulltranscripts_sorted.csv' }}">CSV <i class="material-icons">
 									cloud_download</i></a>
@@ -148,6 +151,18 @@
 							</p>
 
 						{% if add_screen == "microbiome" %}
+						<br>
+						<br>
+							<h3 class="border-bottom mb-4"> Off-targets in HMP microbiome </h3>
+									<p>The predicted off-targets (OT) of ASOs in the Human Microbiome Project (HMP)
+										database are shown below. Only exact matches (0 mismatches) are considered for
+										microbiome off-target screening.</p>
+							<img src="{{ dir_out + "/" + res + '/outputs/plot_ots_hmp.png'}}" >
+						<br>
+						<br>
+							<p>Download barplot: &nbsp<a href="{{ dir_out + "/" + res + '/outputs/plot_ots_hmp.svg' }}">SVG <i class="material-icons">cloud_download</i></a>
+								&nbsp&nbsp
+							<a href="{{ dir_out + "/" + res + '/outputs/plot_ots_hmp.png' }}"> PNG <i class="material-icons">cloud_download</i></a></p>
 							<p>Download detailed HMP off-target table: <a href="{{ dir_out + "/" + res +
 								'/outputs/offtargets_hmp_sorted.csv' }}">CSV <i class="material-icons">
 									cloud_download</i></a>
@@ -167,9 +182,6 @@
 							</p>
 						{% endif %}
 
-						<p>Download barplot: &nbsp<a href="{{ dir_out + "/" + res + '/outputs/plot_ots_whole_transcriptome.svg' }}">SVG <i class="material-icons">cloud_download</i></a>
-							&nbsp&nbsp
-						<a href="{{ dir_out + "/" + res + '/outputs/plot_ots_whole_transcriptome.png' }}"> PNG <i class="material-icons">cloud_download</i></a></p>
 						<br>
 						<br>
 							<h3 class="border-bottom mb-4"> Summary table for {{ result.custom_id }} - ASOs </h3>

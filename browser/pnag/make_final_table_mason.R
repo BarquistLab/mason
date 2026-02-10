@@ -10,6 +10,7 @@ library(writexl)
 print("before making tabls")
 # Load data
 path_output <- commandArgs(trailingOnly = TRUE)[1]
+screen <- commandArgs(trailingOnly = TRUE)[2]
 #path_output <- "./browser/pnag/static/data/2026_02_10_10_44_13/b0185/outputs"
 
 output_df <- read_csv(paste0(path_output, "/result_table.csv"))
@@ -46,8 +47,8 @@ table_out <- kable(output_df, format = "html", escape = FALSE) %>%
     column_spec(7, color = "black", background = ifelse(output_df$pur_perc < 30, "lightgreen",
                                                         ifelse(output_df$pur_perc < 51, "white",
                                                                "yellow"))) %>%
-  # make ranked MIC column colored by rank (19). use coloring green to yellow to red, with 100 breaks, and reverse the order so that low MIC is green and high MIC is red
-    column_spec(19, color = "black", background = colorRampPalette(c("green", "yellow", "red"))(100)[as.numeric(cut(output_df$MIC_ranked, breaks = 100))])
+  # make ranked MIC column colored by rank. use coloring green to yellow to red, with 100 breaks, and reverse the order so that low MIC is green and high MIC is red
+    column_spec(which(names(output_df) == "MIC_ranked"), color = "black", background = colorRampPalette(c("green", "yellow", "red"))(100)[as.numeric(cut(output_df$MIC_ranked, breaks = 100))])
 
 
 
@@ -69,7 +70,11 @@ print("after saving xlsx")
 df_plot$counts <- as.numeric(df_plot$counts)
 
 # make df_plot$off_target_type a factor and order it
-df_plot$off_target_type <- factor(df_plot$off_target_type, levels = c("OT in transcriptome", "OT in TIR regions"))
+ot_levels <- c("OT in transcriptome", "OT in TIR regions")
+if ("OT in HMP microbiome" %in% df_plot$off_target_type) {
+  ot_levels <- c(ot_levels, "OT in HMP microbiome")
+}
+df_plot$off_target_type <- factor(df_plot$off_target_type, levels = ot_levels)
 
 # plot for only ots in TIR regions
 df_plot$ASO <- factor(gsub(".*_(ASO_\\d+)", "\\1", df_plot$ASO), levels = unique(output_df$ASO))
@@ -140,3 +145,25 @@ ggsave(paste0(path_output, "/plot_ots_whole_transcriptome.png"), p_whole, width 
        limitsize = FALSE)
 ggsave(paste0(path_output, "/plot_ots_whole_transcriptome.svg"), p_whole, width = wplot,
          limitsize = FALSE)
+
+# Microbiome off-target plot
+if (!is.na(screen) && screen == "microbiome" && "OT in HMP microbiome" %in% df_plot$off_target_type) {
+  df_hmp <- df_plot[df_plot$off_target_type == "OT in HMP microbiome", ]
+  df_hmp$counts <- as.numeric(df_hmp$counts)
+  df_hmp$ASO <- factor(gsub(".*_(ASO_\\d+)", "\\1", df_hmp$ASO), levels = unique(output_df$ASO))
+
+  p_hmp <- ggplot(df_hmp, aes(x = ASO, y = counts)) +
+    geom_bar(stat = "identity", fill = "#440154") +
+    ggtitle("Number of off-targets in HMP microbiome (0 mismatches)") +
+    labs(x = "ASO sequence", y = "Number of off-targets") +
+    theme_classic() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1, size = 13),
+          axis.text.y = element_text(size = 15),
+          axis.title = element_text(size = 20),
+          plot.title = element_text(size = 25, hjust = 0.5, face = "bold")) +
+    geom_text(aes(label = counts), vjust = -0.25, size = 5)
+
+  wplot_hmp <- nrow(output_df) + 5
+  ggsave(paste0(path_output, "/plot_ots_hmp.png"), p_hmp, width = wplot_hmp, limitsize = FALSE)
+  ggsave(paste0(path_output, "/plot_ots_hmp.svg"), p_hmp, width = wplot_hmp, limitsize = FALSE)
+}

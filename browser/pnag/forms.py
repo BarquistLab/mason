@@ -48,8 +48,7 @@ class startForm(BaseOrganismForm):
                             "^[^,;]*$|^[^,;]+,[^,;]+$|^[^,;]+(,[^,;]+){2}$|^[^,;]+(,[^,;]+){3}$|^[^,;]+(,[^,;]+){4}$",
                             message="please use less than 5 genes")])
     len_PNA = IntegerField('Length of ASOs', validators=[InputRequired(), NumberRange(min=7, max=16)])
-    mismatches = IntegerField('Allowed mismatches for off targets',
-                              validators=[InputRequired(), NumberRange(min=0, max=4)])
+
     bases_before = StringField('Bases before (5 prime) CDS (start codon) to start ASO design (optional)',
                                validators=[
                                    Regexp("^[1-9]$|^1[0-9]$|^2[0]$|^$", message="Numbers between 1-20 are acepted")])

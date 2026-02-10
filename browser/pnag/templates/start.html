@@ -176,21 +176,6 @@
 				</div>
 				<br>
 				<div class="form-group">
-					{{ form.mismatches.label(class="form-control-label", style="font-weight: bold;") }}
-					<p>Number of maximally alowed mismatches for the off-target prediction algorithm.
-					For 10-mer PNAs usually three or less mismatches should be chosen, as more mismatches prevent
-					PNA binding. Up to 4 mismatches can be allowed</p>
-					{% if form.mismatches.errors %}
-						{{ form.mismatches(class="form-control form-control-lg is-invalid") }}
-						{% for error in form.mismatches.errors %}
-							<span class="text-danger">{{ error }}</span><br>
-						{% endfor %}
-					{% else %}
-						{{ form.mismatches(class="form-control form-control-lg") }}
-					{% endif %}
-				</div>
-				<br>
-				<div class="form-group">
 					{{ form.bases_before.label(class="form-control-label", style="font-weight: bold;") }}
 					<p>If not specified, all ASOs overlapping the start codon are designed.
 					If a SD sequence exists, it can be useful to design more ASOs lying upstream (5') the CDS to inhibit

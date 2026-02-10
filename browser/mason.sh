@@ -11,7 +11,6 @@ do
 	g) gff=${OPTARG};;
 	t) target=${OPTARG};;
 	l) length=${OPTARG};;
-	m) mismatches=${OPTARG};;
 	i) result_id=${OPTARG};;
 	p) pna_input=${OPTARG};;
 	b) bases_before=${OPTARG};;

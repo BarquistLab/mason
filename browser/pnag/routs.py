@@ -123,7 +123,6 @@ def start():
         form.presets.data = "e_coli"
         form.genes.data = "b0081"
         form.len_PNA.data = 10
-        form.mismatches.data = 2
         form.bases_before.data = ""
         form.essential.data = []
 
@@ -146,13 +145,12 @@ def start():
             threading.Thread(target=start_calculation, name="masons",
                              args=[str(path_parent) + "/mason.sh", paths['genome'],
                                    paths['gff'], tgene, str(form.len_PNA.data),
-                                   str(form.mismatches.data), str(b_before),
+                                   str(b_before),
                                    resultid, resultid, additional_screen]).start()
 
         with open("./pnag/static/data/" + time_string + "/inputs.txt", "a") as inputfile:
             inputfile.write("\n" + result_custom_id)
             inputfile.write("\n" + "; ".join(target_genes))
-            inputfile.write("\n" + str(form.mismatches.data))
             inputfile.write("\n" + additional_screen)
 
         return redirect(url_for('result', result_id=time_string))
@@ -238,14 +236,13 @@ ATATATATA"""
 def result(result_id):
     ctx = _read_result_context(result_id)
     tgenes = ctx['lines'][2]
-    mismatches = ctx['lines'][3]
-    add_screen = ctx['lines'][4]
+    add_screen = ctx['lines'][3]
 
     return render_template("result.html", title="Result", result=result_id, dir_out=ctx['dir_out'],
                            all_output_dirs=ctx['all_output_dirs'],
                            rfin=ctx['rfinished'], genome_file=ctx['ffile'], gff_file=ctx['gfffile'],
                            custom_id=ctx['custom_id'],
-                           time=ctx['time'], tgenes=tgenes, mismatches=mismatches, add_screen=add_screen,
+                           time=ctx['time'], tgenes=tgenes, add_screen=add_screen,
                            errs=ctx['errs'])
 
 

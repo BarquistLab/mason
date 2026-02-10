@@ -95,10 +95,10 @@ p <- ggplot(df_plot[df_plot$off_target_type == "OT in TIR regions", ],
         axis.title = element_text(size=20),
         plot.title = element_text(size= 25, hjust = 0.5, face = "bold"),
         # add increased legend fontsize and adjust position (topright of plot inside plot area
-        legend.text = element_text(size=12),
+        legend.text = element_text(size=15),
         legend.background = element_rect(fill="white", linewidth = .5),
         legend.direction = "horizontal",
-        legend.title = element_text(size=12),
+        legend.title = element_text(size=15),
         # make legend above plot, not inside plot area
         legend.position = "top",
         legend.margin = margin(6, 10, 6, 6)) +
@@ -129,9 +129,9 @@ p_whole <- ggplot(df_plot[df_plot$off_target_type == "OT in transcriptome", ],
         axis.title = element_text(size=20),
         # put title in the middle of the plot and make bigger and bold
         plot.title = element_text(size= 25, hjust = 0.5, face = "bold"),
-        legend.text = element_text(size=12),
+        legend.text = element_text(size=15),
         legend.background = element_rect(fill=alpha('white', 0.7), linewidth = .5),
-        legend.title = element_text(size=12),
+        legend.title = element_text(size=15),
         # make legend above plot, not inside plot area
         legend.position = "top",
         legend.direction = "horizontal",
@@ -164,7 +164,7 @@ if (!is.na(screen) && screen == "microbiome" && "OT in HMP microbiome" %in% df_p
           axis.text.y = element_text(size = 15),
           axis.title = element_text(size = 20),
           plot.title = element_text(size = 25, hjust = 0.5, face = "bold")) +
-    geom_text(aes(label = counts), vjust = -0.25, size = 5)
+    geom_text(aes(label = counts), vjust = -0.25, size = 7)
 
   wplot_hmp <- nrow(output_df) + 5
   ggsave(paste0(path_output, "/plot_ots_hmp.png"), p_hmp, width = wplot_hmp, limitsize = FALSE)
@@ -186,7 +186,7 @@ if (!is.na(screen) && screen == "human" && "OT in human genome" %in% df_plot$off
           axis.text.y = element_text(size = 15),
           axis.title = element_text(size = 20),
           plot.title = element_text(size = 25, hjust = 0.5, face = "bold")) +
-    geom_text(aes(label = counts), vjust = -0.25, size = 5)
+    geom_text(aes(label = counts), vjust = -0.25, size = 7)
 
   wplot_human <- nrow(output_df) + 5
   ggsave(paste0(path_output, "/plot_ots_human.png"), p_human, width = wplot_human, limitsize = FALSE)

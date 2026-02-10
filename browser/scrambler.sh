@@ -120,6 +120,7 @@ echo "summarize off-targets"
 if [ -z "$mode" ]
 then
   python ./pnag/summarize_ots_scrambler.py "$OUT"  >> logfile_masonscript.log 2>&1
+  Rscript ./pnag/plot_ots_scrambler.R "$OUT" >> logfile_masonscript.log 2>&1
 elif [ "$mode" == "checker" ]
 then
   Rscript ./pnag/summarize_ots_checker.R "$OUT"  >> logfile_masonscript.log 2>&1

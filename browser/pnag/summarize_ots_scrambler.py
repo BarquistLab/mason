@@ -1,4 +1,3 @@
-import copy
 import os
 import matplotlib.pyplot as plt
 import re
@@ -6,7 +5,6 @@ import pandas as pd
 import seaborn as sns
 import numpy as np
 import sys
-import six
 
 ot_table = sys.argv[1] + "/offtargets_fulltranscripts_sorted.tab"
 #ot_table = "./browser/pnag/static/data/2026_02_10_15_27_21/outputs/offtargets_fulltranscripts_sorted.tab"
@@ -102,67 +100,6 @@ for i in all_off_targets["ASO"].unique():
     # output_df.loc[i, "OT_TIR"] = int(num_tir_ot)
 
 
-# visualize:
-def render_mpl_table(data, col_width=3.0, row_height=1, font_size=12,
-                     header_color='#002864', row_colors=['#f1f1f2', 'w'], edge_color='w',
-                     bbox=[0, 0, 1, 1], header_columns=0,
-                     ax=None, **kwargs):
-    if ax is None:
-        size = (np.array(data.shape[::-1]) + np.array([0, 1])) * np.array([col_width, row_height])
-        fig, ax = plt.subplots(figsize=(25, data.shape[1]))
-        ax.axis('off')
-
-    mpl_table = ax.table(cellText=data.values, bbox=bbox, colLabels=data.columns, **kwargs)
-
-    mpl_table.auto_set_font_size(False)
-    mpl_table.set_fontsize(font_size)
-
-    for k, cell in six.iteritems(mpl_table._cells):
-        cell.set_edgecolor(edge_color)
-        if k[0] == 0 or k[1] < header_columns:
-            cell.set_text_props(weight='bold', color='w')
-            cell.set_facecolor(header_color)
-        else:
-            cell.set_facecolor(row_colors[k[0] % len(row_colors)])
-    return ax
-
-
-def show_on_single_plot(ax, maxlen):
-    for p in ax.patches:
-        _x = p.get_x() + p.get_width() / 2
-        _y = p.get_y() + p.get_height() + maxlen/120
-        value = '{:.0f}'.format(p.get_height())
-        ax.text(_x, _y, value, ha="center", fontsize=11)
-
-
-def create_ot_barplot(dataframe, title, filepath, sorted_values, pal="Blues_r"):
-    # order the ASOs by number of OTs:
-
-    # get the number of asos:
-    sns.set_style("whitegrid")
-    plt.figure(figsize=(16, 11))
-    plt.xlabel('xlabel', fontsize=20, fontweight='bold')
-    plt.ylabel('ylabel', fontsize=20, fontweight='bold')
-    plt.title('titlelabel', fontsize=30, fontweight='bold')
-
-    bp = sns.barplot(x="ASO", y="counts", hue="num_mismatch",
-                     data=dataframe, palette=pal,
-                     # order by counts with 0mm, then 1mm, then 2mm, then 3mm:
-                        order=sorted_values)
-    bp.set(xlabel='', ylabel='Number of off-targets')
-    # make y axis labels bigger
-    bp.tick_params(labelsize=15)
-    # add numbers on top of bars and adjust heir size:
-    show_on_single_plot(bp, maxlen=dataframe["counts"].max())
-
-    bp.set_title(title, fontsize=30, fontweight='bold')
-    bp.set_xticklabels(bp.get_xticklabels(), rotation=45, horizontalalignment='right', fontsize=15)
-    bp.legend(title="Nr. of mismatches", fontsize=15, title_fontsize=20)
-    bp.figure.savefig(filepath + ".png")
-    bp.figure.savefig(filepath + ".svg")
-    plt.clf()
-
-
 output_df["OT_tot_3mm"] = output_df["OT_tot_3mm"].astype(int)
 output_df["OT_TIR_3mm"] = output_df["OT_TIR_3mm"].astype(int)
 output_df["OT_tot_2mm"] = output_df["OT_tot_2mm"].astype(int)
@@ -205,19 +142,8 @@ if output_df.shape[0] > 11:
 # restrict df_plot to to only "ASO" rows that contain the ASOs in output_df:
 df_plot = df_plot[df_plot["ASO"].isin(output_df["ASO"])]
 
-# create a barplot for the OTs in TIR and in whole transcriptome:
-# first sort values by output_df ASO column:
-sorted_values = output_df["ASO"].tolist()
-create_ot_barplot(df_plot[df_plot["off-target type"] == "OT in TIR regions"], "Off-targets of ASOs in TIR of genes",
-                    sys.argv[1] + "/plot_ots_start_regions", sorted_values, "inferno")
-create_ot_barplot(df_plot[df_plot["off-target type"] == "OT in transcriptome"],
-                  "Off-targets of ASOs in whole transcriptome",
-                  sys.argv[1] + "/plot_ots_whole_transcriptome", sorted_values)
-
-output_df_fig = copy.deepcopy(output_df)
-ax = render_mpl_table(output_df_fig, header_columns=0, col_width=4.0, row_height=4)
-ax.figure.savefig(sys.argv[1] + "/result_table.png", bbox_inches='tight')
-ax.figure.savefig(sys.argv[1] + "/result_table.svg", bbox_inches='tight')
+# export df_plot for R plotting script
+df_plot.to_csv(sys.argv[1] + "/df_plot.csv", index=False)
 
 # create a heatmap visualizing the sequence (atgcs in diff. colors) for all the sequences in output_df["ASO_seq"].
 # use seaborn for this.
@@ -282,7 +208,7 @@ plt.savefig(sys.argv[1] + '/heatmap.png', dpi=500)
 plt.savefig(sys.argv[1] + '/heatmap.svg')
 
 # save df for download/visualization:
-output_df.to_csv(sys.argv[1] + "/result_table.csv", sep=",")
+output_df.to_csv(sys.argv[1] + "/result_table.csv", sep=",", index=False)
 output_df.to_excel(sys.argv[1] + "/result_table.xlsx")
 os.remove(sys.argv[1] + "/result_table.tsv")
 

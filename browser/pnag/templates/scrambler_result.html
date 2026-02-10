@@ -121,9 +121,10 @@
 									{% endif %}
 
 								</p>
-						<img src="{{ dir_out + "/" + 'outputs' + '/result_table.png' }}" class="larger">
+						<object type="text/html" data="{{ dir_out + "/" + 'outputs/result_table.html' }}" width="100%" height="250px"> </object>
 					<br>
 					<br>
+					<p> Full table in HTML format: &nbsp<a href="{{ dir_out + "/" + 'outputs/result_table.html' }}">HTML <i class="material-icons">cloud_download</i></a>
 					<p>Download table: &nbsp<a href="{{ dir_out + "/" + 'outputs' +
 						'/result_table.csv' }}">CSV <i class="material-icons">cloud_download</i></a>
 						&nbsp&nbsp
@@ -131,7 +132,6 @@
 						'outputs/result_table.xlsx' }}">Excel <i class="material-icons">
 							cloud_download</i></a>
 					</p>
-					<p>Download table (graphic): &nbsp<a href="{{ dir_out + "/" + 'outputs/result_table.png' }}">PNG <i class="material-icons">cloud_download</i></a>
 			</div>
 
 

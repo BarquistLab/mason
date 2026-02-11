@@ -94,6 +94,59 @@
 					</div>
 
 				<br>
+				<div class="form-group">
+					<button type="button" class="btn btn-outline-secondary btn-sm" id="toggle_target_gene"
+							onclick="toggleTargetGene()">Add target gene (optional)</button>
+					<div id="div_target_gene" style="display:none;" class="mt-3 p-3 border rounded">
+						{{ form.target_gene.label(class="form-control-label", style="font-weight: bold;") }}
+						<p>Provide a locus tag to validate that your ASOs target the gene's translation initiation
+							region (TIR). This enables MASON-style output with heatmap, secondary structure plots,
+							and melting temperature barplot.</p>
+						{% if form.target_gene.errors %}
+							{{ form.target_gene(class="form-control form-control-lg is-invalid") }}
+							<div class="invalid-feedback">
+								{% for error in form.target_gene.errors %}
+									<span>{{ error }}</span>
+								{% endfor %}
+							</div>
+						{% else %}
+							{{ form.target_gene(class="form-control form-control-lg") }}
+						{% endif %}
+						<br>
+						<div class="form-check">
+							{{ form.use_ml(class="form-check-input") }}
+							{{ form.use_ml.label(class="form-check-label") }}
+						</div>
+					</div>
+				</div>
+
+				<script>
+					function toggleTargetGene() {
+						var div = document.getElementById('div_target_gene');
+						var btn = document.getElementById('toggle_target_gene');
+						if (div.style.display === 'none') {
+							div.style.display = 'block';
+							btn.textContent = 'Remove target gene';
+							btn.classList.remove('btn-outline-secondary');
+							btn.classList.add('btn-outline-danger');
+						} else {
+							div.style.display = 'none';
+							btn.textContent = 'Add target gene (optional)';
+							btn.classList.remove('btn-outline-danger');
+							btn.classList.add('btn-outline-secondary');
+							document.getElementById('target_gene').value = '';
+							document.getElementById('use_ml').checked = false;
+						}
+					}
+					window.addEventListener('DOMContentLoaded', function() {
+						var tg = document.getElementById('target_gene');
+						if (tg && tg.value.trim() !== '') {
+							toggleTargetGene();
+						}
+					});
+				</script>
+
+			<br>
 				{{ off_target_screen_radios("ASO-Checker") }}
 
 

@@ -299,6 +299,8 @@ ATATATATA"""
     if form.validate_on_submit():
         time_string = datetime.utcnow().strftime('%Y_%m_%d_%H_%M_%S')
         additional_screen = request.form['add_screen']
+        target_gene = form.target_gene.data.strip() if form.target_gene.data else ""
+        use_ml = "yes" if (target_gene and form.use_ml.data) else "no"
         try:
             paths = _resolve_genome_paths(form, time_string)
         except RuntimeError as e:
@@ -318,11 +320,15 @@ ATATATATA"""
         threading.Thread(target=start_checker, name="checkers",
                          args=[str(path_parent) + "/scrambler.sh", paths['genome'],
                                paths['gff'], time_string, time_string, pna_seq, "checker",
-                               additional_screen]).start()
+                               additional_screen],
+                         kwargs={"target_gene": target_gene, "use_ml": use_ml}).start()
 
         with open(os.path.join(base_dir, "inputs.txt"), "a") as inputfile:
             inputfile.write("\n" + result_custom_id + "\n" + pna_seq)
             inputfile.write("\n" + additional_screen)
+            if target_gene:
+                inputfile.write("\n" + target_gene)
+                inputfile.write("\n" + use_ml)
 
         return redirect(url_for('result_checker', result_id=time_string))
     return render_template("checker.html", title="ASO-Checker", form=form)
@@ -359,21 +365,53 @@ def result_scrambler(result_id):
 @app.route("/result_checker/<result_id>")
 def result_checker(result_id):
     ctx = _read_result_context(result_id)
-    # Last line may be the screen value; check if it's a valid screen option
-    last_line = ctx['lines'][-1].strip() if ctx['lines'] else ""
-    if last_line in ("none", "human", "microbiome"):
+    lines = ctx['lines']
+
+    # New format: lines are genome,gff / custom_id / pnaseq... / screen / target_gene / use_ml
+    # Detect new format: last line is "yes"/"no" (use_ml) and second-to-last is target_gene
+    target_gene = ""
+    use_ml = "no"
+    last_line = lines[-1].strip() if lines else ""
+    second_last = lines[-2].strip() if len(lines) >= 2 else ""
+
+    if last_line in ("yes", "no") and second_last not in ("none", "human", "microbiome"):
+        # New format with target_gene and use_ml appended
+        use_ml = last_line
+        target_gene = second_last
+        add_screen = lines[-3].strip() if len(lines) >= 3 else "none"
+        pnaseq = "".join(lines[2:-3])
+    elif last_line in ("none", "human", "microbiome"):
         add_screen = last_line
-        pnaseq = "".join(ctx['lines'][2:-1])
+        pnaseq = "".join(lines[2:-1])
     else:
         add_screen = "none"
-        pnaseq = "".join(ctx['lines'][2:])
+        pnaseq = "".join(lines[2:])
+
+    # Read varna_positions.tsv for VARNA display when target gene is set
+    varna_asos = []
+    warnings = []
+    if target_gene:
+        base_dir = os.path.join(app.root_path, 'static/data', result_id)
+        varna_path = os.path.join(base_dir, "outputs", "varna_positions.tsv")
+        if os.path.isfile(varna_path):
+            with open(varna_path) as vf:
+                for line in vf:
+                    parts = line.strip().split("\t")
+                    if parts and parts[0] != "aso_name":
+                        varna_asos.append(parts[0])
+        warnings_path = os.path.join(base_dir, "outputs", "warnings.txt")
+        if os.path.isfile(warnings_path):
+            with open(warnings_path) as wf:
+                warnings = [l.strip() for l in wf if l.strip()]
 
     return render_template("checker_result.html", title="Result ASO-Checker", result=result_id,
                            dir_out=ctx['dir_out'],
                            all_output_dirs=ctx['all_output_dirs'],
                            rfin=ctx['rfinished'], genome_file=ctx['ffile'], gff_file=ctx['gfffile'],
                            custom_id=ctx['custom_id'], pnaseq=pnaseq,
-                           time=ctx['time'], errs=ctx['errs'], add_screen=add_screen)
+                           time=ctx['time'], errs=ctx['errs'], add_screen=add_screen,
+                           target_gene=target_gene, use_ml=use_ml,
+                           varna_asos=varna_asos, warnings=warnings)
 
 
 @app.route("/delete_result/<result_id>")

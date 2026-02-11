@@ -75,4 +75,7 @@ class ScrambledForm(BaseOrganismForm):
 class CheckerForm(BaseOrganismForm):
     seq_input = StringField("ASO-sequence(s) (5' to 3'):", widget=TextArea(),
                             validators=[InputRequired()])
+    target_gene = StringField('Target gene locus tag (optional)',
+                              validators=[Optional(), Length(max=50)])
+    use_ml = BooleanField('Use machine-learning (random forest) model to predict MICs', default=False)
     submit_scr = SubmitField('Submit & start Checker')

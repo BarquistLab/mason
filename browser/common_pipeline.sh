@@ -150,7 +150,7 @@ run_optional_screening() {
 
 cleanup_intermediate_files() {
     # Remove intermediate files that aren't downloadable from the web UI.
-    # Args: $1 — mode ("mason" or "scrambler")
+    # Args: $1 — mode ("mason", "scrambler", or "checker_target")
     # Expects: $REF, $OUT to be set
     local mode="$1"
 
@@ -161,11 +161,12 @@ cleanup_intermediate_files() {
     rm -f "$REF"/*.fai
 
     # Mode-specific reference_sequences/ files
-    if [[ "$mode" == "mason" ]]; then
+    if [[ "$mode" == "mason" || "$mode" == "checker_target" ]]; then
         rm -f "$REF/targetgene_startreg.fasta"
         rm -f "$REF/targetgene_mfe.fasta"
         rm -f "$REF/intarna_output.fold"
-    else
+    fi
+    if [[ "$mode" == "scrambler" || "$mode" == "checker_target" ]]; then
         rm -f "$REF/PNA_sequence.fasta"
     fi
 
@@ -174,8 +175,8 @@ cleanup_intermediate_files() {
     rm -f "$OUT/offtargets_startregions_sorted.csv"
     rm -f "$OUT/result_table.tsv"
 
-    # Mason-only outputs/ files
-    if [[ "$mode" == "mason" ]]; then
+    # Mason and checker_target outputs/ files
+    if [[ "$mode" == "mason" || "$mode" == "checker_target" ]]; then
         rm -f "$OUT/saved_table_ml.csv"
         rm -f "$OUT/cai_value.txt"
         rm -f "$OUT/mfe_values.txt"

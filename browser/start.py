@@ -31,9 +31,12 @@ def start_scrambler(scrambler, fasta, gff, id, result_id, pna_input, screen):
     print("finished scrambler calculation!")
 
 
-def start_checker(checker, fasta, gff, id, result_id, pna_input, checker_input, screen):
+def start_checker(checker, fasta, gff, id, result_id, pna_input, checker_input, screen,
+                   target_gene="", use_ml="no"):
     """Start the ASO-Checker calculation."""
-    run_pipeline(checker,
-                 ["-f", fasta, "-g", gff, "-i", id, "-p", pna_input, "-m", checker_input, "-s", screen],
+    args = ["-f", fasta, "-g", gff, "-i", id, "-p", pna_input, "-m", checker_input, "-s", screen]
+    if target_gene:
+        args += ["-t", target_gene, "-u", use_ml]
+    run_pipeline(checker, args,
                  "./pnag/static/data/" + result_id + "/done.txt")
     print("finished ASO-Checker calculation!")

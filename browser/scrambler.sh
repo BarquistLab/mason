@@ -3,7 +3,7 @@
 # I start with assigning the flags (user inputs):
 
 
-while getopts ":f:g:p:i:m:s:" flag; do
+while getopts ":f:g:p:i:m:s:t:u:" flag; do
     case "${flag}" in
         f) fasta=${OPTARG} ;;
         g) gff=${OPTARG} ;;
@@ -11,6 +11,8 @@ while getopts ":f:g:p:i:m:s:" flag; do
         p) pna_input=${OPTARG} ;;
         m) mode=${OPTARG} ;;
         s) screen=${OPTARG} ;;
+        t) target=${OPTARG} ;;
+        u) use_ml=${OPTARG} ;;
         \?) echo "Invalid option: -$OPTARG" >&2
             exit 1 ;;
         :) echo "Option -$OPTARG requires an argument." >&2
@@ -100,7 +102,113 @@ then
     echo "$pna_input" >> "$REF/PNA_sequence.fasta"
     # else write it to PNA_sequence.fasta with >PNA as header
   fi
-  python "./pnag/checker_modify_pnas.py" "$REF/PNA_sequence.fasta" "$RES" #>> logfile_masonscript.log 2>&1
+
+  if [ -n "$target" ]
+  then
+    echo "checker target mode: extracting target gene $target"
+
+    # extract raw CDS transcripts (same as mason.sh)
+    grep -P "\tCDS\t|\tsRNA\t|\tncRNA\t|\tgene\t" "$gff" |\
+      awk -F'\t' 'BEGIN { OFS="\t" } {print $0}'| \
+      awk -F'\t' 'BEGIN { OFS="\t" } { if ($9 ~ /locus_tag=/) { print $0 } else if ($9 ~ /ID=[^;]*/) { match($9, /ID=[^;]*/); print $0 ";locus_tag=" substr($9, RSTART+3, RLENGTH-3) } }' | \
+      sed -E 's/([^\t]*\t[^\t]*\t)([^\t]*)(.*;locus_tag=([A-Za-z0-9_-]+).*)/\1\4\3/' | \
+      sed -E 's/([^\t]*\t[^\t]*\t)([^\t]*)(.*;gene=([A-Za-z0-9_-]+).*)/\1\2;\4\3/' |
+      grep ";locus_tag="> \
+      "$REF/raw_transcripts_$GFF_NEW"
+
+    # extract raw CDS FASTA for CAI calculation
+    bedtools getfasta -s -fi "$fasta" -bed "$REF/raw_transcripts_$GFF_NEW" \
+       -name+ -fo "$REF/raw_transcripts_$FASTA_NEW" >> logfile_masonscript.log 2>&1
+
+    # calculate CAI
+    cusp -sequence "$REF/raw_transcripts_$FASTA_NEW" -outfile "$REF/codon_occ.cusp" >> logfile_masonscript.log 2>&1
+    grep -A 1 "$target" "$REF/raw_transcripts_$FASTA_NEW" | head -2 > "$REF/targetgene_fullseq.fasta"
+    cai -seqall "$REF/targetgene_fullseq.fasta" -cfile "$REF/codon_occ.cusp" -outfile "$OUT/cai_value.txt" >> logfile_masonscript.log 2>&1
+    sed -i 's/Sequence: [0-9]*-[0-9]*([+-]) CAI: //' "$OUT/cai_value.txt"
+
+    # clean up raw transcript files
+    rm -f "$REF/raw_transcripts_$FASTA_NEW" "$REF/raw_transcripts_$GFF_NEW" "$REF/codon_occ.cusp" "$REF/targetgene_fullseq.fasta"
+
+    # extract target gene TIR regions from full transcripts
+    grep -A 1 "$target" "$REF/full_transcripts_$FASTA_NEW" | \
+      head -2 | sed -E 's/^([A-Z]{46}).*/\1/' > "$REF/targetgene_startreg.fasta"
+
+    grep -A 1 "$target" "$REF/full_transcripts_$FASTA_NEW" | \
+      head -2 | sed -E 's/^([A-Z]{60}).*/\1/' > "$REF/targetgene_mfe.fasta"
+
+    # validate target gene was found in GFF
+    if [ ! -s "$REF/targetgene_startreg.fasta" ] || [ "$(wc -l < "$REF/targetgene_startreg.fasta")" -lt 2 ]
+    then
+      echo "Target gene $target not found in GFF annotation!"
+      echo "Target gene $target not found in GFF annotation!" >> "$RES/error.txt"
+      touch "$RES/done.txt"
+      exit 0
+    fi
+
+    # calculate MFE with RNAfold
+    RNAfold -i "$REF/targetgene_mfe.fasta" --noPS > "$REF/intarna_output.fold"
+    FOLD_FILE="$REF/intarna_output.fold"
+    SEQ=$(awk 'NR==2' "$FOLD_FILE")
+    STRUCT=$(awk 'NR==3 {print $1}' "$FOLD_FILE")
+    MFE=$(grep -o '[(][[:space:]]*[-][0-9.]\+' "$FOLD_FILE" | tail -1 | tr -d '()[:space:]')
+    echo "$MFE" > "$OUT/mfe_values.txt"
+
+    # run checker_modify_pnas.py with target gene FASTA args
+    python "./pnag/checker_modify_pnas.py" "$REF/PNA_sequence.fasta" "$RES" \
+      "$REF/targetgene_startreg.fasta" "$REF/targetgene_mfe.fasta" >> logfile_masonscript.log 2>&1
+
+    # validate that at least some ASOs target the gene
+    if [ ! -s "$REF/aso_targets.fasta" ] || [ "$(wc -l < "$REF/aso_targets.fasta")" -lt 2 ]
+    then
+      echo "No ASOs target the specified gene $target!"
+      echo "No ASOs target the specified gene $target! None of the provided ASO sequences match the translation initiation region." >> "$RES/error.txt"
+      touch "$RES/done.txt"
+      exit 0
+    fi
+
+    # generate VARNA plots: one per-gene structure + per-ASO with binding highlighted
+    # first: plain TIR structure (same as mason.sh)
+    varna -sequenceDBN "$SEQ" \
+      -structureDBN "$STRUCT" \
+      -highlightRegion "15-26:fill=#FFA500,outline=#FFA500;31-33:fill=#FF0000,outline=#FFA500" \
+      -title "Secondary structure of $target (MFE = $MFE kcal/mol)" \
+      -titleSize 10 \
+      -o "$OUT/varna_plot.svg"
+
+    varna -sequenceDBN "$SEQ" \
+      -structureDBN "$STRUCT" \
+      -highlightRegion "15-26:fill=#FFA500,outline=#FFA500;31-33:fill=#FF0000,outline=#FFA500" \
+      -title "Sec. structure of $target (MFE = $MFE kcal/mol)" \
+      -titleSize 10 \
+      -resolution "3.0" \
+      -o "$OUT/varna_plot.png"
+
+    # per-ASO VARNA plots: ASO binding drawn first with larger radius so it remains
+    # visible behind the SD (orange) and start codon (red) regions
+    if [ -f "$OUT/varna_positions.tsv" ]
+    then
+      tail -n +2 "$OUT/varna_positions.tsv" | while IFS=$'\t' read -r aso_name start_pos end_pos
+      do
+        HIGHLIGHT="$start_pos-$end_pos:fill=#4169E1,outline=#4169E1,radius=25;15-26:fill=#FFA500,outline=#FFA500;31-33:fill=#FF0000,outline=#FF0000"
+        varna -sequenceDBN "$SEQ" \
+          -structureDBN "$STRUCT" \
+          -highlightRegion "$HIGHLIGHT" \
+          -title "$aso_name binding on $target (MFE = $MFE kcal/mol)" \
+          -titleSize 10 \
+          -o "$OUT/varna_${aso_name}.svg"
+
+        varna -sequenceDBN "$SEQ" \
+          -structureDBN "$STRUCT" \
+          -highlightRegion "$HIGHLIGHT" \
+          -title "$aso_name on $target (MFE = $MFE kcal/mol)" \
+          -titleSize 10 \
+          -resolution "3.0" \
+          -o "$OUT/varna_${aso_name}.png"
+      done
+    fi
+  else
+    python "./pnag/checker_modify_pnas.py" "$REF/PNA_sequence.fasta" "$RES" >> logfile_masonscript.log 2>&1
+  fi
 else
   echo "Somethings wrong!"
 fi
@@ -121,13 +229,27 @@ then
   Rscript ./pnag/plot_ots_scrambler.R "$OUT" "$screen" >> logfile_masonscript.log 2>&1
 elif [ "$mode" == "checker" ]
 then
-  Rscript ./pnag/summarize_ots_checker.R "$OUT" "$screen"  >> logfile_masonscript.log 2>&1
+  if [ -n "$target" ]
+  then
+    Rscript ./pnag/summarize_ots_checker.R "$OUT" "$screen" "$target" "$use_ml" >> logfile_masonscript.log 2>&1
+    if [ "$use_ml" = "yes" ]; then
+      python ./pnag/ML_run.py "$OUT" >> logfile_masonscript.log 2>&1
+    fi
+    Rscript ./pnag/make_final_table_mason.R "$OUT" "$screen" "$use_ml" >> logfile_masonscript.log 2>&1
+  else
+    Rscript ./pnag/summarize_ots_checker.R "$OUT" "$screen"  >> logfile_masonscript.log 2>&1
+  fi
 else
   echo "Somethings wrong!"
 fi
 
 touch "$RES/$target"
 
-cleanup_intermediate_files "scrambler"
+if [ -n "$target" ] && [ "$mode" == "checker" ]
+then
+  cleanup_intermediate_files "checker_target"
+else
+  cleanup_intermediate_files "scrambler"
+fi
 
 echo "MASON finished" >> logfile_masonscript.log

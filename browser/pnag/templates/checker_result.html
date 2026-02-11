@@ -16,6 +16,9 @@
 		<p>{{ time }}</p>
 		<p>Used genome file (FASTA): <a href="{{ genome_file }}"><i class="material-icons">cloud_download</i></a></p>
 		<p>Used annotation file (GFF): <a href="{{ gff_file }}"><i class="material-icons">cloud_download</i></a></p>
+		{% if target_gene %}
+		<p>Target gene (locus tag): {{ target_gene }}</p>
+		{% endif %}
 		<p> Input ASO-sequence(s):</p>
 		<pre>{{ pnaseq }}</pre>
 		<h5 style="color:rgba(128, 0, 0, 1.0);">Please be aware that the results will be
@@ -24,6 +27,179 @@
 	</article>
 
 	{% if rfin %}
+		{% if errs and errs[0] %}
+			<div class="content-section">
+				<h5 style="background-color:rgba(128, 0, 0, 1.0);color:white;">
+					{% for err in errs %}
+						{{ err }}<br>
+					{% endfor %}
+				</h5>
+			</div>
+		{% elif target_gene %}
+			{# === TARGET GENE MODE: MASON-style output === #}
+			{% include "includes/delete_modal.html" %}
+
+			<h2 id="res">ASO-checker results (target: {{ target_gene }}):</h2>
+			<div class="content-section">
+
+				{% if warnings %}
+				<div class="alert alert-warning">
+					<strong>Warning:</strong> The following ASOs were skipped because they do not target the
+					translation initiation region of {{ target_gene }}:
+					<ul>
+						{% for w in warnings %}
+						<li>{{ w }}</li>
+						{% endfor %}
+					</ul>
+				</div>
+				{% endif %}
+
+				<h3 class="border-bottom mb-4">ASO alignment to target mRNA</h3>
+				<p>
+					Below, the checked ASOs are visualized as they would align with the target gene's mRNA
+					around the translation initiation region (TIR).
+					The start codon and Shine-Dalgarno (SD) region are highlighted by darkened fields.
+					The ASO sequences are shown in 3' to 5' orientation to show the alignment to the mRNA.
+				</p>
+				<img src="{{ dir_out + '/outputs/heatmap.png' }}" >
+				<p>Download ASO sequences: &nbsp <a href="{{ dir_out + '/reference_sequences/aso_sequences.fasta' }}">FASTA<i class="material-icons">cloud_download</i></a></p>
+				<p>Download heatmap: &nbsp<a href="{{ dir_out + '/outputs/heatmap.svg' }}">SVG <i class="material-icons">cloud_download</i></a>
+					&nbsp&nbsp
+				<a href="{{ dir_out + '/outputs/heatmap.png' }}"> PNG <i class="material-icons">cloud_download</i></a></p>
+				<br>
+
+				<h3 class="border-bottom mb-4">Secondary structure of translation initiation region (TIR)</h3>
+				<p>
+					The predicted secondary structure of the mRNA around the translation initiation region (TIR),
+					as calculated with <a href="https://www.tbi.univie.ac.at/RNA/RNAfold.1.html" >RNAfold</a> (v2.6.4),
+					and visualized using  <a href="https://varna.lisn.upsaclay.fr/index.php?lang=en&page=command&css=varna" >VARNA</a> v3.9.
+					High base-pairing or structure in the region of the start codon (red) or Shine-Dalgarno region (SD)
+					(orange) may influence translation initiation and ASO accessibility.
+					<span style="color: red">Red:</span> denotes the start codon.
+					<span style="color: orange">Orange:</span> denotes the area where usually a SD-region is located (-17 to -5 bases from start codon).
+					<span style="color: #4169E1">Blue:</span> denotes the ASO binding site.
+					The secondary structure is shown in 5' to 3' orientation. Shown as TIR is the region spanning from -30 to +30 bases relative to the start codon.
+				</p>
+				<img src="{{ dir_out + '/outputs/varna_plot.png' }}" width="50%" class="centered-image">
+				<br>
+				<p>
+					Download secondary structure: &nbsp
+					<a href="{{ dir_out + '/outputs/varna_plot.svg' }}">SVG <i class="material-icons">cloud_download</i></a>
+					&nbsp&nbsp
+					<a href="{{ dir_out + '/outputs/varna_plot.png' }}"> PNG <i class="material-icons">cloud_download</i></a>
+				</p>
+
+				{% if varna_asos %}
+				<h4>Per-ASO binding site visualization</h4>
+				<p>
+					<span style="color: #4169E1; font-weight: bold;">Blue</span> = ASO binding site,
+					<span style="color: #FFA500; font-weight: bold;">Orange</span> = SD region,
+					<span style="color: #FF0000; font-weight: bold;">Red</span> = start codon.
+				</p>
+				{% for aso in varna_asos %}
+				<br>
+				<h5>{{ aso }}</h5>
+				<img src="{{ dir_out + '/outputs/varna_' + aso + '.png' }}" width="50%" class="centered-image">
+				<p>
+					Download: &nbsp
+					<a href="{{ dir_out + '/outputs/varna_' + aso + '.svg' }}">SVG <i class="material-icons">cloud_download</i></a>
+					&nbsp&nbsp
+					<a href="{{ dir_out + '/outputs/varna_' + aso + '.png' }}"> PNG <i class="material-icons">cloud_download</i></a>
+				</p>
+				{% endfor %}
+				{% endif %}
+
+				<br>
+				<h3 class="border-bottom mb-4"> Predicted melting temperature (Tm, in &deg;C) for ASOs </h3>
+				<p>The predicted Tm of ASOs are shown in the barplot below. For Tm prediction, we used the R
+					package
+					<a href="https://bioconductor.org/packages/release/bioc/html/rmelting.html">rmelting</a>
+					(v1.10.0) which is an interface to the
+					<a href="https://www.ebi.ac.uk/biomodels-static/tools/melting/">MELTING</a> (v5)
+					program. We calculate the melting temperature for RNA-RNA duplexes, because
+					there are no available algorithms for the Tm of PNA-mRNA duplexes. As parameters we used the
+					nucleic acid concentration of 8 &mu;M and a Na concentration of 0.1M. The Tm values are useful
+					for relative comparison between PNAs. However, the absolute Tm is only an approximation and
+					should be validated experimentally. In general, PNAs with a very low Tm should be avoided to
+					enable PNA-mRNA binding. </p>
+				<img src="{{ dir_out + '/outputs/tm.png' }}" >
+				<p>Download barplot: &nbsp<a href="{{ dir_out + '/outputs/tm.png' }}">PNG <i class="material-icons">cloud_download</i></a>
+					&nbsp&nbsp <a href="{{ dir_out + '/outputs/tm.svg' }}">SVG <i class="material-icons">cloud_download</i></a></p>
+				<br>
+				<br>
+
+				<h3 class="border-bottom mb-4"> Predicted off-targets for ASOs </h3>
+				<p>The predicted off-targets (OT) of ASOs are shown in the barplots below. OTs in the
+					translation initiation regions (TIRs) of genes of the targeted organism are visualized
+					below in different shades of red. OTs in the whole transcriptome of the targeted bacterium are visualized below in different
+					shades of blue in the second plot.
+					The lighter the color, the more mismatches the OT has.
+					OTs in the TIR of transcripts are defined as binding regions with the
+					first base in the region between -20 and +5 bases relative to the annotated
+					start site of the CDS. For details and explanations of the detailed off-target table
+					see <a href="../help">help page</a>. </p>
+				<img src="{{ dir_out + '/outputs/plot_ots_start_regions.png'}}" >
+				<br>
+				<br>
+				<p>Download barplot: &nbsp<a href="{{ dir_out + '/outputs/plot_ots_start_regions.svg' }}">SVG <i class="material-icons">cloud_download</i></a>
+					&nbsp&nbsp
+				<a href="{{ dir_out + '/outputs/plot_ots_start_regions.png' }}"> PNG <i class="material-icons">cloud_download</i></a></p>
+
+				<img src="{{ dir_out + '/outputs/plot_ots_whole_transcriptome.png'}}" >
+				<br>
+				<br>
+				<p>Download barplot: &nbsp<a href="{{ dir_out + '/outputs/plot_ots_whole_transcriptome.svg' }}">SVG <i class="material-icons">cloud_download</i></a>
+					&nbsp&nbsp
+				<a href="{{ dir_out + '/outputs/plot_ots_whole_transcriptome.png' }}"> PNG <i class="material-icons">cloud_download</i></a></p>
+				<p>Download detailed critical-off-target table: &nbsp <a href="{{ dir_out +
+						'/outputs/offtargets_fulltranscripts_sorted.csv' }}">CSV <i class="material-icons">
+							cloud_download</i></a>
+						&nbsp&nbsp
+						<a href="{{ dir_out +
+						'/outputs/offtargets_fulltranscripts_sorted.xlsx' }}">Excel <i class="material-icons">cloud_download</i></a>
+					</p>
+
+				{% set res_prefix = dir_out + "/" %}
+				{% set show_pdf = false %}
+				{% include "includes/ot_hmp_section.html" %}
+				{% include "includes/ot_human_section.html" %}
+
+				<br>
+				<br>
+				<h3 class="border-bottom mb-4"> Summary table for ASOs targeting {{ target_gene }} </h3>
+				<p> Summary for each ASO sequence. Meanings of column names: <br>
+					gene = target gene locus tag <br>
+					SC_bases = maximum stretch of self-complementary bases <br>
+					pur_perc = percentage of purine bases in ASO sequence (too high % should be avoided) <br>
+					long_pur_stretch = longest purine stretch (too long purine stretches should be avoided) <br>
+					Tm = Melting temperature<br>
+					OT_tot = critical off-targets in the whole transcriptome<br>
+					OT_TIR = critical off-targets in translation initiation regions<br>
+					{% if add_screen == "microbiome" %}
+						OT_HMP = off-targets in translation initiation regions of genes in the microbiome<br>
+					{% endif %}
+					{% if add_screen == "human" %}
+						OT_GRCh38 = off-targets in coding regions of the human genome<br>
+					{% endif %}
+					{% if use_ml == "yes" %}
+						MIC_pred = predicted minimum inhibitory concentration (random forest model)<br>
+						MIC_ranked = rank of ASOs by predicted MIC (lower rank = better predicted efficacy)<br>
+					{% endif %}
+				</p>
+				<object type="text/html" data="{{ dir_out + '/outputs/result_table.html' }}" width="100%" height="250px"> </object>
+
+				<br>
+				<br>
+				<p> Full table in HTML format: &nbsp<a href="{{ dir_out + '/outputs/result_table.html' }}">HTML <i class="material-icons">cloud_download</i></a>
+				<br>
+				<p>Download ASO summary table: &nbsp<a href="{{ dir_out + '/outputs/result_table.csv' }}">CSV <i class="material-icons">cloud_download</i></a>
+					&nbsp&nbsp
+					<a href="{{ dir_out + '/outputs/result_table.xlsx' }}">Excel <i class="material-icons">cloud_download</i></a>
+				</p>
+			</div>
+
+		{% else %}
+			{# === STANDARD CHECKER MODE (no target gene) === #}
 			<h2 id="res">ASO-checker results:</h2>
 			{% include "includes/delete_modal.html" %}
 			<div class="content-section">
@@ -74,6 +250,7 @@
 					<br>
 					{% include "includes/summary_table_section.html" %}
 			</div>
+		{% endif %}
 
 
 	{% else %}

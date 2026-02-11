@@ -60,7 +60,7 @@ class startForm(BaseOrganismForm):
 
 class ScrambledForm(BaseOrganismForm):
     seq_input = StringField("ASO-sequence (5' to 3'):",
-                            validators=[InputRequired(), Regexp("^[ATGC]+$", message="use DNA alphabet only (A,T,G,C)"),
+                            validators=[InputRequired(), Regexp("^[ATGCatgc]+$", message="use DNA alphabet only (A,T,G,C)"),
                                         Length(min=8, max=15, message="choose sequence with 8-14 nucleotides!")])
     submit_scr = SubmitField('Submit & start Scrambler')
 

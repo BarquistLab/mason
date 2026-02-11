@@ -69,6 +69,24 @@ def _init_run_directory(time_string, paths):
     return base_dir
 
 
+def _format_checker_sequences(seq_input):
+    """Convert plain sequences to FASTA format with aso_NNN headers if needed.
+    Also uppercases all sequence characters."""
+    lines = [l.strip() for l in seq_input.strip().splitlines() if l.strip()]
+    if not lines:
+        return seq_input
+    if lines[0].startswith('>'):
+        # Already FASTA — uppercase sequence lines only
+        return '\n'.join(l if l.startswith('>') else l.upper()
+                         for l in seq_input.strip().splitlines())
+    # Plain sequences — wrap each line with an aso_NNN header
+    fasta_lines = []
+    for i, line in enumerate(lines, 1):
+        fasta_lines.append(f'>aso_{i:03d}')
+        fasta_lines.append(line.upper())
+    return '\n'.join(fasta_lines)
+
+
 def _read_result_context(result_id):
     """Read shared result page context: inputs.txt, done status, output dirs, file paths."""
     base_dir = os.path.join(app.root_path, 'static/data', result_id)
@@ -180,7 +198,7 @@ def scrambler():
         base_dir = _init_run_directory(time_string, paths)
 
         result_custom_id = form.custom_id.data
-        pna_seq = form.seq_input.data
+        pna_seq = form.seq_input.data.upper()
         pna_file_string = os.path.join(base_dir, "pna_input.fasta")
 
         with open(pna_file_string, "w") as pna_file:
@@ -225,11 +243,11 @@ ATATATATA"""
         base_dir = _init_run_directory(time_string, paths)
 
         result_custom_id = form.custom_id.data
-        pna_seq = form.seq_input.data
+        pna_seq = _format_checker_sequences(form.seq_input.data)
         pna_file_string = os.path.join(base_dir, "pna_input.fasta")
 
         with open(pna_file_string, "w") as pna_file:
-            pna_file.write(">PNA\n" + pna_seq)
+            pna_file.write(pna_seq)
 
         open(os.path.join(path_parent, "logfile_masonscript.log"), "w").close()
 

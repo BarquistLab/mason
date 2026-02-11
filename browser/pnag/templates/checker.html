@@ -57,12 +57,19 @@
 						value = select_presets.value;
 						first = document.getElementById('div_genome');
 						second = document.getElementById('div_gff');
+						ncbi = document.getElementById('div_ncbi_accession');
 						if (value == 'upload') {
 							first.style.display = 'block';
 							second.style.display = 'block';
+							ncbi.style.display = 'none';
+						} else if (value == 'ncbi') {
+							first.style.display = 'none';
+							second.style.display = 'none';
+							ncbi.style.display = 'flex';
 						} else {
 							first.style.display = 'none';
 							second.style.display = 'none';
+							ncbi.style.display = 'none';
 						}
 					}
 				</script>

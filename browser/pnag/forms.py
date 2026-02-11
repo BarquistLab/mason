@@ -9,7 +9,7 @@ from flask_wtf.file import FileField, FileAllowed
 from wtforms import StringField, SubmitField, SelectField, SelectMultipleField, BooleanField
 from wtforms.widgets import TextArea
 from wtforms.fields import IntegerField
-from wtforms.validators import Length, ValidationError, NumberRange, InputRequired, Regexp
+from wtforms.validators import Length, ValidationError, NumberRange, InputRequired, Regexp, Optional
 from pnag import app
 
 
@@ -29,11 +29,17 @@ class BaseOrganismForm(FlaskForm):
     genome = FileField('FASTA File', validators=[FileAllowed(['fasta', 'fa', 'fna'])])
     gff = FileField('GFF File', validators=[FileAllowed(['gff', 'gff3', 'gff2', 'gff1', 'gtf'])])
     presets = SelectField('Genome of target organism', choices=[], validators=[InputRequired()])
+    ncbi_accession = StringField('NCBI Assembly Accession',
+                                 validators=[Optional(), Regexp(r'^GC[AF]_\d{9}(\.\d+)?$',
+                                             message='Enter a valid NCBI assembly accession (e.g. GCF_000005845.2)')])
 
     def validate_presets(self, presets):
         if presets.data == 'upload':
             if not self.genome.data or not self.gff.data:
                 raise ValidationError('Please select a preset or upload both files, genome and gff.')
+        elif presets.data == 'ncbi':
+            if not self.ncbi_accession.data or not self.ncbi_accession.data.strip():
+                raise ValidationError('Please enter an NCBI assembly accession number.')
 
 
 class startForm(BaseOrganismForm):

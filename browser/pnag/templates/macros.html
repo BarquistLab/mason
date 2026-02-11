@@ -12,6 +12,17 @@
 {% endmacro %}
 
 {% macro genome_gff_upload(form) %}
+<div class="form-group row" id="div_ncbi_accession" style="display:none;">
+    <div class="col-md-12">
+        <p>Enter an NCBI assembly accession (e.g. <code>GCF_000005845.2</code> for <i>E. coli</i> K-12).
+            You can find accessions at <a href="https://www.ncbi.nlm.nih.gov/datasets/genome/">NCBI Datasets</a>.
+            The genome FASTA and GFF annotation will be downloaded automatically.</p>
+    </div>
+    <div class="col-md-6">
+        {{ form.ncbi_accession.label(class="form-control-label") }}
+        {{ render_field(form.ncbi_accession) }}
+    </div>
+</div>
 <div class="form-group row" id="div_genome">
     <p class="col-md-12"> Below, custom FASTA and GFF files of a bacterium of interest can be uploaded (can be downloaded from
             <a href="https://www.ncbi.nlm.nih.gov/genome/">NCBI</a>): </p>

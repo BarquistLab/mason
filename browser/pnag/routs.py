@@ -6,6 +6,9 @@ This defines the structure of the website with its routs and functions within.
 It tells which template to use and validates submitted forms.
 """
 import os
+import glob
+import subprocess
+import zipfile
 from datetime import datetime
 import re
 import shutil
@@ -33,7 +36,50 @@ with open('ESSENTIAL_GENES.json', 'r') as f:
 
 def _preset_choices():
     """Build the preset choices list used by all forms."""
-    return [('upload', 'Own files')] + [(key, PRESETS[key][2]) for key in PRESETS.keys()]
+    return ([('upload', 'Own files'), ('ncbi', 'NCBI assembly accession')]
+            + [(key, PRESETS[key][2]) for key in PRESETS.keys()])
+
+
+def _download_ncbi_accession(accession, dest_dir):
+    """Download genome FASTA and GFF3 from NCBI using the datasets CLI.
+
+    Returns dict with 'genome' and 'gff' paths.
+    Raises RuntimeError on failure.
+    """
+    os.makedirs(dest_dir, exist_ok=True)
+    zip_path = os.path.join(dest_dir, 'ncbi_dataset.zip')
+
+    result = subprocess.run(
+        ['datasets', 'download', 'genome', 'accession', accession,
+         '--include', 'gff3,genome', '--filename', zip_path, '--no-progressbar'],
+        capture_output=True, text=True, timeout=300
+    )
+    if result.returncode != 0:
+        raise RuntimeError(
+            f'Failed to download accession {accession}. '
+            'Please check that the accession is valid (e.g. GCF_000005845.2).'
+        )
+
+    try:
+        with zipfile.ZipFile(zip_path, 'r') as zf:
+            zf.extractall(dest_dir)
+    except zipfile.BadZipFile:
+        raise RuntimeError(f'Downloaded file for {accession} is not a valid zip archive.')
+    finally:
+        if os.path.exists(zip_path):
+            os.remove(zip_path)
+
+    data_dir = os.path.join(dest_dir, 'ncbi_dataset', 'data', accession)
+    fna_files = glob.glob(os.path.join(data_dir, '*.fna'))
+    gff_files = glob.glob(os.path.join(data_dir, '*.gff'))
+
+    if not fna_files or not gff_files:
+        raise RuntimeError(
+            f'Could not find FASTA/GFF files for accession {accession}. '
+            'The assembly may not include both genome and annotation files.'
+        )
+
+    return {'genome': fna_files[0], 'gff': gff_files[0]}
 
 
 def _resolve_genome_paths(form, time_string):
@@ -52,6 +98,9 @@ def _resolve_genome_paths(form, time_string):
         form.gff.data.save(gff_file)
         paths['genome'] = genome_file
         paths['gff'] = gff_file
+    elif form.presets.data == 'ncbi':
+        base_dir = os.path.join(app.root_path, 'static/data', time_string)
+        paths = _download_ncbi_accession(form.ncbi_accession.data.strip(), base_dir)
     else:
         files = PRESETS[form.presets.data]
         paths['genome'] = files[0]
@@ -156,7 +205,11 @@ def start():
         if form.essential.data:
             target_genes += [form.essential.data]
 
-        paths = _resolve_genome_paths(form, time_string)
+        try:
+            paths = _resolve_genome_paths(form, time_string)
+        except RuntimeError as e:
+            flash(str(e), 'danger')
+            return render_template("start.html", title="Start", essential=ESSENTIAL_GENES, form=form)
         base_dir = _init_run_directory(time_string, paths)
 
         result_custom_id = form.custom_id.data
@@ -197,7 +250,11 @@ def scrambler():
     if form.validate_on_submit():
         time_string = datetime.utcnow().strftime('%Y_%m_%d_%H_%M_%S')
         additional_screen = request.form['add_screen']
-        paths = _resolve_genome_paths(form, time_string)
+        try:
+            paths = _resolve_genome_paths(form, time_string)
+        except RuntimeError as e:
+            flash(str(e), 'danger')
+            return render_template("scrambler.html", title="Scrambler", form=form)
         base_dir = _init_run_directory(time_string, paths)
 
         result_custom_id = form.custom_id.data
@@ -242,7 +299,11 @@ ATATATATA"""
     if form.validate_on_submit():
         time_string = datetime.utcnow().strftime('%Y_%m_%d_%H_%M_%S')
         additional_screen = request.form['add_screen']
-        paths = _resolve_genome_paths(form, time_string)
+        try:
+            paths = _resolve_genome_paths(form, time_string)
+        except RuntimeError as e:
+            flash(str(e), 'danger')
+            return render_template("checker.html", title="ASO-Checker", form=form)
         base_dir = _init_run_directory(time_string, paths)
 
         result_custom_id = form.custom_id.data

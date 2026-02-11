@@ -73,11 +73,19 @@
 						value = select_presets.value;
 						first = document.getElementById('div_genome');
 						second = document.getElementById('div_gff');
+						ncbi = document.getElementById('div_ncbi_accession');
 						egenes = document.getElementById('essgenes');
 						if (value == 'upload') {
 							egenes.style.display = 'none';
 							first.style.display = 'block';
 							second.style.display = 'block';
+							ncbi.style.display = 'none';
+							essential_choice.innerHTML = '';
+						} else if (value == 'ncbi') {
+							egenes.style.display = 'none';
+							first.style.display = 'none';
+							second.style.display = 'none';
+							ncbi.style.display = 'flex';
 							essential_choice.innerHTML = '';
 						} else {
 							if (select_presets.value in essential_dict) {
@@ -95,6 +103,7 @@
 							}
 							first.style.display = 'none';
 							second.style.display = 'none';
+							ncbi.style.display = 'none';
 						}
 					}
 				</script>

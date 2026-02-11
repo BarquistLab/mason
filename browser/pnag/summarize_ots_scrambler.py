@@ -7,7 +7,7 @@ import numpy as np
 import sys
 
 ot_table = sys.argv[1] + "/offtargets_fulltranscripts_sorted.tab"
-#ot_table = "./browser/pnag/static/data/2026_02_10_15_27_21/outputs/offtargets_fulltranscripts_sorted.tab"
+screen = sys.argv[2] if len(sys.argv) > 2 else "none"
 all_off_targets = pd.read_table(ot_table, sep='\t', index_col=False)
 
 
@@ -141,6 +141,44 @@ if output_df.shape[0] > 11:
 
 # restrict df_plot to to only "ASO" rows that contain the ASOs in output_df:
 df_plot = df_plot[df_plot["ASO"].isin(output_df["ASO"])]
+
+# HMP microbiome off-targets (0mm exact matches)
+if screen == "microbiome":
+    hmp_file = sys.argv[1] + "/offtargets_microbiome_sorted.tab"
+    if os.path.exists(hmp_file):
+        hmp_ot = pd.read_table(hmp_file, sep='\t', index_col=False)
+        kept_asos = set(output_df["ASO"])
+        output_df["OT_HMP_0mm"] = 0
+        for aso_id in hmp_ot["probe_id"].unique():
+            if aso_id not in kept_asos:
+                continue
+            ot_aso = hmp_ot[hmp_ot["probe_id"] == aso_id]
+            n_0mm = int((ot_aso["num_mismatch"] == 0).sum())
+            output_df.loc[output_df["ASO"] == aso_id, "OT_HMP_0mm"] = n_0mm
+            df_plot = pd.concat([df_plot, pd.DataFrame([[aso_id, "OT in HMP microbiome", "HMP microbiome",
+                                                          n_0mm, ot_aso.iloc[0]["probe_seq"], 0]], columns=df_plot.columns)])
+        output_df["OT_HMP_0mm"] = output_df["OT_HMP_0mm"].astype(int)
+        hmp_ot.to_csv(sys.argv[1] + "/offtargets_hmp_sorted.csv", index=False)
+        hmp_ot.to_excel(sys.argv[1] + "/offtargets_hmp_sorted.xlsx", index=False)
+
+# Human genome off-targets (0mm exact matches)
+if screen == "human":
+    human_file = sys.argv[1] + "/offtargets_human_sorted.tab"
+    if os.path.exists(human_file):
+        human_ot = pd.read_table(human_file, sep='\t', index_col=False)
+        kept_asos = set(output_df["ASO"])
+        output_df["OT_GRCh38_0mm"] = 0
+        for aso_id in human_ot["probe_id"].unique():
+            if aso_id not in kept_asos:
+                continue
+            ot_aso = human_ot[human_ot["probe_id"] == aso_id]
+            n_0mm = int((ot_aso["num_mismatch"] == 0).sum())
+            output_df.loc[output_df["ASO"] == aso_id, "OT_GRCh38_0mm"] = n_0mm
+            df_plot = pd.concat([df_plot, pd.DataFrame([[aso_id, "OT in human genome", "human genome",
+                                                          n_0mm, ot_aso.iloc[0]["probe_seq"], 0]], columns=df_plot.columns)])
+        output_df["OT_GRCh38_0mm"] = output_df["OT_GRCh38_0mm"].astype(int)
+        human_ot.to_csv(sys.argv[1] + "/offtargets_human_sorted.csv", index=False)
+        human_ot.to_excel(sys.argv[1] + "/offtargets_human_sorted.xlsx", index=False)
 
 # export df_plot for R plotting script
 df_plot.to_csv(sys.argv[1] + "/df_plot.csv", index=False)

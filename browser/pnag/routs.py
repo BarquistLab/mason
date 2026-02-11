@@ -176,6 +176,7 @@ def scrambler():
 
     if form.validate_on_submit():
         time_string = datetime.utcnow().strftime('%Y_%m_%d_%H_%M_%S')
+        additional_screen = request.form['add_screen']
         paths = _resolve_genome_paths(form, time_string)
         base_dir = _init_run_directory(time_string, paths)
 
@@ -188,10 +189,12 @@ def scrambler():
 
         threading.Thread(target=start_scrambler, name="scramblers",
                          args=[str(path_parent) + "/scrambler.sh", paths['genome'],
-                               paths['gff'], time_string, time_string, pna_seq]).start()
+                               paths['gff'], time_string, time_string, pna_seq,
+                               additional_screen]).start()
 
         with open(os.path.join(base_dir, "inputs.txt"), "a") as inputfile:
             inputfile.write("\n" + result_custom_id + "\n" + pna_seq)
+            inputfile.write("\n" + additional_screen)
 
         return redirect(url_for('result_scrambler', result_id=time_string))
     return render_template("scrambler.html", title="Scrambler", form=form)
@@ -216,6 +219,7 @@ ATATATATA"""
 
     if form.validate_on_submit():
         time_string = datetime.utcnow().strftime('%Y_%m_%d_%H_%M_%S')
+        additional_screen = request.form['add_screen']
         paths = _resolve_genome_paths(form, time_string)
         base_dir = _init_run_directory(time_string, paths)
 
@@ -228,10 +232,12 @@ ATATATATA"""
 
         threading.Thread(target=start_checker, name="checkers",
                          args=[str(path_parent) + "/scrambler.sh", paths['genome'],
-                               paths['gff'], time_string, time_string, pna_seq, "checker"]).start()
+                               paths['gff'], time_string, time_string, pna_seq, "checker",
+                               additional_screen]).start()
 
         with open(os.path.join(base_dir, "inputs.txt"), "a") as inputfile:
             inputfile.write("\n" + result_custom_id + "\n" + pna_seq)
+            inputfile.write("\n" + additional_screen)
 
         return redirect(url_for('result_checker', result_id=time_string))
     return render_template("checker.html", title="ASO-Checker", form=form)
@@ -255,26 +261,33 @@ def result(result_id):
 def result_scrambler(result_id):
     ctx = _read_result_context(result_id)
     pnaseq = ctx['lines'][2]
+    add_screen = ctx['lines'][3].strip() if len(ctx['lines']) > 3 else "none"
 
     return render_template("scrambler_result.html", title="Result", result=result_id, dir_out=ctx['dir_out'],
                            all_output_dirs=ctx['all_output_dirs'],
                            rfin=ctx['rfinished'], genome_file=ctx['ffile'], gff_file=ctx['gfffile'],
                            custom_id=ctx['custom_id'], pnaseq=pnaseq,
-                           time=ctx['time'], errs=ctx['errs'])
+                           time=ctx['time'], errs=ctx['errs'], add_screen=add_screen)
 
 
 @app.route("/result_checker/<result_id>")
 def result_checker(result_id):
     ctx = _read_result_context(result_id)
-    # get fasta pna sequence (make 1 string from list)
-    pnaseq = "".join(ctx['lines'][2:])
+    # Last line may be the screen value; check if it's a valid screen option
+    last_line = ctx['lines'][-1].strip() if ctx['lines'] else ""
+    if last_line in ("none", "human", "microbiome"):
+        add_screen = last_line
+        pnaseq = "".join(ctx['lines'][2:-1])
+    else:
+        add_screen = "none"
+        pnaseq = "".join(ctx['lines'][2:])
 
     return render_template("checker_result.html", title="Result ASO-Checker", result=result_id,
                            dir_out=ctx['dir_out'],
                            all_output_dirs=ctx['all_output_dirs'],
                            rfin=ctx['rfinished'], genome_file=ctx['ffile'], gff_file=ctx['gfffile'],
                            custom_id=ctx['custom_id'], pnaseq=pnaseq,
-                           time=ctx['time'], errs=ctx['errs'])
+                           time=ctx['time'], errs=ctx['errs'], add_screen=add_screen)
 
 
 @app.route("/delete_result/<result_id>")

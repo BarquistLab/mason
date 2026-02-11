@@ -3,13 +3,14 @@
 # I start with assigning the flags (user inputs):
 
 
-while getopts ":f:g:p:i:m:" flag; do
+while getopts ":f:g:p:i:m:s:" flag; do
     case "${flag}" in
         f) fasta=${OPTARG} ;;
         g) gff=${OPTARG} ;;
         i) result_id=${OPTARG} ;;
         p) pna_input=${OPTARG} ;;
         m) mode=${OPTARG} ;;
+        s) screen=${OPTARG} ;;
         \?) echo "Invalid option: -$OPTARG" >&2
             exit 1 ;;
         :) echo "Option -$OPTARG requires an argument." >&2
@@ -112,6 +113,18 @@ seqmap 3 "$REF/aso_targets.fasta" "$REF/full_transcripts_$FASTA_NEW" \
        "$OUT/offtargets_fulltranscripts.tab" /output_all_matches \
        /forward_strand /output_statistics /available_memory:5000 >> logfile_masonscript.log 2>&1
 
+if [[ $screen = "microbiome" ]]
+then
+    seqmap 0 "$REF/aso_targets.fasta" "$PRESETS/start_regions_HMP.fasta" \
+       "$OUT/offtargets_microbiome.tab" /output_all_matches \
+       /forward_strand /output_statistics /available_memory:5000 >> logfile_masonscript.log 2>&1
+elif [[ $screen = "human" ]]
+then
+  seqmap 0 "$REF/aso_targets.fasta" "$PRESETS/GRCh38_latest_rna.fna" \
+       "$OUT/offtargets_human.tab" /output_all_matches \
+       /forward_strand /output_statistics /available_memory:5000 >> logfile_masonscript.log 2>&1
+fi
+
 # Process mismatches using shared function (offset=-32 for scrambler)
 run_seqmap_and_process_mismatches -32
 
@@ -119,11 +132,11 @@ echo "summarize off-targets"
 
 if [ -z "$mode" ]
 then
-  python ./pnag/summarize_ots_scrambler.py "$OUT"  >> logfile_masonscript.log 2>&1
-  Rscript ./pnag/plot_ots_scrambler.R "$OUT" >> logfile_masonscript.log 2>&1
+  python ./pnag/summarize_ots_scrambler.py "$OUT" "$screen"  >> logfile_masonscript.log 2>&1
+  Rscript ./pnag/plot_ots_scrambler.R "$OUT" "$screen" >> logfile_masonscript.log 2>&1
 elif [ "$mode" == "checker" ]
 then
-  Rscript ./pnag/summarize_ots_checker.R "$OUT"  >> logfile_masonscript.log 2>&1
+  Rscript ./pnag/summarize_ots_checker.R "$OUT" "$screen"  >> logfile_masonscript.log 2>&1
 else
   echo "Somethings wrong!"
 fi

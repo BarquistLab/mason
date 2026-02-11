@@ -149,6 +149,10 @@
 										{% if add_screen == "human" %}
 											OT_GRCh38 = off-targets in coding regions of the human genome<br>
 										{% endif %}
+										{% if use_ml == "yes" %}
+											MIC_pred = predicted minimum inhibitory concentration (random forest model)<br>
+											MIC_ranked = rank of ASOs by predicted MIC (lower rank = better predicted efficacy)<br>
+										{% endif %}
 
 									</p>
                     <object type="text/html" data="{{ dir_out + "/" + res + '/outputs/result_table.html' }}" width="100%" height="250px"> </object>

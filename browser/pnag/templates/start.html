@@ -132,7 +132,17 @@
 				</div>
 				<br>
 				{{ off_target_screen_radios("MASON") }}
-				 <br>
+				<br>
+				<div class="form-group">
+					<div class="form-check">
+						{{ form.use_ml(class="form-check-input") }}
+						{{ form.use_ml.label(class="form-check-label", style="font-weight: bold;") }}
+					</div>
+					<p>The random forest model was trained on 9-mer ASO data targeting genes in uropathogenic <i>E. coli</i> (UPEC).
+						The predicted MIC values should not be interpreted as absolute values.
+						Instead, use the MIC ranking to compare and select ASOs relative to each other.</p>
+				</div>
+				<br>
 					<div class="form-group">
 						{{ form.submit(class="btn btn-outline-info float-left") }}
 					</div>

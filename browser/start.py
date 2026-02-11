@@ -14,11 +14,11 @@ def run_pipeline(script_path, args, done_file_path):
     open(done_file_path, "w+").close()
 
 
-def start_calculation(mason, fasta, gff, targets, length,  b_before, id, result_id, screen):
+def start_calculation(mason, fasta, gff, targets, length, b_before, id, result_id, screen, use_ml="no"):
     """Start the MASON calculation."""
     run_pipeline(mason,
                  ["-f", fasta, "-g", gff, "-t", targets, "-l", length,
-                  "-i", id, "-b", b_before, "-s", screen],
+                  "-i", id, "-b", b_before, "-s", screen, "-u", use_ml],
                  "./pnag/static/data/" + result_id + "/../done.txt")
     print("finished mason calculation!")
 

@@ -3,7 +3,7 @@
 # I start with assigning the flags (user inputs):
 
 
-while getopts f:g:t:l:m:p:i:b:s: flag
+while getopts f:g:t:l:m:p:i:b:s:u: flag
 do
     # shellcheck disable=SC2220
     case "${flag}" in
@@ -15,6 +15,7 @@ do
 	p) pna_input=${OPTARG};;
 	b) bases_before=${OPTARG};;
 	s) screen=${OPTARG};;
+	u) use_ml=${OPTARG};;
     esac
 done
 
@@ -171,9 +172,11 @@ run_seqmap_and_process_mismatches 0
 
 Rscript ./pnag/summarize_ots.R "$OUT" "$target" "$screen" >> logfile_masonscript.log 2>&1
 
-python ./pnag/ML_run.py "$OUT" >> logfile_masonscript.log 2>&1
+if [ "$use_ml" = "yes" ]; then
+    python ./pnag/ML_run.py "$OUT" >> logfile_masonscript.log 2>&1
+fi
 
-Rscript ./pnag/make_final_table_mason.R "$OUT" "$screen" >> logfile_masonscript.log 2>&1
+Rscript ./pnag/make_final_table_mason.R "$OUT" "$screen" "$use_ml" >> logfile_masonscript.log 2>&1
 
 touch "$RES/$target"
 

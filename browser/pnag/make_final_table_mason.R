@@ -12,15 +12,17 @@ print("before making tabls")
 # Load data
 path_output <- commandArgs(trailingOnly = TRUE)[1]
 screen <- commandArgs(trailingOnly = TRUE)[2]
+use_ml <- commandArgs(trailingOnly = TRUE)[3]
 
 output_df <- read_csv(paste0(path_output, "/result_table.csv"))
 df_plot <- read_csv(paste0(path_output, "/df_plot.csv"))
-ml_res <- read_csv(paste0(path_output, "/saved_table_ml.csv"))
 
-
-output_df$MIC_pred <- ml_res$MIC_pred
-# rank MIC_pred from low to high
-output_df$MIC_ranked <- rank(output_df$MIC_pred, ties.method = "min")
+if (!is.na(use_ml) && use_ml == "yes") {
+  ml_res <- read_csv(paste0(path_output, "/saved_table_ml.csv"))
+  output_df$MIC_pred <- ml_res$MIC_pred
+  # rank MIC_pred from low to high
+  output_df$MIC_ranked <- rank(output_df$MIC_pred, ties.method = "min")
+}
 
 # reorder columns so that MIC columns are next to each other. [1] "ASO"              "gene"             "ASO_seq"          "SC_bases"
 #  [5] "%_SC_bases"       "Tm"               "pur_perc"         "long_pur_stretch"
@@ -46,9 +48,14 @@ table_out <- kable(output_df, format = "html", escape = FALSE) %>%
                                                                        "lightgreen"))) %>%
     column_spec(7, color = "black", background = ifelse(output_df$pur_perc < 30, "lightgreen",
                                                         ifelse(output_df$pur_perc < 51, "white",
-                                                               "yellow"))) %>%
-  # make ranked MIC column colored by rank. use coloring green to yellow to red, with 100 breaks, and reverse the order so that low MIC is green and high MIC is red
-    column_spec(which(names(output_df) == "MIC_ranked"), color = "black", background = colorRampPalette(c("green", "yellow", "red"))(100)[as.numeric(cut(output_df$MIC_ranked, breaks = 100))])
+                                                               "yellow")))
+
+# Conditionally add MIC_ranked coloring
+if ("MIC_ranked" %in% names(output_df)) {
+  table_out <- table_out %>%
+    column_spec(which(names(output_df) == "MIC_ranked"), color = "black",
+                background = colorRampPalette(c("green", "yellow", "red"))(100)[as.numeric(cut(output_df$MIC_ranked, breaks = 100))])
+}
 
 
 

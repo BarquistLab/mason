@@ -151,6 +151,7 @@ def start():
         additional_screen = request.form['add_screen']
         target_genes = [x.strip() for x in form.genes.data.split(',') if x.strip()]
         b_before = form.bases_before.data
+        use_ml = "yes" if form.use_ml.data else "no"
 
         if form.essential.data:
             target_genes += [form.essential.data]
@@ -168,12 +169,14 @@ def start():
                              args=[str(path_parent) + "/mason.sh", paths['genome'],
                                    paths['gff'], tgene, str(form.len_PNA.data),
                                    str(b_before),
-                                   resultid, resultid, additional_screen]).start()
+                                   resultid, resultid, additional_screen,
+                                   use_ml]).start()
 
         with open(os.path.join(base_dir, "inputs.txt"), "a") as inputfile:
             inputfile.write("\n" + result_custom_id)
             inputfile.write("\n" + "; ".join(target_genes))
             inputfile.write("\n" + additional_screen)
+            inputfile.write("\n" + use_ml)
 
         return redirect(url_for('result', result_id=time_string))
     return render_template("start.html", title="Start", essential=ESSENTIAL_GENES, form=form)
@@ -269,13 +272,14 @@ def result(result_id):
     ctx = _read_result_context(result_id)
     tgenes = ctx['lines'][2]
     add_screen = ctx['lines'][3]
+    use_ml = ctx['lines'][4].strip() if len(ctx['lines']) > 4 else "no"
 
     return render_template("result.html", title="Result", result=result_id, dir_out=ctx['dir_out'],
                            all_output_dirs=ctx['all_output_dirs'],
                            rfin=ctx['rfinished'], genome_file=ctx['ffile'], gff_file=ctx['gfffile'],
                            custom_id=ctx['custom_id'],
                            time=ctx['time'], tgenes=tgenes, add_screen=add_screen,
-                           errs=ctx['errs'])
+                           errs=ctx['errs'], use_ml=use_ml)
 
 
 @app.route("/result_scrambler/<result_id>")

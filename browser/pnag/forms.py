@@ -6,7 +6,7 @@ This sets the Forms used on the Website. These variables can be called in the ht
 """
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, SubmitField, SelectField, SelectMultipleField
+from wtforms import StringField, SubmitField, SelectField, SelectMultipleField, BooleanField
 from wtforms.widgets import TextArea
 from wtforms.fields import IntegerField
 from wtforms.validators import Length, ValidationError, NumberRange, InputRequired, Regexp
@@ -47,6 +47,7 @@ class startForm(BaseOrganismForm):
     bases_before = StringField('Bases before (5 prime) CDS (start codon) to start ASO design (optional)',
                                validators=[
                                    Regexp("^[1-9]$|^1[0-9]$|^2[0]$|^$", message="Numbers between 1-20 are acepted")])
+    use_ml = BooleanField('Use machine-learning (random forest) model to predict MICs', default=False)
     submit = SubmitField('Submit & start MASON')
 
     def validate_genes(self, genes):

@@ -1,0 +1,31 @@
+{# Summary table section with column descriptions and download links #}
+{# Expects: result, dir_out, res_prefix, add_screen #}
+<br>
+<br>
+    <h3 class="border-bottom mb-4"> Summary table for {{ result.custom_id }} - ASOs </h3>
+            <p> Summary for each ASO sequence. meanings of column names: <br>
+                location = location (start and end) of the ASO-binding site, measured from the CDS start site <br>
+                SC_bases = maximum stretch of self-complementary bases <br>
+                pur_perc = percentage of purine bases in ASO sequence (too high % should be avoided) <br>
+                long_pur_stretch = longest purine stretch (too long purine stretches should be avoided) <br>
+                Tm = Melting temperature<br>
+                OT_tot = critical off-targets in the whole transcriptome<br>
+                OT_TIR = critical off-targets in translation initiation regions<br>
+                {% if add_screen == "microbiome" %}
+                    OT_HMP = off-targets in translation initiation regions of genes in the microbiome<br>
+                {% endif %}
+                {% if add_screen == "human" %}
+                    OT_GRCh38 = off-targets in coding regions of the human genome<br>
+                {% endif %}
+
+            </p>
+    <object type="text/html" data="{{ res_prefix + 'outputs/result_table.html' }}" width="100%" height="250px"> </object>
+
+<br>
+<br>
+<p> Full table in HTML format: &nbsp<a href="{{ res_prefix + 'outputs/result_table.html' }}">HTML <i class="material-icons">cloud_download</i></a>
+<p>Download table: &nbsp<a href="{{ res_prefix + 'outputs/result_table.csv' }}">CSV <i class="material-icons">cloud_download</i></a>
+    &nbsp&nbsp
+    <a href="{{ res_prefix + 'outputs/result_table.xlsx' }}">Excel <i class="material-icons">
+        cloud_download</i></a>
+</p>

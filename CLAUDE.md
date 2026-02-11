@@ -43,15 +43,15 @@ All three tools follow the same pattern:
 | Job runner | `start.py` (generic `run_pipeline()`) |
 | Bash pipelines | `mason.sh`, `scrambler.sh`, `common_pipeline.sh` (shared functions) |
 | Python analysis | `pnag/make_pnas.py`, `pnag/modify_PNAs.py`, `pnag/scrambler_modify_pnas.py`, `pnag/checker_modify_pnas.py`, `pnag/pna_utils.py` |
-| R analysis | `pnag/melting.R`, `pnag/summarize_ots.R`, `pnag/summarize_ots_checker.R`, `pnag/r_utils.R` |
+| R analysis | `pnag/melting.R`, `pnag/summarize_ots.R`, `pnag/summarize_ots_checker.R`, `pnag/make_final_table_mason.R`, `pnag/plot_ots_scrambler.R`, `pnag/r_utils.R` |
 | ML model | `pnag/ML_run.py`, `pnag/static/rf_optimized_model_mason.sav` |
 | Templates | `pnag/templates/` (Jinja2 + Bootstrap 4) |
 
 ### Shared Utility Modules
 
 - **`pna_utils.py`** — `calculate_purine_stats()`, `calculate_self_complementarity()` (uses cdifflib)
-- **`common_pipeline.sh`** — `setup_directories()`, `copy_reference_files()`, `extract_gff_transcripts()`, `run_seqmap_and_process_mismatches()`
-- **`r_utils.R`** — `calculate_pna_mw()`, `count_offtargets_by_mismatch()`
+- **`common_pipeline.sh`** — `setup_directories()`, `copy_reference_files()`, `extract_gff_transcripts()`, `run_seqmap_and_process_mismatches()`, `extract_gene_lengths()`, `run_seqmap_full_transcriptome()`, `run_optional_screening()`
+- **`r_utils.R`** — `calculate_pna_mw()`, `count_offtargets_by_mismatch()`, `plot_ot_dodged()`, `plot_ot_single()`, `process_screen_offtargets()`
 
 ### Important Implementation Details
 

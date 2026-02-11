@@ -1,6 +1,5 @@
 import sys
 from Bio import SeqIO
-from cdifflib import CSequenceMatcher
 import pandas as pd
 from pna_utils import calculate_purine_stats, calculate_self_complementarity
 

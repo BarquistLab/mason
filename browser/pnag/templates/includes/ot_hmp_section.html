@@ -1,0 +1,23 @@
+{# HMP microbiome off-target results section #}
+{# Expects: dir_out, res_prefix (path prefix for output files), show_pdf (boolean) #}
+{% if add_screen == "microbiome" %}
+<br>
+<br>
+    <h3 class="border-bottom mb-4"> Off-targets in HMP microbiome </h3>
+            <p>The predicted off-targets (OT) of ASOs in the Human Microbiome Project (HMP)
+                database are shown below. Only exact matches (0 mismatches) are considered for
+                microbiome off-target screening.</p>
+    <img src="{{ res_prefix + 'outputs/plot_ots_hmp.png'}}"{% if img_class %} class="{{ img_class }}"{% endif %} >
+<br>
+<br>
+    <p>Download barplot: &nbsp<a href="{{ res_prefix + 'outputs/plot_ots_hmp.svg' }}">SVG <i class="material-icons">cloud_download</i></a>
+        &nbsp&nbsp
+    <a href="{{ res_prefix + 'outputs/plot_ots_hmp.png' }}"> PNG <i class="material-icons">cloud_download</i></a>
+    {% if show_pdf %}&nbsp&nbsp
+    <a href="{{ res_prefix + 'outputs/plot_ots_hmp.pdf' }}"> PDF <i class="material-icons">cloud_download</i></a>{% endif %}</p>
+    <p>Download detailed HMP off-target table: <a href="{{ res_prefix + 'outputs/offtargets_hmp_sorted.csv' }}">CSV <i class="material-icons">
+            cloud_download</i></a>
+        &nbsp&nbsp
+        <a href="{{ res_prefix + 'outputs/offtargets_hmp_sorted.xlsx' }}">Excel <i class="material-icons">cloud_download</i></a>
+    </p>
+{% endif %}

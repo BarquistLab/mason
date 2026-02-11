@@ -47,7 +47,7 @@ copy_reference_files
 extract_gff_transcripts "$gff" "$REF/full_transcripts_$GFF_NEW"
 
 # extract the gene lengths:
-bioawk -c fastx '{ print $name, length($seq) }' < "$fasta"  > "$REF/genelengths.tsv"
+extract_gene_lengths
 
 # change the gff entries that go too far:
 Rscript pnag/modify_gff.R "$REF/full_transcripts_$GFF_NEW" "$REF/genelengths.tsv" "$WARNINGS"
@@ -107,23 +107,8 @@ fi
 
 
 
-#Now I run seqmap on start regions and whole transcriptome:
-echo "run seqmap"
-seqmap 3 "$REF/aso_targets.fasta" "$REF/full_transcripts_$FASTA_NEW" \
-       "$OUT/offtargets_fulltranscripts.tab" /output_all_matches \
-       /forward_strand /output_statistics /available_memory:5000 >> logfile_masonscript.log 2>&1
-
-if [[ $screen = "microbiome" ]]
-then
-    seqmap 0 "$REF/aso_targets.fasta" "$PRESETS/start_regions_HMP.fasta" \
-       "$OUT/offtargets_microbiome.tab" /output_all_matches \
-       /forward_strand /output_statistics /available_memory:5000 >> logfile_masonscript.log 2>&1
-elif [[ $screen = "human" ]]
-then
-  seqmap 0 "$REF/aso_targets.fasta" "$PRESETS/GRCh38_latest_rna.fna" \
-       "$OUT/offtargets_human.tab" /output_all_matches \
-       /forward_strand /output_statistics /available_memory:5000 >> logfile_masonscript.log 2>&1
-fi
+run_seqmap_full_transcriptome
+run_optional_screening
 
 # Process mismatches using shared function (offset=-32 for scrambler)
 run_seqmap_and_process_mismatches -32

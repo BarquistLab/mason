@@ -105,3 +105,165 @@ count_offtargets_by_mismatch <- function(all_off_targets, output_df, index_by_na
 
   return(list(output_df = output_df, df_plot = df_plot))
 }
+
+plot_ot_dodged <- function(df_plot_subset, title, viridis_option, legend_title = "# mismatches",
+                           output_prefix, wplot = NULL, text_size = NULL, save_pdf = FALSE) {
+  # Create a dodged bar plot for off-targets with mismatch-level fill.
+  # Args:
+  #   df_plot_subset: data frame filtered to one off_target_type
+  #   title: plot title
+  #   viridis_option: viridis palette option ("inferno", "viridis", etc.)
+  #   legend_title: legend title string
+  #   output_prefix: file path prefix (without extension)
+  #   wplot: plot width (NULL for default ggsave width)
+  #   text_size: list with axis_text, axis_title, plot_title, legend_text, legend_title, geom_text sizes
+  #              (NULL uses defaults matching mason style)
+  #   save_pdf: if TRUE, also save as PDF
+
+  if (is.null(text_size)) {
+    text_size <- list(axis_text = 13, axis_title = 20, plot_title = 25,
+                      legend_text = 15, legend_title = 15, geom_text = 5)
+  }
+
+  p <- ggplot(df_plot_subset,
+              aes(x = ASO, y = counts, fill = factor(nr_mismatches, levels = c(0, 1, 2, 3)))) +
+    geom_bar(stat = "identity", position = "dodge") +
+    ggtitle(title) +
+    labs(x = "ASO sequence", y = "Number of off-targets") +
+    theme_classic() +
+    guides(fill = guide_legend(title = legend_title)) +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1, size = text_size$axis_text),
+          axis.text.y = element_text(size = text_size$axis_text + 2),
+          axis.title = element_text(size = text_size$axis_title),
+          plot.title = element_text(size = text_size$plot_title, hjust = 0.5, face = "bold"),
+          legend.text = element_text(size = text_size$legend_text),
+          legend.background = element_rect(fill = "white", linewidth = .5),
+          legend.direction = "horizontal",
+          legend.title = element_text(size = text_size$legend_title),
+          legend.position = "top",
+          legend.margin = margin(6, 10, 6, 6)) +
+    scale_fill_viridis(discrete = TRUE, direction = -1, option = viridis_option) +
+    geom_text(aes(label = counts), position = position_dodge(width = 0.9),
+              vjust = -0.25, size = text_size$geom_text)
+
+  width_arg <- if (!is.null(wplot)) list(width = wplot) else list()
+  do.call(ggsave, c(list(paste0(output_prefix, ".png"), p, limitsize = FALSE), width_arg))
+  do.call(ggsave, c(list(paste0(output_prefix, ".svg"), p, limitsize = FALSE), width_arg))
+  if (save_pdf) {
+    do.call(ggsave, c(list(paste0(output_prefix, ".pdf"), p, limitsize = FALSE), width_arg))
+  }
+
+  invisible(p)
+}
+
+plot_ot_single <- function(df_subset, title, fill_color, output_prefix,
+                           wplot = NULL, text_size = NULL, save_pdf = FALSE) {
+  # Create a single-color bar plot for HMP/human off-targets.
+  # Args:
+  #   df_subset: data frame filtered to one screening type
+  #   title: plot title
+  #   fill_color: bar fill color
+  #   output_prefix: file path prefix (without extension)
+  #   wplot: plot width (NULL for default ggsave width)
+  #   text_size: list with axis_text, axis_title, plot_title, geom_text sizes
+  #   save_pdf: if TRUE, also save as PDF
+
+  if (is.null(text_size)) {
+    text_size <- list(axis_text = 13, axis_title = 20, plot_title = 25, geom_text = 7)
+  }
+
+  df_subset$counts <- as.numeric(df_subset$counts)
+
+  p <- ggplot(df_subset, aes(x = ASO, y = counts)) +
+    geom_bar(stat = "identity", fill = fill_color) +
+    ggtitle(title) +
+    labs(x = "ASO sequence", y = "Number of off-targets") +
+    theme_classic() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1, size = text_size$axis_text),
+          axis.text.y = element_text(size = text_size$axis_text + 2),
+          axis.title = element_text(size = text_size$axis_title),
+          plot.title = element_text(size = text_size$plot_title, hjust = 0.5, face = "bold")) +
+    geom_text(aes(label = counts), vjust = -0.25, size = text_size$geom_text)
+
+  width_arg <- if (!is.null(wplot)) list(width = wplot) else list()
+  do.call(ggsave, c(list(paste0(output_prefix, ".png"), p, limitsize = FALSE), width_arg))
+  do.call(ggsave, c(list(paste0(output_prefix, ".svg"), p, limitsize = FALSE), width_arg))
+  if (save_pdf) {
+    do.call(ggsave, c(list(paste0(output_prefix, ".pdf"), p, limitsize = FALSE), width_arg))
+  }
+
+  invisible(p)
+}
+
+process_screen_offtargets <- function(screen_type, path_output, output_df, df_plot,
+                                      index_by_name = TRUE) {
+  # Process HMP microbiome or human genome screening off-targets.
+  # Reads the screening file, counts 0mm off-targets per ASO, appends to df_plot,
+  # exports CSV/Excel, and updates output_df.
+  #
+  # Args:
+  #   screen_type: "microbiome" or "human"
+  #   path_output: output directory path
+  #   output_df: result table data frame
+  #   df_plot: plotting data frame
+  #   index_by_name: if TRUE, index output_df by row name (mason); if FALSE, filter by ASO column
+  #
+  # Returns:
+  #   list(output_df, df_plot)
+
+  if (screen_type == "microbiome") {
+    screen_file <- paste0(path_output, "/offtargets_microbiome_sorted.tab")
+    ot_col <- "OT_HMP_0mm"
+    ot_label <- "OT in HMP microbiome"
+    ot_transcripts <- "HMP microbiome"
+    csv_name <- "/offtargets_hmp_sorted.csv"
+    xlsx_name <- "/offtargets_hmp_sorted.xlsx"
+  } else if (screen_type == "human") {
+    screen_file <- paste0(path_output, "/offtargets_human_sorted.tab")
+    ot_col <- "OT_GRCh38_0mm"
+    ot_label <- "OT in human genome"
+    ot_transcripts <- "human genome"
+    csv_name <- "/offtargets_human_sorted.csv"
+    xlsx_name <- "/offtargets_human_sorted.xlsx"
+  } else {
+    return(list(output_df = output_df, df_plot = df_plot))
+  }
+
+  if (!file.exists(screen_file)) {
+    return(list(output_df = output_df, df_plot = df_plot))
+  }
+
+  screen_ot <- read_tsv(screen_file, col_names = TRUE)
+  unique_asos <- unique(screen_ot$probe_id)
+  output_df[[ot_col]] <- 0
+
+  for (aso_n in unique_asos) {
+    ot_aso <- screen_ot[screen_ot$probe_id == aso_n, ]
+    n_0mm <- sum(ot_aso$num_mismatch == 0)
+
+    if (index_by_name) {
+      output_df[aso_n, ot_col] <- n_0mm
+    } else {
+      output_df[output_df$ASO == aso_n, ot_col] <- n_0mm
+    }
+
+    df_plot <- rbind(df_plot, data.frame(
+      ASO = aso_n,
+      off_target_type = ot_label,
+      transcripts = ot_transcripts,
+      counts = n_0mm,
+      target.sequence = ot_aso$probe_seq[1],
+      nr_mismatches = 0,
+      stringsAsFactors = FALSE
+    ))
+  }
+
+  # Export cleaned screening table
+  screen_ot_clean <- screen_ot %>%
+    mutate(ASO = probe_id) %>%
+    select(-probe_id)
+  write_csv(screen_ot_clean, file = paste0(path_output, csv_name))
+  write_xlsx(screen_ot_clean, paste0(path_output, xlsx_name))
+
+  return(list(output_df = output_df, df_plot = df_plot))
+}

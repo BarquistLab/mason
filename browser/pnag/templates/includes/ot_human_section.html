@@ -1,0 +1,25 @@
+{# Human genome off-target results section #}
+{# Expects: dir_out, res_prefix (path prefix for output files), show_pdf (boolean) #}
+{% if add_screen == "human" %}
+<br>
+<br>
+    <h3 class="border-bottom mb-4"> Off-targets in human genome </h3>
+            <p>The predicted off-targets (OT) of ASOs in the human genome (GRCh38)
+                are shown below. Only exact matches (0 mismatches) are considered for
+                human genome off-target screening.</p>
+    <img src="{{ res_prefix + 'outputs/plot_ots_human.png'}}"{% if img_class %} class="{{ img_class }}"{% endif %} >
+<br>
+<br>
+    <p>Download barplot: &nbsp<a href="{{ res_prefix + 'outputs/plot_ots_human.svg' }}">SVG <i class="material-icons">cloud_download</i></a>
+        &nbsp&nbsp
+    <a href="{{ res_prefix + 'outputs/plot_ots_human.png' }}"> PNG <i class="material-icons">cloud_download</i></a>
+    {% if show_pdf %}&nbsp&nbsp
+    <a href="{{ res_prefix + 'outputs/plot_ots_human.pdf' }}"> PDF <i class="material-icons">cloud_download</i></a>{% endif %}</p>
+    <p>Download detailed human genome off-target table:
+        <a href="{{ res_prefix + 'outputs/offtargets_human_sorted.csv' }}">CSV
+        <i class="material-icons">cloud_download</i></a>
+        &nbsp&nbsp
+        <a href="{{ res_prefix + 'outputs/offtargets_human_sorted.xlsx' }}">Excel <i class="material-icons">
+            cloud_download</i></a>
+    </p>
+{% endif %}

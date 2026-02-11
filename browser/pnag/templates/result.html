@@ -1,7 +1,4 @@
 {% extends "layout.html" %}
-{% block head %}
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
-{% endblock %}
 
 
 {% block content %}
@@ -46,26 +43,7 @@
 		{%for res in all_output_dirs%}
 
 				<h2 id="{{res}}">gene - {{ " " + res }}</h2>
-				<!-- Modal -->
-				<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-				  <div class="modal-dialog" role="document">
-					<div class="modal-content">
-					  <div class="modal-header">
-						<h5 class="modal-title" id="exampleModalLabel">Delete Result</h5>
-						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-						  <span aria-hidden="true">&times;</span>
-						</button>
-					  </div>
-					  <div class="modal-body">
-						  <p>Are you sure you want to delete the result? This process cannot be undone.</p>
-					  </div>
-					  <div class="modal-footer">
-						  <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="material-icons">clear</i></button>
-						  <a href="{{ url_for('delete_result', result_id=result) }}"><button type="button" class="btn btn-primary"><i class="material-icons">check</i></button></a>
-					  </div>
-					</div>
-				  </div>
-				</div>
+				{% include "includes/delete_modal.html" %}
 				<div class="content-section">
 					{%if res not in errs %}
 							<h3 class="border-bottom mb-4">ASO sequences</h3>
@@ -76,7 +54,7 @@
 								Shine-Dalgarno (SD) region. 'GAGG' and start codon are highlighted by darkened fields.
 								PNAs are not included if they have more than 60% bases of self-complementarity.
 
-								The ASO sequences are shown in 3’ to 5’ orientation below to show the alignment to the mRNA.
+								The ASO sequences are shown in 3' to 5' orientation below to show the alignment to the mRNA.
 								In the other parts of the results section and the fasta files /summary table, the correct orientation,
 								i.e. from 5' to 3' is used.
 							</p>
@@ -149,49 +127,10 @@
 								'/outputs/offtargets_fulltranscripts_sorted.xlsx' }}">Excel <i class="material-icons">cloud_download</i></a>
 							</p>
 
-						{% if add_screen == "microbiome" %}
-						<br>
-						<br>
-							<h3 class="border-bottom mb-4"> Off-targets in HMP microbiome </h3>
-									<p>The predicted off-targets (OT) of ASOs in the Human Microbiome Project (HMP)
-										database are shown below. Only exact matches (0 mismatches) are considered for
-										microbiome off-target screening.</p>
-							<img src="{{ dir_out + "/" + res + '/outputs/plot_ots_hmp.png'}}" >
-						<br>
-						<br>
-							<p>Download barplot: &nbsp<a href="{{ dir_out + "/" + res + '/outputs/plot_ots_hmp.svg' }}">SVG <i class="material-icons">cloud_download</i></a>
-								&nbsp&nbsp
-							<a href="{{ dir_out + "/" + res + '/outputs/plot_ots_hmp.png' }}"> PNG <i class="material-icons">cloud_download</i></a></p>
-							<p>Download detailed HMP off-target table: <a href="{{ dir_out + "/" + res +
-								'/outputs/offtargets_hmp_sorted.csv' }}">CSV <i class="material-icons">
-									cloud_download</i></a>
-								&nbsp&nbsp
-								<a href="{{ dir_out + "/" + res +
-								'/outputs/offtargets_hmp_sorted.xlsx' }}">Excel <i class="material-icons">cloud_download</i></a>
-							</p>
-						{% endif %}
-						{% if add_screen == "human" %}
-						<br>
-						<br>
-							<h3 class="border-bottom mb-4"> Off-targets in human genome </h3>
-									<p>The predicted off-targets (OT) of ASOs in the human genome (GRCh38)
-										are shown below. Only exact matches (0 mismatches) are considered for
-										human genome off-target screening.</p>
-							<img src="{{ dir_out + "/" + res + '/outputs/plot_ots_human.png'}}" >
-						<br>
-						<br>
-							<p>Download barplot: &nbsp<a href="{{ dir_out + "/" + res + '/outputs/plot_ots_human.svg' }}">SVG <i class="material-icons">cloud_download</i></a>
-								&nbsp&nbsp
-							<a href="{{ dir_out + "/" + res + '/outputs/plot_ots_human.png' }}"> PNG <i class="material-icons">cloud_download</i></a></p>
-							<p>Download detailed human genome off-target table:
-								<a href="{{ dir_out + "/" + res + '/outputs/offtargets_human_sorted.csv' }}">CSV
-								<i class="material-icons">cloud_download</i></a>
-								&nbsp&nbsp
-								<a href="{{ dir_out + "/" + res +
-								'/outputs/offtargets_human_sorted.xlsx' }}">Excel <i class="material-icons">
-									cloud_download</i></a>
-							</p>
-						{% endif %}
+						{% set res_prefix = dir_out + "/" + res + "/" %}
+						{% set show_pdf = false %}
+						{% include "includes/ot_hmp_section.html" %}
+						{% include "includes/ot_human_section.html" %}
 
 						<br>
 						<br>

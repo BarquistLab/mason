@@ -4,16 +4,13 @@ This project is licensed under the terms of the MIT license.
 
 This sets the Forms used on the Website. These variables can be called in the html for display and access.
 """
-import os
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, SubmitField, BooleanField, SelectField, SelectMultipleField, RadioField, \
-    TextAreaField
+from wtforms import StringField, SubmitField, SelectField, SelectMultipleField
 from wtforms.widgets import TextArea
 from wtforms.fields import IntegerField
 from wtforms.validators import Length, ValidationError, NumberRange, InputRequired, Regexp
 from pnag import app
-import re
 
 
 class NoValidationSelectMultipleField(SelectField):
@@ -40,8 +37,6 @@ class BaseOrganismForm(FlaskForm):
 
 
 class startForm(BaseOrganismForm):
-    genome_2 = FileField('FASTA File', validators=[FileAllowed(['fasta', 'fa', 'fna'])])
-    gff_2 = FileField('GFF File', validators=[FileAllowed(['gff', 'gff3', 'gff2', 'gff1', 'gtf'])])
     essential = NoValidationSelectMultipleField('Select essential genes', choices=[])
     genes = StringField('Enter the locus tags of target genes separated by comma',
                         validators=[Regexp(
@@ -68,10 +63,6 @@ class ScrambledForm(BaseOrganismForm):
                             validators=[InputRequired(), Regexp("^[ATGC]+$", message="use DNA alphabet only (A,T,G,C)"),
                                         Length(min=8, max=15, message="choose sequence with 8-14 nucleotides!")])
     submit_scr = SubmitField('Submit & start Scrambler')
-
-    def validate_seq_input(self, seq_input):
-        if not re.match("^[ATGC]+$", seq_input.data):
-            raise ValidationError("use DNA alphabet only (A,T,G,C)")
 
 
 class CheckerForm(BaseOrganismForm):

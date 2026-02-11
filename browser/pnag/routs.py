@@ -9,12 +9,9 @@ import os
 from datetime import datetime
 import re
 import shutil
-import pandas as pd
 from flask import render_template, url_for, flash, redirect, request, send_file
-# import needed things from other files in this package
-from pnag import app, bcrypt, mail
+from pnag import app
 from pnag.forms import startForm, ScrambledForm, CheckerForm
-from flask_login import current_user
 import base64
 import json
 import threading
@@ -303,7 +300,6 @@ def download(path):
     first, f_ext = os.path.splitext(path)
     preset = first
     preset = preset.split('/')
-    first.split('_')
     if 'presets' in preset:
         return send_file(path, as_attachment=True)
     else:
@@ -323,29 +319,6 @@ def about():
 @app.route("/help")
 def help():
     return render_template("help.html", title="Help")
-
-
-def save_file(form_file, prefix, time_str):
-    # saves files with prefix and time in data folder
-    if form_file:
-        if prefix == 'genes':
-            file_fn = prefix + time_str + str(current_user.id) + '.txt'
-            file_path = os.path.join(app.root_path, 'static/data', file_fn)
-            f = open(file_path, 'w')
-            f.write(form_file)
-            f.close()
-        else:
-            _, f_ext = os.path.splitext(form_file.filename)
-            file_fn = prefix + time_str + str(current_user.id) + f_ext
-            file_path = os.path.join(app.root_path, 'static/data', file_fn)
-            form_file.save(file_path)
-    elif prefix == 'pnas':
-        file_fn = prefix + time_str + str(current_user.id) + '.fasta'
-        file_path = os.path.join(app.root_path, 'static/data', file_fn)
-    else:
-        file_fn = prefix + time_str + str(current_user.id) + '.fasta'
-        file_path = os.path.join(path_parent, 'pnag/static/data/', file_fn)
-    return file_path
 
 
 @app.errorhandler(404)

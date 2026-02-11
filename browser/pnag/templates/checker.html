@@ -1,4 +1,5 @@
 {% extends "layout.html" %}
+{% from "macros.html" import render_field, genome_gff_upload, off_target_screen_radios %}
 {% block content %}
 	<div class="content-section">
 		<form method="POST" action="" enctype="multipart/form-data">
@@ -44,14 +45,7 @@
 						Other genomes (FASTA) and their annotations (GFF) can be downloaded from the <a href="https://www.ncbi.nlm.nih.gov/">NCBI </a>website
 					and uploaded using the "Own files" option. For more details on  how to download custom genomes, have a look at our
 						<a href="{{ url_for('help') }}">help page</a></p>
-					{% if form.presets.errors %}
-						{{ form.presets(class="form-control form-control-lg is-invalid") }}
-						{% for error in form.presets.errors %}
-							<span class="text-danger">{{ error }}</span><br>
-						{% endfor %}
-					{% else %}
-						{{ form.presets(class="form-control form-control-lg") }}
-					{% endif %}
+					{{ render_field(form.presets) }}
 				</div>
 
 
@@ -75,33 +69,7 @@
 
 				<br>
 
-
-				<div class="form-group row" id="div_genome">
-				<p class="col-md-12"> Below, custom FASTA and GFF files of a bacterium of interest can be uploaded (can be downloaded from
-						<a href="https://www.ncbi.nlm.nih.gov/genome/">NCBI</a>): </p>
-				<div class="col-md-6" id="div_genome" >
-					{{ form.genome.label(class="form-control-label") }}
-					{% if form.genome.errors %}
-						{{ form.genome(class="form-control form-control-lg is-invalid") }}
-						{% for error in form.genome.errors %}
-							<span class="text-danger">{{ error }}</span><br>
-						{% endfor %}
-					{% else %}
-						{{ form.genome(class="form-control form-control-lg") }}
-					{% endif %}
-				</div>
-				<div class="col-md-6" id="div_gff" >
-					{{ form.gff.label(class="form-control-label") }}
-					{% if form.gff.errors %}
-						{{ form.gff(class="form-control form-control-lg is-invalid") }}
-						{% for error in form.gff.errors %}
-							<span class="text-danger">{{ error }}</span><br>
-						{% endfor %}
-					{% else %}
-						{{ form.gff(class="form-control form-control-lg") }}
-					{% endif %}
-				</div>
-				</div>
+				{{ genome_gff_upload(form) }}
 
 
 				<br>
@@ -114,21 +82,7 @@
 					</div>
 
 				<br>
-				<div class="form-group">
-					<p><b> Screen other genomes for off-targets (optional) </b></p>
-
-					<p> Select to screen for off-targets in the <a href="https://www.ncbi.nlm.nih.gov/genome/guide/human/">human genome</a>
-						(<a href="../static/data/presets/GRCh38_latest_rna.fna">FASTA</a>) or
-						the <a href="https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA28331">human microbiome</a>
-						(<a href="../static/data/presets/start_regions_HMP.fasta">FASTA</a>). For the human genome,
-						the whole transcriptome is screened, whereas for the human microbiome only translation
-						initiation sites are considered. Note, that the selection of these additional screens will
-						increase the running time of ASO-Checker</p>
-
-					<input type="radio" name="add_screen" id="none" value="none" checked> None  </input><br>
-					<input type="radio" name="add_screen" id="add_human" value="human"> Human genome  </input><br>
-					<input type="radio" name="add_screen" id="add_microbiome" value="microbiome"> Human microbiome </input><br>
-				</div>
+				{{ off_target_screen_radios("ASO-Checker") }}
 
 
 					<div class="form-group">

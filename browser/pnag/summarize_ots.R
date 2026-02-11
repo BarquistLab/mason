@@ -1,7 +1,3 @@
-
-Sys.setenv(HOME = "/home/jakob")
-
-
 library(ggplot2)
 library(dplyr)
 library(readr)
@@ -18,8 +14,6 @@ path_output <- commandArgs(trailingOnly = TRUE)[1]
 target_gene <- commandArgs(trailingOnly = TRUE)[2]
 screen <- commandArgs(trailingOnly = TRUE)[3]
 
-
-# path_output <- "./browser/pnag/static/data/2024_11_18_16_12_24/b0185/outputs"
 
 
 # Load data
@@ -54,7 +48,6 @@ write_csv(all_off_targets[all_off_targets$TIR == "TIR", ],
           file = paste0(path_output, "/offtargets_startregions_sorted.csv"))
 
 # write excel file
-library(writexl)
 write_xlsx(all_off_targets, paste0(path_output, "/offtargets_fulltranscripts_sorted.xlsx"))
 
 
@@ -67,74 +60,12 @@ ot_results <- count_offtargets_by_mismatch(all_off_targets, output_df, index_by_
 output_df <- ot_results$output_df
 df_plot <- ot_results$df_plot
 
-## Microbiome off-targets (0mm exact matches against HMP database)
-if (!is.na(screen) && screen == "microbiome") {
-  hmp_file <- paste0(path_output, "/offtargets_microbiome_sorted.tab")
-  if (file.exists(hmp_file)) {
-    hmp_ot <- read_tsv(hmp_file, col_names = TRUE)
-
-    # Count 0mm off-targets per ASO and add to output_df
-    unique_asos <- unique(hmp_ot$probe_id)
-    output_df[["OT_HMP_0mm"]] <- 0
-    for (aso_n in unique_asos) {
-      ot_aso <- hmp_ot[hmp_ot$probe_id == aso_n, ]
-      n_0mm <- sum(ot_aso$num_mismatch == 0)
-      output_df[aso_n, "OT_HMP_0mm"] <- n_0mm
-
-      # Append to df_plot for microbiome
-      df_plot <- rbind(df_plot, data.frame(
-        ASO = aso_n,
-        off_target_type = "OT in HMP microbiome",
-        transcripts = "HMP microbiome",
-        counts = n_0mm,
-        target.sequence = ot_aso$probe_seq[1],
-        nr_mismatches = 0,
-        stringsAsFactors = FALSE
-      ))
-    }
-
-    # Export cleaned microbiome table
-    hmp_ot_clean <- hmp_ot %>%
-      mutate(ASO = probe_id) %>%
-      select(-probe_id)
-    write_csv(hmp_ot_clean, file = paste0(path_output, "/offtargets_hmp_sorted.csv"))
-    write_xlsx(hmp_ot_clean, paste0(path_output, "/offtargets_hmp_sorted.xlsx"))
-  }
-}
-
-## Human genome off-targets (0mm exact matches against GRCh38)
-if (!is.na(screen) && screen == "human") {
-  human_file <- paste0(path_output, "/offtargets_human_sorted.tab")
-  if (file.exists(human_file)) {
-    human_ot <- read_tsv(human_file, col_names = TRUE)
-
-    # Count 0mm off-targets per ASO and add to output_df
-    unique_asos <- unique(human_ot$probe_id)
-    output_df[["OT_GRCh38_0mm"]] <- 0
-    for (aso_n in unique_asos) {
-      ot_aso <- human_ot[human_ot$probe_id == aso_n, ]
-      n_0mm <- sum(ot_aso$num_mismatch == 0)
-      output_df[aso_n, "OT_GRCh38_0mm"] <- n_0mm
-
-      # Append to df_plot for human genome
-      df_plot <- rbind(df_plot, data.frame(
-        ASO = aso_n,
-        off_target_type = "OT in human genome",
-        transcripts = "human genome",
-        counts = n_0mm,
-        target.sequence = ot_aso$probe_seq[1],
-        nr_mismatches = 0,
-        stringsAsFactors = FALSE
-      ))
-    }
-
-    # Export cleaned human table
-    human_ot_clean <- human_ot %>%
-      mutate(ASO = probe_id) %>%
-      select(-probe_id)
-    write_csv(human_ot_clean, file = paste0(path_output, "/offtargets_human_sorted.csv"))
-    write_xlsx(human_ot_clean, paste0(path_output, "/offtargets_human_sorted.xlsx"))
-  }
+## Microbiome/human off-targets (0mm exact matches)
+if (!is.na(screen) && screen %in% c("microbiome", "human")) {
+  screen_results <- process_screen_offtargets(screen, path_output, output_df, df_plot,
+                                               index_by_name = TRUE)
+  output_df <- screen_results$output_df
+  df_plot <- screen_results$df_plot
 }
 
 print(output_df)
@@ -195,7 +126,3 @@ write.csv(output_df, file = paste0(path_output, "/result_table.csv"), row.names 
 write.csv(df_plot, file = paste0(path_output, "/df_plot.csv"), row.names = FALSE)
 
 
-
-
-# Remove temporary files
-#file.remove(paste0(path_output, "/result_table.tsv", sep = ""))

@@ -2,7 +2,6 @@ import os
 import matplotlib.pyplot as plt
 import re
 import pandas as pd
-import seaborn as sns
 import numpy as np
 import sys
 
@@ -25,7 +24,6 @@ all_off_targets = all_off_targets[all_off_targets["longest_stretch"] >= 7]
 
 # add output df used for other things, e.g. Tm:
 output_df = pd.read_csv(sys.argv[1] + "/result_table.tsv", sep="\t", index_col=None)
-#output_df = pd.read_csv("./browser/pnag/static/data/2026_02_10_15_27_21/outputs/result_table.tsv", sep="\t", index_col=None)
 
 # remove first row of output_df
 
@@ -96,9 +94,6 @@ for i in all_off_targets["ASO"].unique():
     output_df.loc[output_df["ASO"] == i, "OT_tot_0mm"] = int(num_tot_ot_0mm)
     output_df.loc[output_df["ASO"] == i, "OT_TIR_0mm"] = int(num_tir_ot_0mm)
 
-    # output_df.loc[i, "OT_tot"] = int(num_tot_ot)
-    # output_df.loc[i, "OT_TIR"] = int(num_tir_ot)
-
 
 output_df["OT_tot_3mm"] = output_df["OT_tot_3mm"].astype(int)
 output_df["OT_TIR_3mm"] = output_df["OT_TIR_3mm"].astype(int)
@@ -108,17 +103,6 @@ output_df["OT_tot_1mm"] = output_df["OT_tot_1mm"].astype(int)
 output_df["OT_TIR_1mm"] = output_df["OT_TIR_1mm"].astype(int)
 output_df["OT_tot_0mm"] = output_df["OT_tot_0mm"].astype(int)
 output_df["OT_TIR_0mm"] = output_df["OT_TIR_0mm"].astype(int)
-
-# add 1 if less than 20
-# output_df["OT_TIR"] = np.where(output_df["location"].str.split(";", expand=True)[0].astype(int) < -20,
-#                               output_df["OT_TIR"]+1, output_df["OT_TIR"])
-# output_df["OT_tot"] = np.where(output_df["location"].str.split(";", expand=True)[0].astype(int) < -20,
-#                               output_df["OT_tot"]+1, output_df["OT_tot"]+1)
-
-
-
-#output_df_fig["ASO_seq"] = output_df_fig["ASO_seq"].replace("^([ATGC]{10})([ATGC]+)", "\\1\n\\2", regex=True)
-#output_df_fig["target_seq"] = output_df_fig["target_seq"].replace("^([AUGC]{10})([AUGC]+)", "\\1\n\\2", regex=True)
 
 
 
@@ -186,11 +170,6 @@ df_plot.to_csv(sys.argv[1] + "/df_plot.csv", index=False)
 # create a heatmap visualizing the sequence (atgcs in diff. colors) for all the sequences in output_df["ASO_seq"].
 # use seaborn for this.
 # we have to start by creating a dataframe with 1 column per base and 1 row per ASO:
-
-#create a dummy output_df with 2 ASO_seq:
-# output_df = pd.DataFrame(columns=["ASO", "ASO_seq", "SC_bases", "pur_perc", "long_pur_stretch", "OT_tot", "OT_TIR"])
-# output_df = output_df.append(pd.Series(["ASO_001", "ATGCATGCAT", 0, 0, 0, 0, 0], index=output_df.columns), ignore_index=True)
-# output_df = output_df.append(pd.Series(["ASO_002", "GGGCAGGCAT", 0, 0, 0, 0, 0], index=output_df.columns), ignore_index=True)
 
 # create a np. array with 1 row per ASO and 1 column per base. For the list, give numbers +1 and 0 to bases matching the
 # first row. Then, use seaborn to create a heatmap with the values in the array.

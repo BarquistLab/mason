@@ -116,3 +116,34 @@ run_seqmap_and_process_mismatches() {
 
     rm -rf "$OUT"/*_sorted_sorted.tab
 }
+
+extract_gene_lengths() {
+    # Extract gene lengths from FASTA using bioawk.
+    # Expects: $fasta, $REF to be set
+    bioawk -c fastx '{ print $name, length($seq) }' < "$fasta" > "$REF/genelengths.tsv"
+}
+
+run_seqmap_full_transcriptome() {
+    # Run seqmap with 3 mismatches on full transcriptome.
+    # Expects: $REF, $FASTA_NEW, $OUT to be set
+    echo "run seqmap"
+    seqmap 3 "$REF/aso_targets.fasta" "$REF/full_transcripts_$FASTA_NEW" \
+           "$OUT/offtargets_fulltranscripts.tab" /output_all_matches \
+           /forward_strand /output_statistics /available_memory:5000 >> logfile_masonscript.log 2>&1
+}
+
+run_optional_screening() {
+    # Run seqmap for HMP microbiome or human genome screening (0 mismatches).
+    # Expects: $screen, $REF, $PRESETS, $OUT to be set
+    if [[ $screen = "microbiome" ]]
+    then
+        seqmap 0 "$REF/aso_targets.fasta" "$PRESETS/start_regions_HMP.fasta" \
+           "$OUT/offtargets_microbiome.tab" /output_all_matches \
+           /forward_strand /output_statistics /available_memory:5000 >> logfile_masonscript.log 2>&1
+    elif [[ $screen = "human" ]]
+    then
+        seqmap 0 "$REF/aso_targets.fasta" "$PRESETS/GRCh38_latest_rna.fna" \
+           "$OUT/offtargets_human.tab" /output_all_matches \
+           /forward_strand /output_statistics /available_memory:5000 >> logfile_masonscript.log 2>&1
+    fi
+}

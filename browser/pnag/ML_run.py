@@ -5,9 +5,6 @@ import sys
 
 import numpy as np
 import pandas as pd
-import os
-# import sklearn random forest regressor
-from sklearn.ensemble import RandomForestRegressor
 
 
 # load the model from disk

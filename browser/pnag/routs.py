@@ -142,6 +142,8 @@ def start():
 
         result_custom_id = form.custom_id.data
 
+        open(os.path.join(path_parent, "logfile_masonscript.log"), "w").close()
+
         for tgene in target_genes:
             resultid = time_string + "/" + tgene
             threading.Thread(target=start_calculation, name="masons",
@@ -183,6 +185,8 @@ def scrambler():
 
         with open(pna_file_string, "w") as pna_file:
             pna_file.write(">PNA\n" + pna_seq)
+
+        open(os.path.join(path_parent, "logfile_masonscript.log"), "w").close()
 
         threading.Thread(target=start_scrambler, name="scramblers",
                          args=[str(path_parent) + "/scrambler.sh", paths['genome'],
@@ -226,6 +230,8 @@ ATATATATA"""
 
         with open(pna_file_string, "w") as pna_file:
             pna_file.write(">PNA\n" + pna_seq)
+
+        open(os.path.join(path_parent, "logfile_masonscript.log"), "w").close()
 
         threading.Thread(target=start_checker, name="checkers",
                          args=[str(path_parent) + "/scrambler.sh", paths['genome'],

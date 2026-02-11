@@ -177,6 +177,6 @@ Rscript ./pnag/make_final_table_mason.R "$OUT" "$screen" >> logfile_masonscript.
 
 touch "$RES/$target"
 
-rm -rf "$OUT/offtargets_startregions_sorted.csv"
+cleanup_intermediate_files "mason"
 
 echo "MASON finished" >> logfile_masonscript.log

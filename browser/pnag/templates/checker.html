@@ -66,6 +66,11 @@
 						}
 					}
 				</script>
+				<script>
+				  window.addEventListener('DOMContentLoaded', () => {
+					select_presets.dispatchEvent(new Event('change'));
+				  });
+				</script>
 
 				<br>
 

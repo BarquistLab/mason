@@ -19,3 +19,4 @@ browser/logfile_masonscript.log
 *.log
 *.ps
 .idea/**
+CLAUDE.md

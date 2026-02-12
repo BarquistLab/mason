@@ -338,7 +338,7 @@ ATATATATA"""
 def result(result_id):
     ctx = _read_result_context(result_id)
     tgenes = ctx['lines'][2]
-    add_screen = ctx['lines'][3]
+    add_screen = ctx['lines'][3].strip()
     use_ml = ctx['lines'][4].strip() if len(ctx['lines']) > 4 else "no"
 
     return render_template("result.html", title="Result", result=result_id, dir_out=ctx['dir_out'],

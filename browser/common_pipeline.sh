@@ -133,7 +133,7 @@ run_seqmap_full_transcriptome() {
 }
 
 run_optional_screening() {
-    # Run seqmap for HMP microbiome or human genome screening (0 mismatches).
+    # Run seqmap for HMP microbiome or human transcriptome screening (0 mismatches).
     # Expects: $screen, $REF, $PRESETS, $OUT to be set
     if [[ $screen = "microbiome" ]]
     then

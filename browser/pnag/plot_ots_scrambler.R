@@ -42,8 +42,8 @@ ot_levels <- c("OT in transcriptome", "OT in TIR regions")
 if ("OT in HMP microbiome" %in% df_plot$off_target_type) {
   ot_levels <- c(ot_levels, "OT in HMP microbiome")
 }
-if ("OT in human genome" %in% df_plot$off_target_type) {
-  ot_levels <- c(ot_levels, "OT in human genome")
+if ("OT in human transcriptome" %in% df_plot$off_target_type) {
+  ot_levels <- c(ot_levels, "OT in human transcriptome")
 }
 df_plot$off_target_type <- factor(df_plot$off_target_type, levels = ot_levels)
 
@@ -71,10 +71,10 @@ if (!is.na(screen) && screen == "microbiome" && "OT in HMP microbiome" %in% df_p
                  wplot = wplot)
 }
 
-if (!is.na(screen) && screen == "human" && "OT in human genome" %in% df_plot$off_target_type) {
-  df_human <- df_plot[df_plot$off_target_type == "OT in human genome", ]
+if (!is.na(screen) && screen == "human" && "OT in human transcriptome" %in% df_plot$off_target_type) {
+  df_human <- df_plot[df_plot$off_target_type == "OT in human transcriptome", ]
   df_human$ASO <- factor(df_human$ASO, levels = unique(output_df$ASO))
-  plot_ot_single(df_human, "Number of off-targets in human genome (0 mismatches)", "#31688e",
+  plot_ot_single(df_human, "Number of off-targets in human transcriptome (0 mms)", "#31688e",
                  output_prefix = paste0(path_output, "/plot_ots_human"),
                  wplot = wplot)
 }

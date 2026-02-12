@@ -197,7 +197,7 @@ plot_ot_single <- function(df_subset, title, fill_color, output_prefix,
 
 process_screen_offtargets <- function(screen_type, path_output, output_df, df_plot,
                                       index_by_name = TRUE) {
-  # Process HMP microbiome or human genome screening off-targets.
+  # Process HMP microbiome or human transcriptome screening off-targets.
   # Reads the screening file, counts 0mm off-targets per ASO, appends to df_plot,
   # exports CSV/Excel, and updates output_df.
   #
@@ -221,8 +221,8 @@ process_screen_offtargets <- function(screen_type, path_output, output_df, df_pl
   } else if (screen_type == "human") {
     screen_file <- paste0(path_output, "/offtargets_human_sorted.tab")
     ot_col <- "OT_GRCh38_0mm"
-    ot_label <- "OT in human genome"
-    ot_transcripts <- "human genome"
+    ot_label <- "OT in human transcriptome"
+    ot_transcripts <- "human transcriptome"
     csv_name <- "/offtargets_human_sorted.csv"
     xlsx_name <- "/offtargets_human_sorted.xlsx"
   } else {

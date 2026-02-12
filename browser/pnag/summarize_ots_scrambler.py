@@ -146,7 +146,7 @@ if screen == "microbiome":
         hmp_ot.to_csv(sys.argv[1] + "/offtargets_hmp_sorted.csv", index=False)
         hmp_ot.to_excel(sys.argv[1] + "/offtargets_hmp_sorted.xlsx", index=False)
 
-# Human genome off-targets (0mm exact matches)
+# Human transcriptome off-targets (0mm exact matches)
 if screen == "human":
     human_file = sys.argv[1] + "/offtargets_human_sorted.tab"
     if os.path.exists(human_file):
@@ -159,7 +159,7 @@ if screen == "human":
             ot_aso = human_ot[human_ot["probe_id"] == aso_id]
             n_0mm = int((ot_aso["num_mismatch"] == 0).sum())
             output_df.loc[output_df["ASO"] == aso_id, "OT_GRCh38_0mm"] = n_0mm
-            df_plot = pd.concat([df_plot, pd.DataFrame([[aso_id, "OT in human genome", "human genome",
+            df_plot = pd.concat([df_plot, pd.DataFrame([[aso_id, "OT in human transcriptome", "human transcriptome",
                                                           n_0mm, ot_aso.iloc[0]["probe_seq"], 0]], columns=df_plot.columns)])
         output_df["OT_GRCh38_0mm"] = output_df["OT_GRCh38_0mm"].astype(int)
         human_ot.to_csv(sys.argv[1] + "/offtargets_human_sorted.csv", index=False)

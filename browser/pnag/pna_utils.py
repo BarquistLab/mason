@@ -1,6 +1,28 @@
 """Shared utility functions for PNA/ASO sequence analysis across all tools."""
 
+import re
 from cdifflib import CSequenceMatcher
+
+SD_PATTERN = r"(AGGAGG|GGAGG|AAGGA|AGGA|GAGG|GGAG|AGG|GGA)"
+
+
+def best_sd_match(seq_slice: str):
+    """Find the best Shine-Dalgarno motif in a sequence slice.
+
+    Uses overlapping regex matches and picks the longest motif (leftmost if tied).
+
+    Args:
+        seq_slice: DNA sequence string to search for SD motifs
+
+    Returns:
+        tuple (motif, start_position) if found, None otherwise
+    """
+    pat = r"(?=(" + SD_PATTERN + r"))"
+    matches = [(m.group(1), m.start()) for m in re.finditer(pat, seq_slice)]
+    if not matches:
+        return None
+    motif, start = max(matches, key=lambda t: (len(t[0]), -t[1]))
+    return motif, start
 
 
 def calculate_purine_stats(sequence):

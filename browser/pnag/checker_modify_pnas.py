@@ -7,7 +7,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn as sns
-from pna_utils import calculate_purine_stats, calculate_self_complementarity
+from pna_utils import calculate_purine_stats, calculate_self_complementarity, best_sd_match
 
 res_path = sys.argv[2]
 input_pna = sys.argv[1]
@@ -23,6 +23,16 @@ if target_mode:
     mfe_record = next(SeqIO.parse(mfe_fasta, "fasta"))
     tir_seq_46 = startreg_record.seq  # 46nt: -30 to +16
     tir_seq_60 = mfe_record.seq       # 60nt: -30 to +30
+
+    # Detect Shine-Dalgarno region (same window as make_pnas.py)
+    sd_result = best_sd_match(str(tir_seq_46[18:28]))
+    if sd_result:
+        sd_motif, sd_rel_start = sd_result
+        sd_pos = sd_rel_start + 18  # 0-indexed in 46nt window
+        sd_len = len(sd_motif)
+    else:
+        sd_pos = None
+        sd_len = 0
 
 seqs = []
 aso_seqs = []
@@ -89,10 +99,11 @@ if target_mode:
             for j in range(30, 33):
                 if j < 46:
                     row[j] = row[j] + 0.4
-            # Highlight SD region (positions 15-26)
-            for j in range(15, 27):
-                if j < 46:
-                    row[j] = row[j] + 0.2
+            # Highlight SD region (only if detected)
+            if sd_pos is not None:
+                for j in range(sd_pos, sd_pos + sd_len):
+                    if j < 46:
+                        row[j] = row[j] + 0.2
             heatmap_list.append(row)
             annot_row = [""] * 46
             for j in range(match_pos, match_pos + aso_len):
@@ -111,6 +122,11 @@ if target_mode:
         vf.write("aso_name\tstart_1idx\tend_1idx\n")
         for aso_name, start, end in varna_positions:
             vf.write(f"{aso_name}\t{start}\t{end}\n")
+
+    # Write SD position for VARNA highlighting (1-indexed)
+    with open(res_path + "/outputs/sd_position.txt", "w") as sf:
+        if sd_pos is not None:
+            sf.write(f"{sd_pos + 1}\t{sd_pos + sd_len}\n")
 
     if count > 0:
         SeqIO.write(seqs, res_path + "/reference_sequences/aso_targets.fasta", "fasta")

@@ -130,9 +130,23 @@ then
     # save MFE value as mfe_values.txt
     echo "$MFE" > "$OUT/mfe_values.txt"
 
+    # Now I run the python script which I wrote to design PNAs:
+    echo "$length"
+    echo "$result_id"
+    python ./pnag/make_pnas.py "$length" "$RES" "$bases_before" >> logfile_masonscript.log 2>&1
+
+    # Read SD position for VARNA highlighting (written by make_pnas.py)
+    if [ -s "$OUT/sd_position.txt" ]; then
+        read SD_START SD_END < "$OUT/sd_position.txt"
+        SD_HIGHLIGHT="${SD_START}-${SD_END}:fill=#FFA500,outline=#FFA500;"
+    else
+        SD_HIGHLIGHT=""
+    fi
+    VARNA_HIGHLIGHT="${SD_HIGHLIGHT}31-33:fill=#FF0000,outline=#FF0000"
+
     varna -sequenceDBN "$SEQ" \
       -structureDBN "$STRUCT" \
-      -highlightRegion "15-26:fill=#FFA500,outline=#FFA500;31-33:fill=#FF0000,outline=#FFA500" \
+      -highlightRegion "$VARNA_HIGHLIGHT" \
       -title "Secondary structure of $target (MFE = $MFE kcal/mol)" \
       -titleSize 10 \
       -o "$OUT/varna_plot.svg"
@@ -140,16 +154,11 @@ then
     # same but output a png file
     varna -sequenceDBN "$SEQ" \
       -structureDBN "$STRUCT" \
-      -highlightRegion "15-26:fill=#FFA500,outline=#FFA500;31-33:fill=#FF0000,outline=#FFA500" \
+      -highlightRegion "$VARNA_HIGHLIGHT" \
       -title "Sec. structure of $target (MFE = $MFE kcal/mol)" \
       -titleSize 10 \
       -resolution "3.0" \
       -o "$OUT/varna_plot.png"
-
-    # Now I run the python script which I wrote to design PNAs:
-    echo "$length"
-    echo "$result_id"
-    python ./pnag/make_pnas.py "$length" "$RES" "$bases_before" >> logfile_masonscript.log 2>&1
 
 else
     echo "PNA $pna_input put in"

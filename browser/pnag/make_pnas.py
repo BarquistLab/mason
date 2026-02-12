@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import subprocess
 import pandas as pd
-from pna_utils import calculate_purine_stats, calculate_self_complementarity
+from pna_utils import calculate_purine_stats, calculate_self_complementarity, best_sd_match
 
 # import used gene length:
 length = int(sys.argv[1])
@@ -24,19 +24,6 @@ list_aso_sequences = []
 list_aso_targets = []
 count = 1
 sd = r"AGGAGG|GGAGG|GGAG|AAGGA|AGGA|GAGG|AGG|GGA"  # Shine Dalgarno sequence
-
-# Longest-to-shortest order is still good style, but not sufficient by itself
-SD_PATTERN = r"(AGGAGG|GGAGG|AAGGA|AGGA|GAGG|GGAG|AGG|GGA)"
-
-def best_sd_match(seq_slice: str):
-    # Overlapping matches via lookahead; capture the motif in group(1)
-    pat = r"(?=(" + SD_PATTERN + r"))"
-    matches = [(m.group(1), m.start()) for m in re.finditer(pat, seq_slice)]
-    if not matches:
-        return None
-    # Pick the longest; if tied, pick the leftmost
-    motif, start = max(matches, key=lambda t: (len(t[0]), -t[1]))
-    return motif, start
 
 # go through target regions and
 for r in range(len(target_regions)):
@@ -94,8 +81,10 @@ for r in range(len(target_regions)):
     else:
         print("No SD found in region:", str(seq[18:28]))
 
-
-
+    # Write SD position for VARNA highlighting (1-indexed)
+    with open(res_path + "/outputs/sd_position.txt", "w") as sf:
+        if best_sd_match(str(seq[18:28])):
+            sf.write(f"{sd_pos + 1}\t{sd_pos + len(sd)}\n")
 
 
     for i in range(30-(length-3), 31):   # 30 is start of cds

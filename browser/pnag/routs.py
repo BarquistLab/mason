@@ -390,6 +390,7 @@ def result_checker(result_id):
     # Read varna_positions.tsv for VARNA display when target gene is set
     varna_asos = []
     warnings = []
+    sd_found = False
     if target_gene:
         base_dir = os.path.join(app.root_path, 'static/data', result_id)
         varna_path = os.path.join(base_dir, "outputs", "varna_positions.tsv")
@@ -403,6 +404,8 @@ def result_checker(result_id):
         if os.path.isfile(warnings_path):
             with open(warnings_path) as wf:
                 warnings = [l.strip() for l in wf if l.strip()]
+        sd_path = os.path.join(base_dir, "outputs", "sd_position.txt")
+        sd_found = os.path.isfile(sd_path) and os.path.getsize(sd_path) > 0
 
     return render_template("checker_result.html", title="Result ASO-Checker", result=result_id,
                            dir_out=ctx['dir_out'],
@@ -411,7 +414,7 @@ def result_checker(result_id):
                            custom_id=ctx['custom_id'], pnaseq=pnaseq,
                            time=ctx['time'], errs=ctx['errs'], add_screen=add_screen,
                            target_gene=target_gene, use_ml=use_ml,
-                           varna_asos=varna_asos, warnings=warnings)
+                           varna_asos=varna_asos, warnings=warnings, sd_found=sd_found)
 
 
 @app.route("/delete_result/<result_id>")

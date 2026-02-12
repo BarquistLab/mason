@@ -166,18 +166,27 @@ then
       exit 0
     fi
 
+    # Read SD position for VARNA highlighting (written by checker_modify_pnas.py)
+    if [ -s "$OUT/sd_position.txt" ]; then
+        read SD_START SD_END < "$OUT/sd_position.txt"
+        SD_HIGHLIGHT="${SD_START}-${SD_END}:fill=#FFA500,outline=#FFA500;"
+    else
+        SD_HIGHLIGHT=""
+    fi
+    VARNA_HIGHLIGHT="${SD_HIGHLIGHT}31-33:fill=#FF0000,outline=#FF0000"
+
     # generate VARNA plots: one per-gene structure + per-ASO with binding highlighted
     # first: plain TIR structure (same as mason.sh)
     varna -sequenceDBN "$SEQ" \
       -structureDBN "$STRUCT" \
-      -highlightRegion "15-26:fill=#FFA500,outline=#FFA500;31-33:fill=#FF0000,outline=#FFA500" \
+      -highlightRegion "$VARNA_HIGHLIGHT" \
       -title "Secondary structure of $target (MFE = $MFE kcal/mol)" \
       -titleSize 10 \
       -o "$OUT/varna_plot.svg"
 
     varna -sequenceDBN "$SEQ" \
       -structureDBN "$STRUCT" \
-      -highlightRegion "15-26:fill=#FFA500,outline=#FFA500;31-33:fill=#FF0000,outline=#FFA500" \
+      -highlightRegion "$VARNA_HIGHLIGHT" \
       -title "Sec. structure of $target (MFE = $MFE kcal/mol)" \
       -titleSize 10 \
       -resolution "3.0" \
@@ -189,7 +198,11 @@ then
     then
       tail -n +2 "$OUT/varna_positions.tsv" | while IFS=$'\t' read -r aso_name start_pos end_pos
       do
-        HIGHLIGHT="$start_pos-$end_pos:fill=#4169E1,outline=#4169E1,radius=25;15-26:fill=#FFA500,outline=#FFA500;31-33:fill=#FF0000,outline=#FF0000"
+        if [ -n "$SD_HIGHLIGHT" ]; then
+            HIGHLIGHT="$start_pos-$end_pos:fill=#4169E1,outline=#4169E1,radius=25;${SD_HIGHLIGHT}31-33:fill=#FF0000,outline=#FF0000"
+        else
+            HIGHLIGHT="$start_pos-$end_pos:fill=#4169E1,outline=#4169E1,radius=25;31-33:fill=#FF0000,outline=#FF0000"
+        fi
         varna -sequenceDBN "$SEQ" \
           -structureDBN "$STRUCT" \
           -highlightRegion "$HIGHLIGHT" \

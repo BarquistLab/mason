@@ -86,8 +86,8 @@ if ("OT in human genome" %in% df_plot$off_target_type) {
 }
 df_plot$off_target_type <- factor(df_plot$off_target_type, levels = ot_levels)
 
-# Clean ASO labels and set factor order
-df_plot$ASO <- factor(gsub(".*_(ASO_\\d+)", "\\1", df_plot$ASO), levels = unique(output_df$ASO))
+aso_short <- function(x) gsub(".*_(ASO_\\d+)", "\\1", x)
+df_plot$ASO <- factor(aso_short(df_plot$ASO), levels = unique(aso_short(output_df$ASO)))
 
 wplot <- nrow(output_df) + 5
 
@@ -105,7 +105,7 @@ plot_ot_dodged(df_plot[df_plot$off_target_type == "OT in transcriptome", ],
 # Screening off-target plots
 if (!is.na(screen) && screen == "microbiome" && "OT in HMP microbiome" %in% df_plot$off_target_type) {
   df_hmp <- df_plot[df_plot$off_target_type == "OT in HMP microbiome", ]
-  df_hmp$ASO <- factor(df_hmp$ASO, levels = unique(output_df$ASO))
+  df_hmp$ASO <- factor(df_hmp$ASO, levels = unique(aso_short(output_df$ASO)))
   plot_ot_single(df_hmp, "Number of off-targets in HMP microbiome (0 mismatches)", "#440154",
                  output_prefix = paste0(path_output, "/plot_ots_hmp"),
                  wplot = wplot)
@@ -113,7 +113,7 @@ if (!is.na(screen) && screen == "microbiome" && "OT in HMP microbiome" %in% df_p
 
 if (!is.na(screen) && screen == "human" && "OT in human genome" %in% df_plot$off_target_type) {
   df_human <- df_plot[df_plot$off_target_type == "OT in human genome", ]
-  df_human$ASO <- factor(df_human$ASO, levels = unique(output_df$ASO))
+  df_human$ASO <- factor(df_human$ASO, levels = unique(aso_short(output_df$ASO)))
   plot_ot_single(df_human, "Number of off-targets in human genome (0 mismatches)", "#31688e",
                  output_prefix = paste0(path_output, "/plot_ots_human"),
                  wplot = wplot)

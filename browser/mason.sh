@@ -138,11 +138,11 @@ then
     # Read SD position for VARNA highlighting (written by make_pnas.py)
     if [ -s "$OUT/sd_position.txt" ]; then
         read SD_START SD_END < "$OUT/sd_position.txt"
-        SD_HIGHLIGHT="${SD_START}-${SD_END}:fill=#FFA500,outline=#FFA500;"
+        SD_HIGHLIGHT="${SD_START}-${SD_END}:fill=#FFA500,outline=#FFA500,radius=10;"
     else
         SD_HIGHLIGHT=""
     fi
-    VARNA_HIGHLIGHT="${SD_HIGHLIGHT}31-33:fill=#FF0000,outline=#FF0000"
+    VARNA_HIGHLIGHT="${SD_HIGHLIGHT}31-33:fill=#FF0000,outline=#FF0000,radius=10"
 
     varna -sequenceDBN "$SEQ" \
       -structureDBN "$STRUCT" \

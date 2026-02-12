@@ -169,11 +169,11 @@ then
     # Read SD position for VARNA highlighting (written by checker_modify_pnas.py)
     if [ -s "$OUT/sd_position.txt" ]; then
         read SD_START SD_END < "$OUT/sd_position.txt"
-        SD_HIGHLIGHT="${SD_START}-${SD_END}:fill=#FFA500,outline=#FFA500;"
+        SD_HIGHLIGHT="${SD_START}-${SD_END}:fill=#FFA500,outline=#FFA500,radius=10;"
     else
         SD_HIGHLIGHT=""
     fi
-    VARNA_HIGHLIGHT="${SD_HIGHLIGHT}31-33:fill=#FF0000,outline=#FF0000"
+    VARNA_HIGHLIGHT="${SD_HIGHLIGHT}31-33:fill=#FF0000,outline=#FF0000,radius=10"
 
     # generate VARNA plots: one per-gene structure + per-ASO with binding highlighted
     # first: plain TIR structure (same as mason.sh)
@@ -199,9 +199,9 @@ then
       tail -n +2 "$OUT/varna_positions.tsv" | while IFS=$'\t' read -r aso_name start_pos end_pos
       do
         if [ -n "$SD_HIGHLIGHT" ]; then
-            HIGHLIGHT="$start_pos-$end_pos:fill=#4169E1,outline=#4169E1,radius=25;${SD_HIGHLIGHT}31-33:fill=#FF0000,outline=#FF0000"
+            HIGHLIGHT="$start_pos-$end_pos:fill=#4169E1,outline=#4169E1,radius=15;${SD_HIGHLIGHT}31-33:fill=#FF0000,outline=#FF0000,radius=10"
         else
-            HIGHLIGHT="$start_pos-$end_pos:fill=#4169E1,outline=#4169E1,radius=25;31-33:fill=#FF0000,outline=#FF0000"
+            HIGHLIGHT="$start_pos-$end_pos:fill=#4169E1,outline=#4169E1,radius=15;31-33:fill=#FF0000,outline=#FF0000,radius=10"
         fi
         varna -sequenceDBN "$SEQ" \
           -structureDBN "$STRUCT" \

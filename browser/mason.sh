@@ -41,6 +41,11 @@ echo "screen: $screen";
 # Setup directories using shared function
 setup_directories
 
+# Copy essential genes list if present (one level up from gene-specific RES)
+if [[ -f "$RES/../essential_genes.txt" ]]; then
+    cp "$RES/../essential_genes.txt" "$OUT/essential_genes.txt"
+fi
+
 echo "$REF"
 echo "$OUT"
 # change gff and fasta names to replace spaces with underscores (for mason, because mason doesn't like spaces in file names)

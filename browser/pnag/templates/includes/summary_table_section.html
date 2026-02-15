@@ -17,6 +17,9 @@
                 {% if add_screen == "human" %}
                     OT_GRCh38 = off-targets in coding regions of the human transcriptome<br>
                 {% endif %}
+                {% if add_screen == "essential_genes" %}
+                    OT_ess_TIR = off-targets in TIR of user-defined essential genes<br>
+                {% endif %}
 
             </p>
     <object type="text/html" data="{{ res_prefix + 'outputs/result_table.html' }}" width="100%" height="250px"> </object>

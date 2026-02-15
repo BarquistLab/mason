@@ -68,6 +68,14 @@ if (!is.na(screen) && screen %in% c("microbiome", "human")) {
   df_plot <- screen_results$df_plot
 }
 
+## Essential gene off-targets
+if (!is.na(screen) && screen == "essential_genes") {
+  ess_results <- process_essential_gene_offtargets(path_output, all_off_targets, output_df, df_plot,
+                                                    index_by_name = FALSE)
+  output_df <- ess_results$output_df
+  df_plot <- ess_results$df_plot
+}
+
 print(output_df)
 print(df_plot)
 
@@ -117,6 +125,9 @@ if (!is.na(target_gene) && nchar(target_gene) > 0) {
                  "OT_tot_0mm", "OT_tot_1mm", "OT_tot_2mm", "OT_tot_3mm")
   if ("OT_HMP_0mm" %in% names(output_df)) base_cols <- c(base_cols, "OT_HMP_0mm")
   if ("OT_GRCh38_0mm" %in% names(output_df)) base_cols <- c(base_cols, "OT_GRCh38_0mm")
+  if ("OT_ess_TIR_0mm" %in% names(output_df)) {
+    base_cols <- c(base_cols, "OT_ess_TIR_0mm", "OT_ess_TIR_1mm", "OT_ess_TIR_2mm", "OT_ess_TIR_3mm")
+  }
   output_df <- output_df %>% select(all_of(base_cols))
 
   # Prepare saved_table_ml.csv (CAI, MFE features for ML)
@@ -149,6 +160,9 @@ if (!is.na(target_gene) && nchar(target_gene) > 0) {
                    "OT_tot_2mm", "OT_tot_3mm")
   if ("OT_HMP_0mm" %in% names(output_df)) select_cols <- c(select_cols, "OT_HMP_0mm")
   if ("OT_GRCh38_0mm" %in% names(output_df)) select_cols <- c(select_cols, "OT_GRCh38_0mm")
+  if ("OT_ess_TIR_0mm" %in% names(output_df)) {
+    select_cols <- c(select_cols, "OT_ess_TIR_0mm", "OT_ess_TIR_1mm", "OT_ess_TIR_2mm", "OT_ess_TIR_3mm")
+  }
   output_df <- output_df %>% select(all_of(select_cols))
 
 
@@ -198,6 +212,9 @@ if (!is.na(target_gene) && nchar(target_gene) > 0) {
   if ("OT in human transcriptome" %in% df_plot$off_target_type) {
     ot_levels <- c(ot_levels, "OT in human transcriptome")
   }
+  if ("OT in TIR of essential genes" %in% df_plot$off_target_type) {
+    ot_levels <- c(ot_levels, "OT in TIR of essential genes")
+  }
   df_plot$off_target_type <- factor(df_plot$off_target_type, levels = ot_levels)
 
   df_plot$ASO <- factor(df_plot$ASO, levels = unique(output_df$ASO))
@@ -233,5 +250,13 @@ if (!is.na(target_gene) && nchar(target_gene) > 0) {
     plot_ot_single(df_human, "Number of off-targets in human transcriptome (0 mms)", "#31688e",
                    output_prefix = paste0(path_output, "/plot_ots_human"),
                    text_size = checker_single_text, save_pdf = TRUE)
+  }
+
+  if (!is.na(screen) && screen == "essential_genes" && "OT in TIR of essential genes" %in% df_plot$off_target_type) {
+    df_ess <- df_plot[df_plot$off_target_type == "OT in TIR of essential genes", ]
+    df_ess$ASO <- factor(df_ess$ASO, levels = unique(output_df$ASO))
+    plot_ot_dodged(df_ess, "Off-targets in TIR of essential genes", "inferno",
+                   output_prefix = paste0(path_output, "/plot_ots_essential_genes"),
+                   text_size = checker_text, save_pdf = TRUE)
   }
 }

@@ -32,6 +32,11 @@ source "$SCRIPT_DIR/common_pipeline.sh"
 # Setup directories using shared function
 setup_directories
 
+# Copy essential genes list if present (same level as RES for scrambler/checker)
+if [[ -f "$RES/essential_genes.txt" ]]; then
+    cp "$RES/essential_genes.txt" "$OUT/essential_genes.txt"
+fi
+
 # I print them out to be sure it worked out:
 echo "fasta: $fasta";
 echo "gff: $gff";

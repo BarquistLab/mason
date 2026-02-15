@@ -212,6 +212,12 @@ def start():
             return render_template("start.html", title="Start", essential=ESSENTIAL_GENES, form=form)
         base_dir = _init_run_directory(time_string, paths)
 
+        if additional_screen == "essential_genes":
+            raw_input = request.form.get('essential_genes_input', '')
+            tags = [t.strip() for t in re.split(r'[,\n]+', raw_input) if t.strip()]
+            with open(os.path.join(base_dir, "essential_genes.txt"), "w") as ef:
+                ef.write("\n".join(tags) + "\n")
+
         result_custom_id = form.custom_id.data
 
         open(os.path.join(path_parent, "logfile_masonscript.log"), "w").close()
@@ -256,6 +262,12 @@ def scrambler():
             flash(str(e), 'danger')
             return render_template("scrambler.html", title="Scrambler", form=form)
         base_dir = _init_run_directory(time_string, paths)
+
+        if additional_screen == "essential_genes":
+            raw_input = request.form.get('essential_genes_input', '')
+            tags = [t.strip() for t in re.split(r'[,\n]+', raw_input) if t.strip()]
+            with open(os.path.join(base_dir, "essential_genes.txt"), "w") as ef:
+                ef.write("\n".join(tags) + "\n")
 
         result_custom_id = form.custom_id.data
         pna_seq = form.seq_input.data.upper()
@@ -307,6 +319,12 @@ ATATATATA"""
             flash(str(e), 'danger')
             return render_template("checker.html", title="ASO-Checker", form=form)
         base_dir = _init_run_directory(time_string, paths)
+
+        if additional_screen == "essential_genes":
+            raw_input = request.form.get('essential_genes_input', '')
+            tags = [t.strip() for t in re.split(r'[,\n]+', raw_input) if t.strip()]
+            with open(os.path.join(base_dir, "essential_genes.txt"), "w") as ef:
+                ef.write("\n".join(tags) + "\n")
 
         result_custom_id = form.custom_id.data
         pna_seq = _format_checker_sequences(form.seq_input.data)
@@ -374,13 +392,14 @@ def result_checker(result_id):
     last_line = lines[-1].strip() if lines else ""
     second_last = lines[-2].strip() if len(lines) >= 2 else ""
 
-    if last_line in ("yes", "no") and second_last not in ("none", "human", "microbiome"):
+    screen_values = ("none", "human", "microbiome", "essential_genes")
+    if last_line in ("yes", "no") and second_last not in screen_values:
         # New format with target_gene and use_ml appended
         use_ml = last_line
         target_gene = second_last
         add_screen = lines[-3].strip() if len(lines) >= 3 else "none"
         pnaseq = "".join(lines[2:-3])
-    elif last_line in ("none", "human", "microbiome"):
+    elif last_line in screen_values:
         add_screen = last_line
         pnaseq = "".join(lines[2:-1])
     else:

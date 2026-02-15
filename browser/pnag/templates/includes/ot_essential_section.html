@@ -1,0 +1,25 @@
+{# Essential genes off-target results section #}
+{# Expects: dir_out, res_prefix (path prefix for output files), show_pdf (boolean) #}
+{% if add_screen == "essential_genes" %}
+<br>
+<br>
+    <h3 class="border-bottom mb-4"> Off-targets in TIR of user-defined essential genes </h3>
+            <p>The predicted off-targets (OT) of ASOs in the translation initiation regions (TIRs) of
+                the user-defined essential genes are shown below. Off-targets are counted at each
+                mismatch level (0-3 mismatches).</p>
+    <img src="{{ res_prefix + 'outputs/plot_ots_essential_genes.png'}}"{% if img_class %} class="{{ img_class }}"{% endif %} >
+<br>
+<br>
+    <p>Download barplot: &nbsp<a href="{{ res_prefix + 'outputs/plot_ots_essential_genes.svg' }}">SVG <i class="material-icons">cloud_download</i></a>
+        &nbsp&nbsp
+    <a href="{{ res_prefix + 'outputs/plot_ots_essential_genes.png' }}"> PNG <i class="material-icons">cloud_download</i></a>
+    {% if show_pdf %}&nbsp&nbsp
+    <a href="{{ res_prefix + 'outputs/plot_ots_essential_genes.pdf' }}"> PDF <i class="material-icons">cloud_download</i></a>{% endif %}</p>
+    <p>Download detailed essential genes off-target table:
+        <a href="{{ res_prefix + 'outputs/offtargets_essential_genes_sorted.csv' }}">CSV
+        <i class="material-icons">cloud_download</i></a>
+        &nbsp&nbsp
+        <a href="{{ res_prefix + 'outputs/offtargets_essential_genes_sorted.xlsx' }}">Excel <i class="material-icons">
+            cloud_download</i></a>
+    </p>
+{% endif %}

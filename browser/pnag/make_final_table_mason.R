@@ -84,6 +84,9 @@ if ("OT in HMP microbiome" %in% df_plot$off_target_type) {
 if ("OT in human transcriptome" %in% df_plot$off_target_type) {
   ot_levels <- c(ot_levels, "OT in human transcriptome")
 }
+if ("OT in TIR of essential genes" %in% df_plot$off_target_type) {
+  ot_levels <- c(ot_levels, "OT in TIR of essential genes")
+}
 df_plot$off_target_type <- factor(df_plot$off_target_type, levels = ot_levels)
 
 aso_short <- function(x) gsub(".*_(ASO_\\d+)", "\\1", x)
@@ -116,5 +119,13 @@ if (!is.na(screen) && screen == "human" && "OT in human transcriptome" %in% df_p
   df_human$ASO <- factor(df_human$ASO, levels = unique(aso_short(output_df$ASO)))
   plot_ot_single(df_human, "Number of off-targets in human transcriptome (0 mms)", "#31688e",
                  output_prefix = paste0(path_output, "/plot_ots_human"),
+                 wplot = wplot)
+}
+
+if (!is.na(screen) && screen == "essential_genes" && "OT in TIR of essential genes" %in% df_plot$off_target_type) {
+  df_ess <- df_plot[df_plot$off_target_type == "OT in TIR of essential genes", ]
+  df_ess$ASO <- factor(df_ess$ASO, levels = unique(aso_short(output_df$ASO)))
+  plot_ot_dodged(df_ess, "Off-targets in TIR of essential genes", "inferno",
+                 output_prefix = paste0(path_output, "/plot_ots_essential_genes"),
                  wplot = wplot)
 }

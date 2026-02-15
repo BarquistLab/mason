@@ -165,6 +165,41 @@ if screen == "human":
         human_ot.to_csv(sys.argv[1] + "/offtargets_human_sorted.csv", index=False)
         human_ot.to_excel(sys.argv[1] + "/offtargets_human_sorted.xlsx", index=False)
 
+# Essential gene off-targets (filter TIR off-targets by locus_tag)
+essential_file = sys.argv[1] + "/essential_genes.txt"
+if screen == "essential_genes" and os.path.exists(essential_file):
+    with open(essential_file) as ef:
+        essential_genes = set(line.strip() for line in ef if line.strip())
+
+    ess_ot = all_off_targets[(all_off_targets["TIR"] == "TIR") & (all_off_targets["locus_tag"].isin(essential_genes))]
+    kept_asos = set(output_df["ASO"])
+    output_df["OT_ess_TIR_0mm"] = 0
+    output_df["OT_ess_TIR_1mm"] = 0
+    output_df["OT_ess_TIR_2mm"] = 0
+    output_df["OT_ess_TIR_3mm"] = 0
+
+    for aso_id in all_off_targets["ASO"].unique():
+        if aso_id not in kept_asos:
+            continue
+        ot_aso = ess_ot[ess_ot["ASO"] == aso_id]
+        for mm in range(4):
+            col = f"OT_ess_TIR_{mm}mm"
+            count = int((ot_aso["num_mismatch"] == mm).sum())
+            output_df.loc[output_df["ASO"] == aso_id, col] = count
+            target_seq = all_off_targets[all_off_targets["ASO"] == aso_id].iloc[0]["mRNA_target_seq"]
+            df_plot = pd.concat([df_plot, pd.DataFrame([[
+                re.sub(".*_(ASO.*)", "\\1", aso_id),
+                "OT in TIR of essential genes", "essential genes",
+                count, target_seq, mm
+            ]], columns=df_plot.columns)])
+
+    for mm in range(4):
+        output_df[f"OT_ess_TIR_{mm}mm"] = output_df[f"OT_ess_TIR_{mm}mm"].astype(int)
+
+    if len(ess_ot) > 0:
+        ess_ot.to_csv(sys.argv[1] + "/offtargets_essential_genes_sorted.csv", index=False)
+        ess_ot.to_excel(sys.argv[1] + "/offtargets_essential_genes_sorted.xlsx", index=False)
+
 # export df_plot for R plotting script
 df_plot.to_csv(sys.argv[1] + "/df_plot.csv", index=False)
 

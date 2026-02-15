@@ -68,6 +68,14 @@ if (!is.na(screen) && screen %in% c("microbiome", "human")) {
   df_plot <- screen_results$df_plot
 }
 
+## Essential gene off-targets
+if (!is.na(screen) && screen == "essential_genes") {
+  ess_results <- process_essential_gene_offtargets(path_output, all_off_targets, output_df, df_plot,
+                                                    index_by_name = TRUE)
+  output_df <- ess_results$output_df
+  df_plot <- ess_results$df_plot
+}
+
 print(output_df)
 print(df_plot)
 # remove location column if no target gene was given
@@ -98,6 +106,9 @@ if ("OT_HMP_0mm" %in% names(output_df)) {
 }
 if ("OT_GRCh38_0mm" %in% names(output_df)) {
   base_cols <- c(base_cols, "OT_GRCh38_0mm")
+}
+if ("OT_ess_TIR_0mm" %in% names(output_df)) {
+  base_cols <- c(base_cols, "OT_ess_TIR_0mm", "OT_ess_TIR_1mm", "OT_ess_TIR_2mm", "OT_ess_TIR_3mm")
 }
 output_df <- output_df %>% select(all_of(base_cols))
 

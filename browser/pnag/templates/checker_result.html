@@ -163,6 +163,7 @@
 				{% set show_pdf = false %}
 				{% include "includes/ot_hmp_section.html" %}
 				{% include "includes/ot_human_section.html" %}
+				{% include "includes/ot_essential_section.html" %}
 
 				<br>
 				<br>
@@ -180,6 +181,9 @@
 					{% endif %}
 					{% if add_screen == "human" %}
 						OT_GRCh38 = off-targets in coding regions of the human transcriptome<br>
+					{% endif %}
+					{% if add_screen == "essential_genes" %}
+						OT_ess_TIR = off-targets in TIR of user-defined essential genes<br>
 					{% endif %}
 					{% if use_ml == "yes" %}
 						MIC_pred = predicted minimum inhibitory concentration (random forest model)<br>
@@ -245,6 +249,7 @@
 						{% set img_class = "center_7" %}
 						{% include "includes/ot_hmp_section.html" %}
 						{% include "includes/ot_human_section.html" %}
+						{% include "includes/ot_essential_section.html" %}
 
 					<br>
 					<br>

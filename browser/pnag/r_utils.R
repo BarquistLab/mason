@@ -195,6 +195,83 @@ plot_ot_single <- function(df_subset, title, fill_color, output_prefix,
   invisible(p)
 }
 
+process_essential_gene_offtargets <- function(path_output, all_off_targets, output_df, df_plot,
+                                              index_by_name = TRUE) {
+  # Filter TIR off-targets to user-specified essential genes, count by mismatch level,
+  # update output_df and df_plot, and export filtered tables.
+  #
+  # Args:
+  #   path_output: output directory path (must contain essential_genes.txt)
+  #   all_off_targets: off-target data frame with ASO, num_mismatch, TIR, locus_tag columns
+  #   output_df: result table data frame
+  #   df_plot: plotting data frame
+  #   index_by_name: if TRUE, index output_df by row name (mason); if FALSE, filter by ASO column
+  #
+  # Returns:
+  #   list(output_df, df_plot)
+
+  essential_file <- file.path(path_output, "essential_genes.txt")
+  if (!file.exists(essential_file)) {
+    return(list(output_df = output_df, df_plot = df_plot))
+  }
+
+  essential_genes <- readLines(essential_file)
+  essential_genes <- trimws(essential_genes)
+  essential_genes <- essential_genes[nchar(essential_genes) > 0]
+
+  if (length(essential_genes) == 0) {
+    return(list(output_df = output_df, df_plot = df_plot))
+  }
+
+  # Filter to TIR off-targets in essential genes
+  ess_ot <- all_off_targets[all_off_targets$TIR == "TIR" & all_off_targets$locus_tag %in% essential_genes, ]
+
+  unique_asos <- unique(all_off_targets$ASO)
+  mismatch_levels <- 0:3
+  ot_cols <- c("OT_ess_TIR_0mm", "OT_ess_TIR_1mm", "OT_ess_TIR_2mm", "OT_ess_TIR_3mm")
+
+  # Initialize columns
+  for (col in ot_cols) {
+    output_df[[col]] <- 0
+  }
+
+  for (aso_n in unique_asos) {
+    ot_aso <- ess_ot[ess_ot$ASO == aso_n, ]
+    ot_aso_all <- all_off_targets[all_off_targets$ASO == aso_n, ]
+    target_seq <- ot_aso_all$probe_seq[1]
+
+    counts <- sapply(mismatch_levels, function(mm) sum(ot_aso$num_mismatch == mm))
+
+    # Update output_df
+    if (index_by_name) {
+      output_df[aso_n, ot_cols] <- counts
+    } else {
+      output_df[output_df$ASO == aso_n, ot_cols] <- counts
+    }
+
+    # Append to df_plot
+    for (mm in mismatch_levels) {
+      df_plot <- rbind(df_plot, data.frame(
+        ASO = aso_n,
+        off_target_type = "OT in TIR of essential genes",
+        transcripts = "essential genes",
+        counts = counts[mm + 1],
+        target.sequence = as.character(target_seq),
+        nr_mismatches = mm,
+        stringsAsFactors = FALSE
+      ))
+    }
+  }
+
+  # Export filtered essential gene off-targets
+  if (nrow(ess_ot) > 0) {
+    write_csv(ess_ot, file = paste0(path_output, "/offtargets_essential_genes_sorted.csv"))
+    write_xlsx(ess_ot, paste0(path_output, "/offtargets_essential_genes_sorted.xlsx"))
+  }
+
+  return(list(output_df = output_df, df_plot = df_plot))
+}
+
 process_screen_offtargets <- function(screen_type, path_output, output_df, df_plot,
                                       index_by_name = TRUE) {
   # Process HMP microbiome or human transcriptome screening off-targets.

@@ -1,0 +1,36 @@
+name: mason_environment
+channels:
+  - conda-forge
+  - bioconda
+  - r
+  - defaults
+dependencies:
+  # Python
+  - python >=3.12
+  - flask >=3.0
+  - flask-wtf
+  - biopython
+  - numpy
+  - pandas
+  - matplotlib
+  - seaborn
+  - scikit-learn
+  - openpyxl
+  # R
+  - r-base >=4.3
+  - r-ggplot2
+  - r-dplyr
+  - r-readr
+  - r-kableextra
+  - r-viridis
+  - r-writexl
+  - bioconductor-rmelting
+  # CLI tools
+  - bedtools
+  - seqmap
+  - bioawk
+  - viennarna
+  - openjdk >=11
+  # pip dependencies
+  - pip:
+    - cdifflib

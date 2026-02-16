@@ -48,24 +48,62 @@
 				<br>
 				<div class="form-group" id="essgenes">
 					{{ form.essential.label(class="form-control-label", style="font-weight: bold;") }}
-					<p>Select an essential gene in the dropdown menu</p>
+					<p id="essgenes_study"></p>
 					{{ render_field(form.essential) }}
 				</div>
 				<script>
 					let select_presets = document.getElementById('presets');
 					document.getElementById('essgenes').style.display = "none";
+					let essential_studies = {{ essential_studies | tojson }};
 
 
 					let essential_choice = document.getElementById('essential');
 					let essential_dict = {{ essential | tojson }};
+					let study_label = document.getElementById('essgenes_study');
+
+					function updateStudyLabel(presetKey) {
+						if (presetKey in essential_studies) {
+							let source = essential_studies[presetKey];
+							if (source === 'Ghomi, Jung et al. 2024') {
+								study_label.innerHTML = 'Essential genes are from the transposon insertion sequencing (TIS) study <a href="https://journals.asm.org/doi/10.1128/mbio.01798-24" target="_blank">' + source + '</a>';
+							} else {
+								study_label.textContent = 'Essential genes are from ' + source;
+							}
+						}
+					}
+
+					function updateEssentialScreenPreset(presetKey) {
+						var radioSpan = document.getElementById('essential_genes_preset_radio');
+						var presetLabel = document.getElementById('essential_genes_preset_label');
+						var presetRadio = document.getElementById('add_essential_preset');
+						var textarea = document.getElementById('essential_genes_input');
+						if (presetKey in essential_dict) {
+							var tags = essential_dict[presetKey].map(function(e) { return e.value; });
+							var source = essential_studies[presetKey] || '';
+							if (source === 'Ghomi, Jung et al. 2024') {
+								presetLabel.innerHTML = 'Screen for essential gene set from <a href="https://journals.asm.org/doi/10.1128/mbio.01798-24" target="_blank">' + source + '</a> (' + tags.length + ' genes)';
+							} else {
+								presetLabel.textContent = 'Screen for essential gene set from ' + source + ' (' + tags.length + ' genes)';
+							}
+							radioSpan.style.display = '';
+							presetRadio.onclick = function() { textarea.value = tags.join(', '); };
+						} else {
+							radioSpan.style.display = 'none';
+							if (presetRadio.checked) {
+								document.getElementById('none').checked = true;
+							}
+						}
+					}
 
 					if (select_presets.value in essential_dict) {
 						let new_choices = essential_dict[select_presets.value];
-						let optionHTML = '';
+						let optionHTML = '<option value="">-- No gene selected --</option>';
 						for (let item of new_choices) {
 							optionHTML += '<option value="' + item.value +'">'+ item.display + '</option>';
 						}
 						essential_choice.innerHTML = optionHTML;
+						updateStudyLabel(select_presets.value);
+						updateEssentialScreenPreset(select_presets.value);
 					}
 					select_presets.onchange = function() {
 						value = select_presets.value;
@@ -79,27 +117,31 @@
 							second.style.display = 'block';
 							ncbi.style.display = 'none';
 							essential_choice.innerHTML = '';
+							updateEssentialScreenPreset('');
 						} else if (value == 'ncbi') {
 							egenes.style.display = 'none';
 							first.style.display = 'none';
 							second.style.display = 'none';
 							ncbi.style.display = 'flex';
 							essential_choice.innerHTML = '';
+							updateEssentialScreenPreset('');
 						} else {
 							if (select_presets.value in essential_dict) {
 								egenes.style.display = 'block';
 								var new_choices = essential_dict[select_presets.value];
 								essential_choice.innerHTML = '';
-								let optionHTML = '';
+								let optionHTML = '<option value="">-- No gene selected --</option>';
 								for (let item of new_choices) {
 									optionHTML += '<option value="' + item.value +'">'+ item.display + '</option>';
 								}
 								essential_choice.innerHTML = optionHTML;
+								updateStudyLabel(select_presets.value);
 							}
 							else {
 								egenes.style.display = 'none';
 								essential_choice.innerHTML = '';
 							}
+							updateEssentialScreenPreset(select_presets.value);
 							first.style.display = 'none';
 							second.style.display = 'none';
 							ncbi.style.display = 'none';

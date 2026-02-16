@@ -73,6 +73,7 @@ class ScrambledForm(BaseOrganismForm):
 
 
 class CheckerForm(BaseOrganismForm):
+    essential = NoValidationSelectMultipleField('Select essential genes', choices=[])
     seq_input = StringField("ASO-sequence(s) (5' to 3'):", widget=TextArea(),
                             validators=[InputRequired()])
     target_gene = StringField('Target gene locus tag (optional)',

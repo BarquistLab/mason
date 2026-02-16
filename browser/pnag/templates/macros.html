@@ -52,6 +52,9 @@
     <input type="radio" name="add_screen" id="none" value="none" checked> None  </input><br>
     <input type="radio" name="add_screen" id="add_human" value="human"> Human transcriptome  </input><br>
     <input type="radio" name="add_screen" id="add_microbiome" value="microbiome"> Human microbiome </input><br>
+    <span id="essential_genes_preset_radio" style="display:none;">
+        <input type="radio" name="add_screen" id="add_essential_preset" value="essential_genes"> <span id="essential_genes_preset_label"></span> </input><br>
+    </span>
     <input type="radio" name="add_screen" id="add_essential" value="essential_genes"> User-defined (essential) genes </input><br>
 
     <div id="essential_genes_div" style="display:none; margin-top:10px;">
@@ -64,8 +67,14 @@
     (function() {
         function toggleEssentialDiv() {
             var checked = document.querySelector('input[name="add_screen"]:checked');
-            document.getElementById('essential_genes_div').style.display =
-                (checked && checked.value === 'essential_genes') ? 'block' : 'none';
+            var manualDiv = document.getElementById('essential_genes_div');
+            var textarea = document.getElementById('essential_genes_input');
+            if (checked && checked.id === 'add_essential') {
+                textarea.value = '';
+                manualDiv.style.display = 'block';
+            } else {
+                manualDiv.style.display = 'none';
+            }
         }
         document.querySelectorAll('input[name="add_screen"]').forEach(function(radio) {
             radio.addEventListener('change', toggleEssentialDiv);

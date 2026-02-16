@@ -17,10 +17,6 @@
       "value": "b2316"
     },
     {
-      "display": "aceF (b0115)",
-      "value": "b0115"
-    },
-    {
       "display": "acpP (b1094)",
       "value": "b1094"
     },
@@ -35,6 +31,10 @@
     {
       "display": "alaS (b2697)",
       "value": "b2697"
+    },
+    {
+      "display": "alsK (b4084)",
+      "value": "b4084"
     },
     {
       "display": "argS (b1876)",
@@ -61,6 +61,10 @@
       "value": "b2595"
     },
     {
+      "display": "bcsB (b3532)",
+      "value": "b3532"
+    },
+    {
       "display": "birA (b3973)",
       "value": "b3973"
     },
@@ -77,6 +81,10 @@
       "value": "b0175"
     },
     {
+      "display": "chpS (b4224)",
+      "value": "b4224"
+    },
+    {
       "display": "coaA (b3974)",
       "value": "b3974"
     },
@@ -89,6 +97,10 @@
       "value": "b0103"
     },
     {
+      "display": "cohE (b1145)",
+      "value": "b1145"
+    },
+    {
       "display": "csrA (b2696)",
       "value": "b2696"
     },
@@ -97,52 +109,20 @@
       "value": "b0733"
     },
     {
-      "display": "cydB (b0734)",
-      "value": "b0734"
-    },
-    {
       "display": "cydC (b0886)",
       "value": "b0886"
-    },
-    {
-      "display": "cydD (b0887)",
-      "value": "b0887"
-    },
-    {
-      "display": "cydX (b4515)",
-      "value": "b4515"
     },
     {
       "display": "cysS (b0526)",
       "value": "b0526"
     },
     {
-      "display": "dapA (b2478)",
-      "value": "b2478"
-    },
-    {
-      "display": "dapB (b0031)",
-      "value": "b0031"
-    },
-    {
-      "display": "dapD (b0166)",
-      "value": "b0166"
-    },
-    {
-      "display": "dapE (b2472)",
-      "value": "b2472"
-    },
-    {
-      "display": "dapF (b3809)",
-      "value": "b3809"
-    },
-    {
-      "display": "dcd (b2065)",
-      "value": "b2065"
-    },
-    {
       "display": "def (b3287)",
       "value": "b3287"
+    },
+    {
+      "display": "degS (b3235)",
+      "value": "b3235"
     },
     {
       "display": "der (b2511)",
@@ -181,10 +161,6 @@
       "value": "b3701"
     },
     {
-      "display": "dnaT (b4362)",
-      "value": "b4362"
-    },
-    {
       "display": "dnaX (b0470)",
       "value": "b0470"
     },
@@ -203,6 +179,10 @@
     {
       "display": "eno (b2779)",
       "value": "b2779"
+    },
+    {
+      "display": "entD (b0583)",
+      "value": "b0583"
     },
     {
       "display": "era (b2566)",
@@ -229,10 +209,6 @@
       "value": "b1093"
     },
     {
-      "display": "fabH (b1091)",
-      "value": "b1091"
-    },
-    {
       "display": "fabI (b1288)",
       "value": "b1288"
     },
@@ -243,10 +219,6 @@
     {
       "display": "fbaA (b2925)",
       "value": "b2925"
-    },
-    {
-      "display": "fdx (b2525)",
-      "value": "b2525"
     },
     {
       "display": "ffh (b2610)",
@@ -265,10 +237,6 @@
       "value": "b0048"
     },
     {
-      "display": "folB (b3058)",
-      "value": "b3058"
-    },
-    {
       "display": "folC (b2315)",
       "value": "b2315"
     },
@@ -277,12 +245,8 @@
       "value": "b0529"
     },
     {
-      "display": "folE (b2153)",
-      "value": "b2153"
-    },
-    {
-      "display": "folP (b3177)",
-      "value": "b3177"
+      "display": "folK (b0142)",
+      "value": "b0142"
     },
     {
       "display": "frr (b0172)",
@@ -293,8 +257,12 @@
       "value": "b0094"
     },
     {
-      "display": "ftsB (b2748)",
-      "value": "b2748"
+      "display": "ftsB (b2235)",
+      "value": "b2235"
+    },
+    {
+      "display": "ftsE (b3463)",
+      "value": "b3463"
     },
     {
       "display": "ftsH (b3178)",
@@ -305,8 +273,16 @@
       "value": "b0084"
     },
     {
+      "display": "ftsK (b0890)",
+      "value": "b0890"
+    },
+    {
       "display": "ftsL (b0083)",
       "value": "b0083"
+    },
+    {
+      "display": "ftsN (b3933)",
+      "value": "b3933"
     },
     {
       "display": "ftsQ (b0093)",
@@ -315,6 +291,10 @@
     {
       "display": "ftsW (b0089)",
       "value": "b0089"
+    },
+    {
+      "display": "ftsX (b3462)",
+      "value": "b3462"
     },
     {
       "display": "ftsY (b3464)",
@@ -327,10 +307,6 @@
     {
       "display": "fusA (b3340)",
       "value": "b3340"
-    },
-    {
-      "display": "gapA (b1779)",
-      "value": "b1779"
     },
     {
       "display": "glmM (b3176)",
@@ -351,10 +327,6 @@
     {
       "display": "gltX (b2400)",
       "value": "b2400"
-    },
-    {
-      "display": "glyA (b2551)",
-      "value": "b2551"
     },
     {
       "display": "glyQ (b3560)",
@@ -385,20 +357,12 @@
       "value": "b2614"
     },
     {
-      "display": "guaA (b2507)",
-      "value": "b2507"
-    },
-    {
       "display": "gyrA (b2231)",
       "value": "b2231"
     },
     {
       "display": "gyrB (b3699)",
       "value": "b3699"
-    },
-    {
-      "display": "hda (b2496)",
-      "value": "b2496"
     },
     {
       "display": "hemA (b1210)",
@@ -417,10 +381,6 @@
       "value": "b3804"
     },
     {
-      "display": "hemE (b3997)",
-      "value": "b3997"
-    },
-    {
       "display": "hemG (b3850)",
       "value": "b3850"
     },
@@ -433,14 +393,6 @@
       "value": "b0154"
     },
     {
-      "display": "higA (b3082)",
-      "value": "b3082"
-    },
-    {
-      "display": "hipB (b1508)",
-      "value": "b1508"
-    },
-    {
       "display": "hisS (b2514)",
       "value": "b2514"
     },
@@ -451,18 +403,6 @@
     {
       "display": "holB (b1099)",
       "value": "b1099"
-    },
-    {
-      "display": "holD (b4372)",
-      "value": "b4372"
-    },
-    {
-      "display": "hscA (b2526)",
-      "value": "b2526"
-    },
-    {
-      "display": "ihfA (b1712)",
-      "value": "b1712"
     },
     {
       "display": "ileS (b0026)",
@@ -479,18 +419,6 @@
     {
       "display": "infC (b1718)",
       "value": "b1718"
-    },
-    {
-      "display": "iraM (b1160)",
-      "value": "b1160"
-    },
-    {
-      "display": "iscS (b2530)",
-      "value": "b2530"
-    },
-    {
-      "display": "iscU (b2529)",
-      "value": "b2529"
     },
     {
       "display": "ispA (b0421)",
@@ -553,10 +481,6 @@
       "value": "b2411"
     },
     {
-      "display": "lipA (b0628)",
-      "value": "b0628"
-    },
-    {
       "display": "lnt (b0657)",
       "value": "b0657"
     },
@@ -581,16 +505,16 @@
       "value": "b1118"
     },
     {
-      "display": "lpd (b0116)",
-      "value": "b0116"
-    },
-    {
       "display": "lptA (b3200)",
       "value": "b3200"
     },
     {
       "display": "lptB (b3201)",
       "value": "b3201"
+    },
+    {
+      "display": "lptC (b3199)",
+      "value": "b3199"
     },
     {
       "display": "lptD (b0054)",
@@ -633,20 +557,16 @@
       "value": "b0915"
     },
     {
-      "display": "lpxL (b1054)",
-      "value": "b1054"
-    },
-    {
       "display": "lspA (b0027)",
       "value": "b0027"
     },
     {
-      "display": "lysS (b2890)",
-      "value": "b2890"
-    },
-    {
       "display": "map (b0168)",
       "value": "b0168"
+    },
+    {
+      "display": "mazE (b2783)",
+      "value": "b2783"
     },
     {
       "display": "metG (b2114)",
@@ -657,8 +577,16 @@
       "value": "b2942"
     },
     {
-      "display": "mnmA (b1133)",
-      "value": "b1133"
+      "display": "minD (b1175)",
+      "value": "b1175"
+    },
+    {
+      "display": "minE (b1174)",
+      "value": "b1174"
+    },
+    {
+      "display": "mqsA (b3021)",
+      "value": "b3021"
     },
     {
       "display": "mraY (b0087)",
@@ -761,10 +689,6 @@
       "value": "b3169"
     },
     {
-      "display": "nusB (b0416)",
-      "value": "b0416"
-    },
-    {
       "display": "nusG (b3982)",
       "value": "b3982"
     },
@@ -785,20 +709,12 @@
       "value": "b3030"
     },
     {
-      "display": "pdxH (b1638)",
-      "value": "b1638"
-    },
-    {
       "display": "pgk (b2926)",
       "value": "b2926"
     },
     {
       "display": "pgsA (b1912)",
       "value": "b1912"
-    },
-    {
-      "display": "pheM (b1715)",
-      "value": "b1715"
     },
     {
       "display": "pheS (b1714)",
@@ -817,6 +733,10 @@
       "value": "b3018"
     },
     {
+      "display": "polA (b3863)",
+      "value": "b3863"
+    },
+    {
       "display": "ppa (b4226)",
       "value": "b4226"
     },
@@ -827,10 +747,6 @@
     {
       "display": "prfB (b2891)",
       "value": "b2891"
-    },
-    {
-      "display": "priB (b4201)",
-      "value": "b4201"
     },
     {
       "display": "prmC (b1212)",
@@ -857,10 +773,6 @@
       "value": "b1204"
     },
     {
-      "display": "ptsI (b2416)",
-      "value": "b2416"
-    },
-    {
       "display": "purB (b1131)",
       "value": "b1131"
     },
@@ -877,20 +789,16 @@
       "value": "b1356"
     },
     {
-      "display": "rbfA (b3167)",
-      "value": "b3167"
-    },
-    {
-      "display": "relB (b1564)",
-      "value": "b1564"
-    },
-    {
       "display": "rho (b3783)",
       "value": "b3783"
     },
     {
       "display": "ribA (b1277)",
       "value": "b1277"
+    },
+    {
+      "display": "ribB (b3041)",
+      "value": "b3041"
     },
     {
       "display": "ribC (b1662)",
@@ -909,28 +817,12 @@
       "value": "b0025"
     },
     {
-      "display": "rimM (b2608)",
-      "value": "b2608"
-    },
-    {
-      "display": "rluD (b2594)",
-      "value": "b2594"
+      "display": "rne (b1084)",
+      "value": "b1084"
     },
     {
       "display": "rnpA (b3704)",
       "value": "b3704"
-    },
-    {
-      "display": "rnt (b1652)",
-      "value": "b1652"
-    },
-    {
-      "display": "rpe (b3386)",
-      "value": "b3386"
-    },
-    {
-      "display": "rplA (b3984)",
-      "value": "b3984"
     },
     {
       "display": "rplB (b3317)",
@@ -955,10 +847,6 @@
     {
       "display": "rplJ (b3985)",
       "value": "b3985"
-    },
-    {
-      "display": "rplK (b3983)",
-      "value": "b3983"
     },
     {
       "display": "rplL (b3986)",
@@ -1013,10 +901,6 @@
       "value": "b3309"
     },
     {
-      "display": "rplY (b2185)",
-      "value": "b2185"
-    },
-    {
       "display": "rpmA (b3185)",
       "value": "b3185"
     },
@@ -1033,16 +917,8 @@
       "value": "b3302"
     },
     {
-      "display": "rpmF (b1089)",
-      "value": "b1089"
-    },
-    {
       "display": "rpmH (b3703)",
       "value": "b3703"
-    },
-    {
-      "display": "rpmI (b1717)",
-      "value": "b1717"
     },
     {
       "display": "rpoA (b3295)",
@@ -1065,10 +941,6 @@
       "value": "b2573"
     },
     {
-      "display": "rpoH (b3461)",
-      "value": "b3461"
-    },
-    {
       "display": "rpsA (b0911)",
       "value": "b0911"
     },
@@ -1089,20 +961,12 @@
       "value": "b3303"
     },
     {
-      "display": "rpsF (b4200)",
-      "value": "b4200"
-    },
-    {
       "display": "rpsG (b3341)",
       "value": "b3341"
     },
     {
       "display": "rpsH (b3306)",
       "value": "b3306"
-    },
-    {
-      "display": "rpsI (b3230)",
-      "value": "b3230"
     },
     {
       "display": "rpsJ (b3321)",
@@ -1117,24 +981,12 @@
       "value": "b3342"
     },
     {
-      "display": "rpsM (b3298)",
-      "value": "b3298"
-    },
-    {
       "display": "rpsN (b3307)",
       "value": "b3307"
     },
     {
-      "display": "rpsO (b3165)",
-      "value": "b3165"
-    },
-    {
       "display": "rpsP (b2609)",
       "value": "b2609"
-    },
-    {
-      "display": "rpsQ (b3311)",
-      "value": "b3311"
     },
     {
       "display": "rpsR (b4202)",
@@ -1145,28 +997,36 @@
       "value": "b3316"
     },
     {
-      "display": "rpsT (b0023)",
-      "value": "b0023"
-    },
-    {
       "display": "rpsU (b3065)",
       "value": "b3065"
     },
     {
-      "display": "rsgA (b4161)",
-      "value": "b4161"
+      "display": "rseP (b0176)",
+      "value": "b0176"
     },
     {
-      "display": "safA (b1500)",
-      "value": "b1500"
+      "display": "rsmI (b3146)",
+      "value": "b3146"
     },
     {
       "display": "secA (b0098)",
       "value": "b0098"
     },
     {
+      "display": "secD (b0408)",
+      "value": "b0408"
+    },
+    {
       "display": "secE (b3981)",
       "value": "b3981"
+    },
+    {
+      "display": "secF (b0409)",
+      "value": "b0409"
+    },
+    {
+      "display": "secM (b0097)",
+      "value": "b0097"
     },
     {
       "display": "secY (b3300)",
@@ -1177,16 +1037,12 @@
       "value": "b0893"
     },
     {
+      "display": "spoT (b3650)",
+      "value": "b3650"
+    },
+    {
       "display": "ssb (b4059)",
       "value": "b4059"
-    },
-    {
-      "display": "sucA (b0726)",
-      "value": "b0726"
-    },
-    {
-      "display": "sucB (b0727)",
-      "value": "b0727"
     },
     {
       "display": "suhB (b2533)",
@@ -1197,6 +1053,10 @@
       "value": "b2559"
     },
     {
+      "display": "tdcF (b3113)",
+      "value": "b3113"
+    },
+    {
       "display": "thiL (b0417)",
       "value": "b0417"
     },
@@ -1205,24 +1065,16 @@
       "value": "b1719"
     },
     {
-      "display": "thyA (b2827)",
-      "value": "b2827"
-    },
-    {
       "display": "tilS (b0188)",
       "value": "b0188"
-    },
-    {
-      "display": "tktA (b2935)",
-      "value": "b2935"
     },
     {
       "display": "tmk (b1098)",
       "value": "b1098"
     },
     {
-      "display": "tonB (b1252)",
-      "value": "b1252"
+      "display": "tnaB (b3709)",
+      "value": "b3709"
     },
     {
       "display": "topA (b1274)",
@@ -1231,10 +1083,6 @@
     {
       "display": "trmD (b2607)",
       "value": "b2607"
-    },
-    {
-      "display": "trpL (b1265)",
-      "value": "b1265"
     },
     {
       "display": "trpS (b3384)",
@@ -1261,10 +1109,6 @@
       "value": "b0170"
     },
     {
-      "display": "tusE (b0969)",
-      "value": "b0969"
-    },
-    {
       "display": "tyrS (b1637)",
       "value": "b1637"
     },
@@ -1281,22 +1125,6 @@
       "value": "b3843"
     },
     {
-      "display": "ubiE (b3833)",
-      "value": "b3833"
-    },
-    {
-      "display": "ubiG (b2232)",
-      "value": "b2232"
-    },
-    {
-      "display": "ubiH (b2907)",
-      "value": "b2907"
-    },
-    {
-      "display": "ubiX (b2311)",
-      "value": "b2311"
-    },
-    {
       "display": "valS (b4258)",
       "value": "b4258"
     },
@@ -1305,52 +1133,48 @@
       "value": "b3633"
     },
     {
+      "display": "waaU (b3623)",
+      "value": "b3623"
+    },
+    {
       "display": "wzyE (b3793)",
       "value": "b3793"
     },
     {
-      "display": "ybeY (b0659)",
-      "value": "b0659"
+      "display": "yafN (b0232)",
+      "value": "b0232"
     },
     {
-      "display": "ycaR (b0917)",
-      "value": "b0917"
+      "display": "yagG (b0270)",
+      "value": "b0270"
     },
     {
-      "display": "ydaE (b4526)",
-      "value": "b4526"
+      "display": "yceQ (b1085)",
+      "value": "b1085"
     },
     {
-      "display": "ydaS (b1357)",
-      "value": "b1357"
+      "display": "ydfB (b1572)",
+      "value": "b1572"
     },
     {
-      "display": "ydcD (b1457)",
-      "value": "b1457"
+      "display": "ydiL (b1689)",
+      "value": "b1689"
     },
     {
-      "display": "yddL (b1472)",
-      "value": "b1472"
+      "display": "yefM (b2017)",
+      "value": "b2017"
     },
     {
-      "display": "ydfO (b1549)",
-      "value": "b1549"
+      "display": "yejM (b2188)",
+      "value": "b2188"
     },
     {
-      "display": "ydhL (b1648)",
-      "value": "b1648"
+      "display": "yhbV (b3159)",
+      "value": "b3159"
     },
     {
-      "display": "yffS (b2450)",
-      "value": "b2450"
-    },
-    {
-      "display": "ygeG (b2851)",
-      "value": "b2851"
-    },
-    {
-      "display": "ygfZ (b2898)",
-      "value": "b2898"
+      "display": "yhhQ (b3471)",
+      "value": "b3471"
     },
     {
       "display": "yidC (b3705)",
@@ -1361,44 +1185,12 @@
       "value": "b3865"
     },
     {
-      "display": "yjbS (b4621)",
-      "value": "b4621"
-    },
-    {
-      "display": "ykfM (b4586)",
-      "value": "b4586"
-    },
-    {
-      "display": "ymfE (b1138)",
-      "value": "b1138"
-    },
-    {
-      "display": "ymiB (b4672)",
-      "value": "b4672"
-    },
-    {
-      "display": "ynbG (b4674)",
-      "value": "b4674"
-    },
-    {
-      "display": "yncH (b1455)",
-      "value": "b1455"
-    },
-    {
-      "display": "yobI (b4677)",
-      "value": "b4677"
-    },
-    {
-      "display": "yqcG (b4682)",
-      "value": "b4682"
-    },
-    {
-      "display": "yqeL (b4683)",
-      "value": "b4683"
-    },
-    {
       "display": "yqgF (b2949)",
       "value": "b2949"
+    },
+    {
+      "display": "yrfF (b3398)",
+      "value": "b3398"
     },
     {
       "display": "zipA (b2412)",

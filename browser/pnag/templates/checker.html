@@ -36,15 +36,12 @@
 				<div class="form-group">
 					{{ form.presets.label(class="form-control-label", style="font-weight: bold;") }}
 					<p>Select one of the preset genomes or use "Own files" to upload your own genome.</p>
-					<p> Select the preset genomes of <i> Salmonella </i> (substr. SL1344) (<a href="../static/data/presets/s_typhi.fa">FASTA</a>,
-						<a href="../static/data/presets/s_typhi.gff">GFF</a>), <i> E. coli </i> (K12) (<a href="../static/data/presets/e_coli_K12.fna">FASTA</a>,
-						<a href="../static/data/presets/e_coli_K12.gff">GFF</a>), <i> Clostridium difficile </i> 630 (<a href="../static/data/presets/c_diffi630.fasta">FASTA</a>,
-						<a href="../static/data/presets/c_diffi630.gff3">GFF</a>) and
-					<i> Fusobacterium nucleatum </i> (ATCC 23726) (<a href="../static/data/presets/Fuso.fasta">FASTA</a>,
-						<a href="../static/data/presets/Fuso.gff3">GFF</a>).
-						Other genomes (FASTA) and their annotations (GFF) can be downloaded from the <a href="https://www.ncbi.nlm.nih.gov/">NCBI </a>website
-					and uploaded using the "Own files" option. For more details on  how to download custom genomes, have a look at our
-						<a href="{{ url_for('help') }}">help page</a></p>
+					<p>Select one of the preset genomes or use "Own files" to upload your own genome. Some presets include
+					essential genes that can be selected as target genes. For organisms marked with an NCBI accession,
+					the genome is automatically downloaded on first use.
+					Other genomes (FASTA) and their annotations (GFF) can be downloaded from the <a href="https://www.ncbi.nlm.nih.gov/">NCBI</a> website
+					and uploaded using the "Own files" option. For more details on how to download custom genomes, have a look at our
+						<a href="{{ url_for('help') }}">help page</a>.</p>
 					{{ render_field(form.presets) }}
 				</div>
 
@@ -52,6 +49,8 @@
 
 				<script>
 					let select_presets = document.getElementById('presets');
+					let essential_dict = {{ essential | tojson }};
+					let essential_studies = {{ essential_studies | tojson }};
 
 					select_presets.onchange = function() {
 						value = select_presets.value;
@@ -70,6 +69,55 @@
 							first.style.display = 'none';
 							second.style.display = 'none';
 							ncbi.style.display = 'none';
+						}
+						updateEssentialGenes(select_presets.value);
+						updateEssentialScreenPreset(select_presets.value);
+					}
+
+					function updateEssentialGenes(presetKey) {
+						var essDiv = document.getElementById('essgenes');
+						var essChoice = document.getElementById('essential');
+						var studyLabel = document.getElementById('essgenes_study');
+						if (presetKey in essential_dict) {
+							essDiv.style.display = 'block';
+							var choices = essential_dict[presetKey];
+							var optionHTML = '<option value="">-- No gene selected --</option>';
+							for (var item of choices) {
+								optionHTML += '<option value="' + item.value + '">' + item.display + '</option>';
+							}
+							essChoice.innerHTML = optionHTML;
+							var source = essential_studies[presetKey] || '';
+							if (source === 'Ghomi, Jung et al. 2024') {
+								studyLabel.innerHTML = 'Essential genes are from the transposon insertion sequencing (TIS) study <a href="https://journals.asm.org/doi/10.1128/mbio.01798-24" target="_blank">' + source + '</a>';
+							} else {
+								studyLabel.textContent = 'Essential genes are from ' + source;
+							}
+						} else {
+							essDiv.style.display = 'none';
+							essChoice.innerHTML = '';
+						}
+					}
+
+					function updateEssentialScreenPreset(presetKey) {
+						var radioSpan = document.getElementById('essential_genes_preset_radio');
+						var presetLabel = document.getElementById('essential_genes_preset_label');
+						var presetRadio = document.getElementById('add_essential_preset');
+						var textarea = document.getElementById('essential_genes_input');
+						if (presetKey in essential_dict) {
+							var tags = essential_dict[presetKey].map(function(e) { return e.value; });
+							var source = essential_studies[presetKey] || '';
+							if (source === 'Ghomi, Jung et al. 2024') {
+								presetLabel.innerHTML = 'Screen for essential gene set from <a href="https://journals.asm.org/doi/10.1128/mbio.01798-24" target="_blank">' + source + '</a> (' + tags.length + ' genes)';
+							} else {
+								presetLabel.textContent = 'Screen for essential gene set from ' + source + ' (' + tags.length + ' genes)';
+							}
+							radioSpan.style.display = '';
+							presetRadio.onclick = function() { textarea.value = tags.join(', '); };
+						} else {
+							radioSpan.style.display = 'none';
+							if (presetRadio.checked) {
+								document.getElementById('none').checked = true;
+							}
 						}
 					}
 				</script>
@@ -102,6 +150,19 @@
 						<p>Provide a locus tag to validate that your ASOs target the gene's translation initiation
 							region (TIR). This enables MASON-style output with heatmap, secondary structure plots,
 							and melting temperature barplot.</p>
+						<div id="essgenes" style="display:none; margin-bottom:10px;">
+							{{ form.essential.label(class="form-control-label", style="font-weight: bold;") }}
+							<p id="essgenes_study"></p>
+							{{ render_field(form.essential) }}
+							<script>
+								document.getElementById('essential').addEventListener('change', function() {
+									var val = this.value;
+									if (val && val.trim()) {
+										document.getElementById('target_gene').value = val;
+									}
+								});
+							</script>
+						</div>
 						{% if form.target_gene.errors %}
 							{{ form.target_gene(class="form-control form-control-lg is-invalid") }}
 							<div class="invalid-feedback">

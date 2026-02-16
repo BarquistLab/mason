@@ -71,6 +71,10 @@ PRESETS = {
 with open('ESSENTIAL_GENES.json', 'r') as f:
     ESSENTIAL_GENES = json.load(f)
 
+# Study citations for essential gene datasets
+ESSENTIAL_GENE_STUDIES = {key: 'Ghomi, Jung et al. 2024' for key in ESSENTIAL_GENES}
+ESSENTIAL_GENE_STUDIES['e_coli'] = 'EcoGene'
+
 
 def _preset_choices():
     """Build the preset choices list used by all forms."""
@@ -305,7 +309,7 @@ def start():
             paths = _resolve_genome_paths(form, time_string)
         except RuntimeError as e:
             flash(str(e), 'danger')
-            return render_template("start.html", title="Start", essential=ESSENTIAL_GENES, form=form)
+            return render_template("start.html", title="Start", essential=ESSENTIAL_GENES, essential_studies=ESSENTIAL_GENE_STUDIES, form=form)
         base_dir = _init_run_directory(time_string, paths)
 
         if additional_screen == "essential_genes":
@@ -334,7 +338,7 @@ def start():
             inputfile.write("\n" + use_ml)
 
         return redirect(url_for('result', result_id=time_string))
-    return render_template("start.html", title="Start", essential=ESSENTIAL_GENES, form=form)
+    return render_template("start.html", title="Start", essential=ESSENTIAL_GENES, essential_studies=ESSENTIAL_GENE_STUDIES, form=form)
 
 
 @app.route("/scramblerauto", methods=['GET', 'POST'])
@@ -413,7 +417,7 @@ ATATATATA"""
             paths = _resolve_genome_paths(form, time_string)
         except RuntimeError as e:
             flash(str(e), 'danger')
-            return render_template("checker.html", title="ASO-Checker", form=form)
+            return render_template("checker.html", title="ASO-Checker", essential=ESSENTIAL_GENES, essential_studies=ESSENTIAL_GENE_STUDIES, form=form)
         base_dir = _init_run_directory(time_string, paths)
 
         if additional_screen == "essential_genes":
@@ -445,7 +449,7 @@ ATATATATA"""
                 inputfile.write("\n" + use_ml)
 
         return redirect(url_for('result_checker', result_id=time_string))
-    return render_template("checker.html", title="ASO-Checker", form=form)
+    return render_template("checker.html", title="ASO-Checker", essential=ESSENTIAL_GENES, essential_studies=ESSENTIAL_GENE_STUDIES, form=form)
 
 
 @app.route("/result/<result_id>")

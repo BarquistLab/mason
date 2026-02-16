@@ -35,16 +35,14 @@
 				<div class="form-group">
 					{{ form.presets.label(class="form-control-label", style="font-weight: bold;") }}
 					<p>Select one of the preset genomes or use "Own files" to upload your own genome.</p>
-					<p> For the preset genomes of <i> Salmonella </i> (substr. SL1344) (<a href="../static/data/presets/s_typhi.fa">FASTA</a>,
-						<a href="../static/data/presets/s_typhi.gff">GFF</a>) and <i> E. coli </i> (K12) (<a href="../static/data/presets/e_coli_K12.fna">FASTA</a>,
-						<a href="../static/data/presets/e_coli_K12.gff">GFF</a>) we
-					provide a list of essential genes. For <i> Clostridium difficile </i> 630 (<a href="../static/data/presets/c_diffi630.fasta">FASTA</a>,
-						<a href="../static/data/presets/c_diffi630.gff3">GFF</a>) and
-					<i> Fusobacterium nucleatum </i> (ATCC 23726) (<a href="../static/data/presets/Fuso.fasta">FASTA</a>,
-						<a href="../static/data/presets/Fuso.gff3">GFF</a>) we provide the newest genome files with annotations.
-						Other genomes (FASTA) and their annotations (GFF) can be downloaded from the <a href="https://www.ncbi.nlm.nih.gov/">NCBI </a>website
-					and uploaded using the "Own files" option. For more details on  how to download custom genomes, have a look at our
-						<a href="{{ url_for('help') }}">help page</a></p>
+					<p> Several preset genomes are available. For most preset organisms we provide a list of
+					essential genes that can be selected as target genes. For organisms marked with an NCBI accession,
+					the genome and annotation files will be downloaded automatically on first use.
+					Other genomes (FASTA) and their annotations (GFF) can be downloaded from the
+						<a href="https://www.ncbi.nlm.nih.gov/">NCBI</a> website
+					and uploaded using the "Own files" option, or by entering an NCBI assembly accession directly.
+					For more details on how to download custom genomes, have a look at our
+						<a href="{{ url_for('help') }}">help page</a>.</p>
 					{{ render_field(form.presets) }}
 				</div>
 				<br>
@@ -99,6 +97,7 @@
 								essential_choice.innerHTML = optionHTML;
 							}
 							else {
+								egenes.style.display = 'none';
 								essential_choice.innerHTML = '';
 							}
 							first.style.display = 'none';

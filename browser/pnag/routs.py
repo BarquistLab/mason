@@ -25,10 +25,48 @@ path_parent = Path(app.root_path).parent
 
 p = os.path.join(app.root_path, 'static/data/presets/')
 PRESETS = {
-    'e_coli': [p + 'e_coli_K12.fna', p + 'e_coli_K12.gff', 'E. coli str. K-12 substr. MG1655'],
-    's_typhi': [p + 's_typhi.fa', p + 's_typhi.gff', 'Salmonella enterica subsp. enterica serovar Typhimurium SL1344'],
-    'c_diffi': [p + 'c_diffi630.fasta', p + 'c_diffi630.gff3', 'Clostridium difficile 630'],
-    'Fuso': [p + 'Fuso.fasta', p + 'Fuso.gff3', 'Fusobacterium nucleatum ATCC 23726']
+    # Local preset genomes (bundled files)
+    'e_coli':  {'genome': p + 'e_coli_K12.fna', 'gff': p + 'e_coli_K12.gff',
+                'display': 'Escherichia coli str. K-12 substr. MG1655'},
+    's_typhi': {'genome': p + 's_typhi.fa', 'gff': p + 's_typhi.gff',
+                'display': 'Salmonella enterica subsp. enterica serovar Typhimurium str. SL1344'},
+    'c_diffi': {'genome': p + 'c_diffi630.fasta', 'gff': p + 'c_diffi630.gff3',
+                'display': 'Clostridioides difficile str. 630'},
+    'Fuso':    {'genome': p + 'Fuso.fasta', 'gff': p + 'Fuso.gff3',
+                'display': 'Fusobacterium nucleatum subsp. nucleatum ATCC 23726'},
+    # NCBI accession presets (genome downloaded on first use)
+    # locus_tag_prefix: post-process GFF to use old_locus_tag matching this prefix
+    # (NCBI RefSeq GFFs use re-annotated *_RS locus tags; originals are in old_locus_tag)
+    'ecoli_bw25113':   {'accession': 'GCF_000750555.1',
+                        'display': 'Escherichia coli str. BW25113',
+                        'locus_tag_prefix': 'BW25113_'},
+    'ecoli_ec958':     {'accession': 'GCF_000285655.3',
+                        'display': 'Escherichia coli str. EC958 (ST131)',
+                        'locus_tag_prefix': 'EC958_'},
+    'ecoli_nctc13441': {'accession': 'GCF_900448475.1',
+                        'display': 'Escherichia coli str. NCTC13441 (UPEC ST131)',
+                        'locus_tag_prefix': 'NCTC13441_'},
+    'c_rod_icc168':    {'accession': 'GCF_000027085.1',
+                        'display': 'Citrobacter rodentium str. ICC168',
+                        'locus_tag_prefix': 'ROD_'},
+    'kpneu_ecl8':      {'accession': 'GCF_000315385.1',
+                        'display': 'Klebsiella pneumoniae str. Ecl8',
+                        'locus_tag_prefix': 'BN373_'},
+    'kpneu_rh201207':  {'accession': 'GCA_905477585.1',
+                        'display': 'Klebsiella pneumoniae str. RH201207',
+                        'locus_tag_prefix': 'KPNRH_'},
+    's_enteritidis':   {'accession': 'GCF_000009505.1',
+                        'display': 'Salmonella enterica subsp. enterica serovar Enteritidis str. P125109',
+                        'locus_tag_prefix': 'SEN'},
+    's_typhi_ty2':     {'accession': 'GCF_000007545.1',
+                        'display': 'Salmonella enterica subsp. enterica serovar Typhi str. Ty2',
+                        'locus_tag_prefix': 't'},
+    's_typh_a130':     {'accession': 'GCF_000027025.1',
+                        'display': 'Salmonella enterica subsp. enterica serovar Typhimurium str. A130',
+                        'locus_tag_prefix': 'STM_MW'},
+    's_typh_d23580':   {'accession': 'GCF_000027025.1',
+                        'display': 'Salmonella enterica subsp. enterica serovar Typhimurium str. D23580',
+                        'locus_tag_prefix': 'STMMW_'},
 }
 with open('ESSENTIAL_GENES.json', 'r') as f:
     ESSENTIAL_GENES = json.load(f)
@@ -37,13 +75,63 @@ with open('ESSENTIAL_GENES.json', 'r') as f:
 def _preset_choices():
     """Build the preset choices list used by all forms."""
     return ([('upload', 'Own files'), ('ncbi', 'NCBI assembly accession')]
-            + [(key, PRESETS[key][2]) for key in PRESETS.keys()])
+            + [(key, PRESETS[key]['display']) for key in PRESETS])
 
 
-def _download_ncbi_accession(accession, dest_dir):
+def _rewrite_gff_locus_tags(gff_path, prefix):
+    """Rewrite GFF locus_tag attributes using old_locus_tag values matching prefix.
+
+    NCBI RefSeq GFFs re-annotate locus tags with *_RS* format. The original tags
+    are preserved in old_locus_tag attributes on gene lines (sometimes URL-encoded
+    with %2C-separated multiples). CDS/RNA lines typically lack old_locus_tag.
+
+    Two-pass approach:
+    1. Build a mapping {new_RS_tag -> old_tag} from lines that have old_locus_tag
+    2. Apply the mapping to ALL lines that have a locus_tag
+    """
+    from urllib.parse import unquote
+    with open(gff_path, 'r') as f:
+        lines = f.readlines()
+
+    # Pass 1: build mapping from new RS tags to old tags
+    tag_map = {}  # e.g. {'T_RS17720': 't3488'}
+    for line in lines:
+        if line.startswith('#') or '\t' not in line:
+            continue
+        m_old = re.search(r'old_locus_tag=([^;\n]+)', line)
+        if not m_old:
+            continue
+        m_new = re.search(r'\blocus_tag=([^;\n]+)', line)
+        if not m_new:
+            continue
+        new_tag = m_new.group(1).split(';')[0]  # stop at semicolon if present
+        old_tags = unquote(m_old.group(1)).split(',')
+        match = next((t for t in old_tags if t.startswith(prefix)), None)
+        if match:
+            tag_map[new_tag] = match
+
+    # Pass 2: rewrite locus_tag on all feature lines using the mapping
+    out = []
+    for line in lines:
+        if line.startswith('#') or '\t' not in line:
+            out.append(line)
+            continue
+        m_tag = re.search(r'\blocus_tag=([^;\n]+)', line)
+        if m_tag:
+            current_tag = m_tag.group(1).split(';')[0]
+            if current_tag in tag_map:
+                line = re.sub(r'\blocus_tag=[^;\n]+', f'locus_tag={tag_map[current_tag]}', line)
+        out.append(line)
+
+    with open(gff_path, 'w') as f:
+        f.writelines(out)
+
+
+def _download_ncbi_accession(accession, dest_dir, locus_tag_prefix=None):
     """Download genome FASTA and GFF3 from NCBI using the datasets CLI.
 
     Returns dict with 'genome' and 'gff' paths.
+    If locus_tag_prefix is set, rewrites GFF locus_tag using old_locus_tag values.
     Raises RuntimeError on failure.
     """
     os.makedirs(dest_dir, exist_ok=True)
@@ -79,6 +167,9 @@ def _download_ncbi_accession(accession, dest_dir):
             'The assembly may not include both genome and annotation files.'
         )
 
+    if locus_tag_prefix and gff_files:
+        _rewrite_gff_locus_tags(gff_files[0], locus_tag_prefix)
+
     return {'genome': fna_files[0], 'gff': gff_files[0]}
 
 
@@ -102,9 +193,14 @@ def _resolve_genome_paths(form, time_string):
         base_dir = os.path.join(app.root_path, 'static/data', time_string)
         paths = _download_ncbi_accession(form.ncbi_accession.data.strip(), base_dir)
     else:
-        files = PRESETS[form.presets.data]
-        paths['genome'] = files[0]
-        paths['gff'] = files[1]
+        preset = PRESETS[form.presets.data]
+        if 'accession' in preset:
+            base_dir = os.path.join(app.root_path, 'static/data', time_string)
+            paths = _download_ncbi_accession(preset['accession'], base_dir,
+                                             preset.get('locus_tag_prefix'))
+        else:
+            paths['genome'] = preset['genome']
+            paths['gff'] = preset['gff']
     return paths
 
 
@@ -155,7 +251,7 @@ def _read_result_context(result_id):
 
     all_output_dirs = []
     for dirs in os.listdir(base_dir):
-        if "." not in dirs:
+        if "." not in dirs and dirs != "ncbi_dataset":
             all_output_dirs += [dirs]
 
     ffile = "../" + "/".join(genome_file.split(sep="/")[-4:])

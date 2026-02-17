@@ -39,7 +39,7 @@ table_out <- kable(output_df, format = "html", escape = FALSE) %>%
   # if column 4 is <5, make it red
   column_spec(4:5, color = "black",
               background = ifelse(output_df[["%_SC_bases"]] > 60, "red",
-                                                      ifelse(output_df[["%_SC_bases"]] > 50, "salmon",
+                                                      ifelse(output_df[["%_SC_bases"]] > 50, "red",
                                                        ifelse(output_df[["%_SC_bases"]] > 40, "yellow",
                                                         ifelse(output_df[["%_SC_bases"]] > 34, "yellow",
                                                                "lightgreen"))))) %>%

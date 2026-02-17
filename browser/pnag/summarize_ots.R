@@ -85,7 +85,7 @@ print(df_plot)
 output_df[["Mw"]] <- sapply(output_df$ASO_seq, calculate_pna_mw)
 
 
-output_df[["%_SC_bases"]] <- round(output_df$SC_bases / nchar(output_df$ASO_seq) , 2)
+output_df[["%_SC_bases"]] <- round(output_df$SC_bases / nchar(output_df$ASO_seq) * 100, 2)
 
 # re-arrange output df by ASO 	ASO_seq	SC_bases  % SC bases  Tm (°C)	pur_perc 	long_pur_stretch 	OT_TIR_0mm 	OT_TIR_1mm
 # OT_TIR_2mm 	OT_TIR_3mm 	OT_tot_0mm 	OT_tot_1mm 	OT_tot_2mm 	OT_tot_3mm
@@ -120,8 +120,9 @@ mfe <- read.csv(paste0(path_output, "/mfe_values.txt"), header = FALSE) [1,1] %>
 saved_table_ml <- output_df %>%
   mutate(CAI = cai) %>%
     mutate(MFE = mfe) %>%
+    mutate(sc_frac = `%_SC_bases` / 100) %>%
   # select only ASO, Tm, % SC bases, pur_perc, OT_TIR_1mm, CAI, MFE
-    select(ASO, `Tm`, `%_SC_bases`, CAI, OT_TIR_1mm, MFE, pur_perc)
+    select(ASO, `Tm`, sc_frac, CAI, OT_TIR_1mm, MFE, pur_perc)
 
 # rename columns to 'Tm', 'sc_bases', 'CAI', 'upec_tir_off_targets_1mm',
 #                      'MFE_UPEC', 'purine_percentage'

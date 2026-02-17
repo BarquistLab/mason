@@ -137,7 +137,8 @@ if (!is.na(target_gene) && nchar(target_gene) > 0) {
   saved_table_ml <- output_df %>%
     mutate(CAI = cai) %>%
     mutate(MFE = mfe) %>%
-    select(ASO, Tm, `%_SC_bases`, CAI, OT_TIR_1mm, MFE, pur_perc)
+    mutate(sc_frac = `%_SC_bases` / 100) %>%
+    select(ASO, Tm, sc_frac, CAI, OT_TIR_1mm, MFE, pur_perc)
 
   colnames(saved_table_ml) <- c("ASO", "Tm", "sc_bases", "CAI", "upec_tir_off_targets_1mm",
                                 "MFE_UPEC", "purine_percentage")
@@ -175,7 +176,7 @@ if (!is.na(target_gene) && nchar(target_gene) > 0) {
     # if column 3 is <5, make it red
     column_spec(3:4, color = "black",
                 background = ifelse(output_df[["%_SC_bases"]] > 60, "red",
-                                                        ifelse(output_df[["%_SC_bases"]] > 50, "salmon",
+                                                        ifelse(output_df[["%_SC_bases"]] > 50, "red",
                                                          ifelse(output_df[["%_SC_bases"]] > 40, "yellow",
                                                           ifelse(output_df[["%_SC_bases"]] > 34, "yellow",
                                                                  "lightgreen"))))) %>%

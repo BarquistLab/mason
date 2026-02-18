@@ -25,10 +25,10 @@ if target_mode:
     tir_seq_60 = mfe_record.seq       # 60nt: -30 to +30
 
     # Detect Shine-Dalgarno region (same window as make_pnas.py)
-    sd_result = best_sd_match(str(tir_seq_46[18:28]))
+    sd_result = best_sd_match(str(tir_seq_46[16:27]))
     if sd_result:
         sd_motif, sd_rel_start = sd_result
-        sd_pos = sd_rel_start + 18  # 0-indexed in 46nt window
+        sd_pos = sd_rel_start + 16  # 0-indexed in 46nt window
         sd_len = len(sd_motif)
     else:
         sd_pos = None

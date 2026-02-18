@@ -38,12 +38,12 @@ for r in range(len(target_regions)):
                                       "OT_tot", "OT_TIR", "OT_GRCh38", "OT_HMP", "OT_cust"])
     # identify location of SD regions:
 
-    if best_sd_match(str(seq[18:28])):
-        sd_pos = best_sd_match(str(seq[18:28]))[1] + 18
-        print("SD found in region:", str(seq[18:28]))
+    if best_sd_match(str(seq[16:27])):
+        sd_pos = best_sd_match(str(seq[16:27]))[1] + 16
+        print("SD found in region:", str(seq[16:27]))
         print("SD position at:", sd_pos)
-        print("SD sequence:", best_sd_match(str(seq[18:28]))[0])
-        sd = best_sd_match(str(seq[18:28]))[0]
+        print("SD sequence:", best_sd_match(str(seq[16:27]))[0])
+        sd = best_sd_match(str(seq[16:27]))[0]
 
         if bases_before != 0:
             print("designing PNA in region before SD, as specified by user. bases:" , bases_before)
@@ -79,11 +79,11 @@ for r in range(len(target_regions)):
                     heatmap_annot += [i * [""] + seqlist_pnas[i:i + length] + (len(seq) - i - length) * [""]]
                     count += 1
     else:
-        print("No SD found in region:", str(seq[18:28]))
+        print("No SD found in region:", str(seq[16:27]))
 
     # Write SD position for VARNA highlighting (1-indexed)
     with open(res_path + "/outputs/sd_position.txt", "w") as sf:
-        if best_sd_match(str(seq[18:28])):
+        if best_sd_match(str(seq[16:27])):
             sf.write(f"{sd_pos + 1}\t{sd_pos + len(sd)}\n")
 
 

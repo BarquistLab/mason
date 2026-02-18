@@ -95,16 +95,6 @@
 						}
 					}
 
-					if (select_presets.value in essential_dict) {
-						let new_choices = essential_dict[select_presets.value];
-						let optionHTML = '<option value="">-- No gene selected --</option>';
-						for (let item of new_choices) {
-							optionHTML += '<option value="' + item.value +'">'+ item.display + '</option>';
-						}
-						essential_choice.innerHTML = optionHTML;
-						updateStudyLabel(select_presets.value);
-						updateEssentialScreenPreset(select_presets.value);
-					}
 					select_presets.onchange = function() {
 						value = select_presets.value;
 						first = document.getElementById('div_genome');
@@ -153,6 +143,9 @@
 				  window.addEventListener('DOMContentLoaded', () => {
 					// This forces the dropdown to refresh the right fields
 					select_presets.dispatchEvent(new Event('change'));
+					{% if autofill %}
+					essential_choice.value = 'b2563';
+					{% endif %}
 				  });
 				</script>
 				<br>

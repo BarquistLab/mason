@@ -19,9 +19,10 @@ df_plot <- read_csv(paste0(path_output, "/df_plot.csv"))
 
 if (!is.na(use_ml) && use_ml == "yes") {
   ml_res <- read_csv(paste0(path_output, "/saved_table_ml.csv"))
-  output_df$MIC_pred <- ml_res$MIC_pred
-  # rank MIC_pred from low to high
+  output_df$MIC_pred <- round(ml_res$MIC_pred, 2)
   output_df$MIC_ranked <- rank(output_df$MIC_pred, ties.method = "min")
+  # Place MIC_ranked after S_B_ΔG
+  output_df <- output_df %>% relocate(MIC_ranked, .after = `S_B_ΔG`)
 }
 
 # reorder columns so that MIC columns are next to each other. [1] "ASO"              "gene"             "ASO_seq"          "SC_bases"
@@ -48,7 +49,11 @@ table_out <- kable(output_df, format = "html", escape = FALSE) %>%
                                                                        "lightgreen"))) %>%
     column_spec(7, color = "black", background = ifelse(output_df$pur_perc < 30, "lightgreen",
                                                         ifelse(output_df$pur_perc < 51, "white",
-                                                               "yellow")))
+                                                               "yellow"))) %>%
+    column_spec(8, color = "black",
+                background = ifelse(output_df[["S_B_ΔG"]] > -1, "lightgreen",
+                             ifelse(output_df[["S_B_ΔG"]] >= -3, "yellow",
+                                    "red")))
 
 # Conditionally add MIC_ranked coloring
 if ("MIC_ranked" %in% names(output_df)) {

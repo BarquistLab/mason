@@ -38,7 +38,7 @@ g <- df_asos %>% ggplot(aes(x = ASO, y = Tm)) +
   geom_text(aes(label = round(Tm, 1)), vjust = -0.25, size = 7)
 
 df_asos$Mw <- sapply(df_asos$ASO_seq, calculate_pna_mw)
-
+df_asos[["S_B_ΔG"]] <- calculate_self_binding_mfe(df_asos$ASO_seq)
 
 df_asos$Tm <- format(round(df_asos$Tm, 2), nsmall = 2)
 df_asos$Mw <- format(round(df_asos$Mw, 2), nsmall = 0)

@@ -33,6 +33,34 @@ calculate_pna_mw <- function(seq) {
   return(mw)
 }
 
+calculate_self_binding_mfe <- function(sequences) {
+  # Calculate self-binding MFE for ASO sequences using RNAfold.
+  # Converts DNA (T) to RNA (U) before folding.
+  #
+  # Args:
+  #   sequences: character vector of ASO sequences (DNA, with T's)
+  #
+  # Returns:
+  #   numeric vector of MFE values (kcal/mol)
+
+  rna_seqs <- gsub("T", "U", toupper(sequences))
+
+  # Write sequences to temp FASTA
+  tmp_fasta <- tempfile(fileext = ".fa")
+  writeLines(paste0(">seq", seq_along(rna_seqs), "\n", rna_seqs), tmp_fasta)
+
+  # Run RNAfold
+  output <- system2("RNAfold", args = c("--noGU", "-T", "37", "--noPS"),
+                     stdin = tmp_fasta, stdout = TRUE, stderr = FALSE)
+  unlink(tmp_fasta)
+
+  # Parse MFE from lines containing parenthesized energy values like "...((-2.30))"
+  structure_lines <- grep("\\(\\s*-?[0-9.]+\\)", output, value = TRUE)
+  mfe_values <- as.numeric(gsub(".*\\(\\s*(-?[0-9.]+)\\).*", "\\1", structure_lines))
+
+  return(mfe_values)
+}
+
 count_offtargets_by_mismatch <- function(all_off_targets, output_df, index_by_name = TRUE) {
   # Count off-targets by mismatch level (0-3mm) for both total and TIR regions.
   # Builds df_plot and updates output_df with OT counts.

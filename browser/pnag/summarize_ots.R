@@ -98,8 +98,8 @@ rownames(output_df) <- NULL
 output_df <- as_tibble(output_df)
 
 
-base_cols <- c("ASO", "gene", "ASO_seq", "SC_bases", "%_SC_bases", "Tm", "pur_perc", "long_pur_stretch",
-               "Mw", "OT_TIR_0mm", "OT_TIR_1mm", "OT_TIR_2mm", "OT_TIR_3mm",
+base_cols <- c("ASO", "gene", "ASO_seq", "SC_bases", "%_SC_bases", "Tm", "pur_perc", "S_B_ΔG",
+               "long_pur_stretch", "Mw", "OT_TIR_0mm", "OT_TIR_1mm", "OT_TIR_2mm", "OT_TIR_3mm",
                "OT_tot_0mm", "OT_tot_1mm", "OT_tot_2mm", "OT_tot_3mm")
 if ("OT_HMP_0mm" %in% names(output_df)) {
   base_cols <- c(base_cols, "OT_HMP_0mm")

@@ -309,7 +309,7 @@ def start():
             paths = _resolve_genome_paths(form, time_string)
         except RuntimeError as e:
             flash(str(e), 'danger')
-            return render_template("start.html", title="Start", essential=ESSENTIAL_GENES, essential_studies=ESSENTIAL_GENE_STUDIES, form=form)
+            return render_template("start.html", title="Start", essential=ESSENTIAL_GENES, essential_studies=ESSENTIAL_GENE_STUDIES, form=form, autofill=False)
         base_dir = _init_run_directory(time_string, paths)
 
         if additional_screen == "essential_genes":
@@ -338,7 +338,8 @@ def start():
             inputfile.write("\n" + use_ml)
 
         return redirect(url_for('result', result_id=time_string))
-    return render_template("start.html", title="Start", essential=ESSENTIAL_GENES, essential_studies=ESSENTIAL_GENE_STUDIES, form=form)
+    autofill = request.method == 'GET' and request.path == '/startauto'
+    return render_template("start.html", title="Start", essential=ESSENTIAL_GENES, essential_studies=ESSENTIAL_GENE_STUDIES, form=form, autofill=autofill)
 
 
 @app.route("/scramblerauto", methods=['GET', 'POST'])

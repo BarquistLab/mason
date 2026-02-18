@@ -88,6 +88,8 @@ output_df[["Tm"]] <- sapply(output_df$ASO_seq, function(x) {
 # calculate Mw for each ASO
 output_df[["Mw"]] <- sapply(output_df$ASO_seq, calculate_pna_mw)
 
+# calculate self-binding MFE for each ASO
+output_df[["S_B_ΔG"]] <- calculate_self_binding_mfe(output_df$ASO_seq)
 
 output_df[["%_SC_bases"]] <- round(output_df$SC_bases / nchar(output_df$ASO_seq) * 100, 2)
 
@@ -120,8 +122,8 @@ if (!is.na(target_gene) && nchar(target_gene) > 0) {
   output_df[["gene"]] <- target_gene
 
   # Select columns in MASON order
-  base_cols <- c("ASO", "gene", "ASO_seq", "SC_bases", "%_SC_bases", "Tm", "pur_perc", "long_pur_stretch",
-                 "Mw", "OT_TIR_0mm", "OT_TIR_1mm", "OT_TIR_2mm", "OT_TIR_3mm",
+  base_cols <- c("ASO", "gene", "ASO_seq", "SC_bases", "%_SC_bases", "Tm", "pur_perc", "S_B_ΔG",
+                 "long_pur_stretch", "Mw", "OT_TIR_0mm", "OT_TIR_1mm", "OT_TIR_2mm", "OT_TIR_3mm",
                  "OT_tot_0mm", "OT_tot_1mm", "OT_tot_2mm", "OT_tot_3mm")
   if ("OT_HMP_0mm" %in% names(output_df)) base_cols <- c(base_cols, "OT_HMP_0mm")
   if ("OT_GRCh38_0mm" %in% names(output_df)) base_cols <- c(base_cols, "OT_GRCh38_0mm")
@@ -155,8 +157,8 @@ if (!is.na(target_gene) && nchar(target_gene) > 0) {
   colnames(output_df)[colnames(output_df) == "Tm"] <- "Tm (°C)"
 
   # re-arrange output df
-  select_cols <- c("ASO", "ASO_seq", "SC_bases", "%_SC_bases", "Tm (°C)", "pur_perc", "long_pur_stretch",
-                   "Mw",
+  select_cols <- c("ASO", "ASO_seq", "SC_bases", "%_SC_bases", "Tm (°C)", "pur_perc", "S_B_ΔG",
+                   "long_pur_stretch", "Mw",
                    "OT_TIR_0mm", "OT_TIR_1mm", "OT_TIR_2mm", "OT_TIR_3mm", "OT_tot_0mm", "OT_tot_1mm",
                    "OT_tot_2mm", "OT_tot_3mm")
   if ("OT_HMP_0mm" %in% names(output_df)) select_cols <- c(select_cols, "OT_HMP_0mm")
@@ -185,7 +187,11 @@ if (!is.na(target_gene) && nchar(target_gene) > 0) {
                                                                          "lightgreen"))) %>%
       column_spec(6, color = "black", background = ifelse(output_df$pur_perc < 30, "lightgreen",
                                                           ifelse(output_df$pur_perc < 51, "white",
-                                                                 "yellow")))
+                                                                 "yellow"))) %>%
+      column_spec(7, color = "black",
+                  background = ifelse(output_df[["S_B_ΔG"]] > -1, "lightgreen",
+                               ifelse(output_df[["S_B_ΔG"]] >= -3, "yellow",
+                                      "red")))
 
 
   print("before saving html")

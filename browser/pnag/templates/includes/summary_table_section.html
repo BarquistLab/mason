@@ -3,14 +3,16 @@
 <br>
 <br>
     <h3 class="border-bottom mb-4"> Summary table for {{ result.custom_id }} - ASOs </h3>
-            <p> Summary for each ASO sequence. meanings of column names: <br>
-                location = location (start and end) of the ASO-binding site, measured from the CDS start site <br>
+            <p> Summary for each ASO sequence. Meanings of column names: <br>
                 SC_bases = maximum stretch of self-complementary bases <br>
-                pur_perc = percentage of purine bases in ASO sequence (too high % should be avoided) <br>
-                long_pur_stretch = longest purine stretch (too long purine stretches should be avoided) <br>
+                %_SC_bases = percentage of self-complementary bases <br>
                 Tm = Melting temperature<br>
-                OT_tot = critical off-targets in the whole transcriptome<br>
+                pur_perc = percentage of purine bases in ASO sequence (too high % should be avoided) <br>
+                S_B_ΔG = self-binding minimum free energy of the ASO, calculated with RNAfold (green: MFE > -1, yellow: -3 to -1, red: &lt; -3)<br>
+                long_pur_stretch = longest purine stretch (too long purine stretches should be avoided) <br>
+                Mw = molecular weight (Da)<br>
                 OT_TIR = critical off-targets in translation initiation regions<br>
+                OT_tot = critical off-targets in the whole transcriptome<br>
                 {% if add_screen == "microbiome" %}
                     OT_HMP = off-targets in translation initiation regions of genes in the microbiome<br>
                 {% endif %}
@@ -20,7 +22,6 @@
                 {% if add_screen == "essential_genes" %}
                     OT_ess_TIR = off-targets in TIR of user-defined essential genes<br>
                 {% endif %}
-
             </p>
     <object type="text/html" data="{{ res_prefix + 'outputs/result_table.html' }}" width="100%" height="250px"> </object>
 

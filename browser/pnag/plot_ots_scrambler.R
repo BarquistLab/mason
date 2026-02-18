@@ -13,6 +13,14 @@ path_output <- commandArgs(trailingOnly = TRUE)[1]
 screen <- commandArgs(trailingOnly = TRUE)[2]
 
 output_df <- read_csv(paste0(path_output, "/result_table.csv"))
+
+# Calculate self-binding MFE for each ASO
+output_df[["S_B_ΔG"]] <- calculate_self_binding_mfe(output_df$ASO_seq)
+
+# Reorder columns: place S_B_ΔG after long_pur_stretch, before OT columns
+prop_cols <- c("ASO", "ASO_seq", "SC_bases", "long_pur_stretch", "S_B_ΔG")
+output_df <- output_df %>% select(all_of(prop_cols), everything())
+
 df_plot <- read_csv(paste0(path_output, "/df_plot.csv"))
 
 # Rename columns to match mason convention (Python uses hyphens/spaces)
@@ -25,7 +33,11 @@ df_plot <- df_plot %>% rename(
 # Generate kableExtra HTML table (no color formatting, just styled)
 table_out <- kable(output_df, format = "html", escape = FALSE) %>%
   kable_styling(bootstrap_options = c("bordered", "hover", "condensed")) %>%
-  column_spec(1, bold = TRUE)
+  column_spec(1, bold = TRUE) %>%
+  column_spec(5, color = "black",
+              background = ifelse(output_df[["S_B_ΔG"]] > -1, "lightgreen",
+                           ifelse(output_df[["S_B_ΔG"]] >= -3, "yellow",
+                                  "red")))
 
 table_out %>% save_kable(paste0(path_output, "/result_table.html"))
 

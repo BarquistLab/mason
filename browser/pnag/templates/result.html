@@ -105,16 +105,26 @@
 						<br>
 						<br>
 							<h3 class="border-bottom mb-4"> Predicted off-targets for ASOs </h3>
-									<p>The predicted off-targets (OT) of ASOs are shown in the barplot below. OTs in the whole
-										transcriptome of the targeted bacterium are visualized in dark blue.
-										OT, which are located in the translation initiation regions (TIRs) of genes of
-										the targeted organism are visualized in light blue.
+									<p>The predicted off-targets (OT) of ASOs are shown in the barplots below.
 										OTs in the TIR of transcripts are defined as binding regions with the
 										first base in the region between -20 and +5 bases relative to the annotated
-										start site of the CDS. For deails and explanations of the detailed off-target table see
+										start site of the CDS. For details and explanations of the detailed off-target table see
 									<a href="../help">help page</a>. </p>
-							<img src="{{ dir_out + "/" + res + '/outputs/plot_ots_whole_transcriptome.png'}}" >
+
+							<h4>Off-targets in TIR regions</h4>
+							<img src="{{ dir_out + "/" + res + '/outputs/plot_ots_start_regions.png'}}" >
 						<br>
+						<p>Download barplot: &nbsp<a href="{{ dir_out + "/" + res + '/outputs/plot_ots_start_regions.svg' }}">SVG <i class="material-icons">cloud_download</i></a>
+							&nbsp&nbsp
+						<a href="{{ dir_out + "/" + res + '/outputs/plot_ots_start_regions.png' }}"> PNG <i class="material-icons">cloud_download</i></a></p>
+							<p>Download TIR off-target table: &nbsp <a href="{{ dir_out + "/" + res +
+								'/outputs/offtargets_startregions_sorted.csv' }}">CSV <i class="material-icons">
+									cloud_download</i></a>
+							</p>
+						<br>
+
+							<h4>Off-targets in whole transcriptome</h4>
+							<img src="{{ dir_out + "/" + res + '/outputs/plot_ots_whole_transcriptome.png'}}" >
 						<br>
 						<p>Download barplot: &nbsp<a href="{{ dir_out + "/" + res + '/outputs/plot_ots_whole_transcriptome.svg' }}">SVG <i class="material-icons">cloud_download</i></a>
 							&nbsp&nbsp

@@ -172,8 +172,9 @@ cleanup_intermediate_files() {
 
     # Common outputs/ files
     rm -f "$OUT/df_plot.csv"
-    rm -f "$OUT/offtargets_startregions_sorted.csv"
     rm -f "$OUT/result_table.tsv"
+    rm -f "$OUT"/*_sorted.tab
+    rm -f "$OUT/essential_genes.txt"
 
     # Mason and checker_target outputs/ files
     if [[ "$mode" == "mason" || "$mode" == "checker_target" ]]; then

@@ -1,6 +1,9 @@
 {% extends "layout.html" %}
 {% block content %}
 	<div class="content-section">
+		<div class="alert alert-warning text-center" role="alert">
+			<strong>Scheduled maintenance:</strong> MASON is being updated and may experience brief interruptions until Tuesday, 10 March 2026.
+		</div>
 		<!-- here I add the logo of MASON and centre it to the middle -->
 		<div class="border-bottom mb-4 pb-3">
 			<img src="{{ url_for('static', filename='mason.png') }}" width="300px" class="mx-auto d-block"/>

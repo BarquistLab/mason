@@ -26,16 +26,27 @@
 			<a href="{{ url_for('start') }}">start MASON <i class="material-icons">fast_forward</i></a></p>
 		</div>
 
-		<h2>MASON update - 2024-05</h2>
+		<h2>MASON update - MASON 2.0</h2>
 		<p>We have updated the MASON webserver with two new features:
 			<a href="{{ url_for('checker') }}"><b>ASO-checker</b></a> and
 			<a href="{{ url_for('scrambler') }}"><b>Scrambler</b></a>.
 			<a href="{{ url_for('checker') }}"><b>ASO-checker</b></a>
-			validates your ASO design by checking for off-targets in the genome as while
+			validates your ASO design by checking for off-targets in the genome while
 			checking for different ASO-specific features.
 			<a href="{{ url_for('scrambler') }}"><b>Scrambler</b></a>
 			scrambles the sequence of your ASO to generate the best negative control ASO sequence for your experiment.
-			Therefore, there are now three options available on the MASON homepage: </p>
+			Additionally, MASON 2.0 introduces:</p>
+		<ul>
+			<li><b>NCBI accession download</b>:enter an NCBI assembly accession to automatically download genome and annotation files, no manual upload needed</li>
+			<li><b>10 preset organisms</b> with pre-loaded genomes and essential gene sets</li>
+			<li><b>Essential gene off-target screening</b>:screen ASO off-targets against essential genes</li>
+			<li><b>RNA secondary structure visualization</b>:VARNA plots of the target region with Shine-Dalgarno highlighting</li>
+			<li><b>Improved Shine-Dalgarno detection</b>:wider search window with extended SD motif recognition</li>
+			<li><b>Self-binding energy (ΔG)</b>:MFE-based self-complementarity assessment for each ASO</li>
+			<li><b>Off-target breakdown by mismatch level</b>:off-targets are now reported separately for 0, 1, 2, and 3 mismatches</li>
+			<li><b>ML-based MIC prediction</b> <span class="badge badge-warning" style="background-color: #ffc107; color: #212529;">BETA</span>:optional random forest model to rank ASO efficacy</li>
+		</ul>
+		<p>There are now three tools available on the MASON homepage:</p>
 		<br>
 		<img src="{{ url_for('static', filename='mason_all_features.png') }}" width="90%" class="mx-auto d-block"/>
 		<br>

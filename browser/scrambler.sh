@@ -23,6 +23,7 @@ done
 # re-activate conda environment:
 . /home/jakob/miniconda3/etc/profile.d/conda.sh
 conda activate browser
+export HOME=${HOME:-/home/jakob}
 
 # Source shared pipeline functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

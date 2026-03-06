@@ -102,8 +102,11 @@ count_offtargets_by_mismatch <- function(all_off_targets, output_df, index_by_na
     target_seq <- ot_aso$probe_seq[1]
 
     # Count off-targets for each mismatch level (vectorized)
+    # Subtract 1 from 0mm counts to exclude the self-match (ASO binding its own target)
     num_tot_ot <- sapply(mismatch_levels, function(mm) sum(ot_aso$num_mismatch == mm))
+    num_tot_ot[1] <- max(0, num_tot_ot[1] - 1)
     num_tir_ot <- sapply(mismatch_levels, function(mm) sum(ot_aso$TIR == "TIR" & ot_aso$num_mismatch == mm))
+    num_tir_ot[1] <- max(0, num_tir_ot[1] - 1)
 
     # Fill df_plot rows for transcriptome off-targets (4 rows)
     for (mm in mismatch_levels) {

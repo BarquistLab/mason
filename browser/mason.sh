@@ -150,21 +150,23 @@ then
     fi
     VARNA_HIGHLIGHT="${SD_HIGHLIGHT}31-33:fill=#FF0000,outline=#FF0000,radius=10"
 
+    echo "Running VARNA SVG..." >> logfile_masonscript.log
     xvfb-run varna -sequenceDBN "$SEQ" \
       -structureDBN "$STRUCT" \
       -highlightRegion "$VARNA_HIGHLIGHT" \
       -title "Secondary structure of $target (MFE = $MFE kcal/mol)" \
       -titleSize 10 \
-      -o "$OUT/varna_plot.svg"
+      -o "$OUT/varna_plot.svg" >> logfile_masonscript.log 2>&1
 
     # same but output a png file
+    echo "Running VARNA PNG..." >> logfile_masonscript.log
     xvfb-run varna -sequenceDBN "$SEQ" \
       -structureDBN "$STRUCT" \
       -highlightRegion "$VARNA_HIGHLIGHT" \
       -title "Sec. structure of $target (MFE = $MFE kcal/mol)" \
       -titleSize 10 \
       -resolution "3.0" \
-      -o "$OUT/varna_plot.png"
+      -o "$OUT/varna_plot.png" >> logfile_masonscript.log 2>&1
 
 else
     echo "PNA $pna_input put in"

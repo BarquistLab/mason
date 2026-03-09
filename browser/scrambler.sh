@@ -183,14 +183,14 @@ then
 
     # generate VARNA plots: one per-gene structure + per-ASO with binding highlighted
     # first: plain TIR structure (same as mason.sh)
-    varna -sequenceDBN "$SEQ" \
+    xvfb-run -a /home/jakob/bin/varna -sequenceDBN "$SEQ" \
       -structureDBN "$STRUCT" \
       -highlightRegion "$VARNA_HIGHLIGHT" \
       -title "Secondary structure of $target (MFE = $MFE kcal/mol)" \
       -titleSize 10 \
       -o "$OUT/varna_plot.svg"
 
-    varna -sequenceDBN "$SEQ" \
+    xvfb-run -a /home/jakob/bin/varna -sequenceDBN "$SEQ" \
       -structureDBN "$STRUCT" \
       -highlightRegion "$VARNA_HIGHLIGHT" \
       -title "Sec. structure of $target (MFE = $MFE kcal/mol)" \
@@ -209,14 +209,14 @@ then
         else
             HIGHLIGHT="$start_pos-$end_pos:fill=#4169E1,outline=#4169E1,radius=15;31-33:fill=#FF0000,outline=#FF0000,radius=10"
         fi
-        varna -sequenceDBN "$SEQ" \
+        xvfb-run -a /home/jakob/bin/varna -sequenceDBN "$SEQ" \
           -structureDBN "$STRUCT" \
           -highlightRegion "$HIGHLIGHT" \
           -title "$aso_name binding on $target (MFE = $MFE kcal/mol)" \
           -titleSize 10 \
           -o "$OUT/varna_${aso_name}.svg"
 
-        varna -sequenceDBN "$SEQ" \
+        xvfb-run -a /home/jakob/bin/varna -sequenceDBN "$SEQ" \
           -structureDBN "$STRUCT" \
           -highlightRegion "$HIGHLIGHT" \
           -title "$aso_name on $target (MFE = $MFE kcal/mol)" \

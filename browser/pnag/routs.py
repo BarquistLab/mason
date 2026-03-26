@@ -12,6 +12,7 @@ import zipfile
 from datetime import datetime
 import re
 import shutil
+import logging
 from flask import render_template, url_for, flash, redirect, request, send_file
 from pnag import app
 from pnag.forms import startForm, ScrambledForm, CheckerForm
@@ -20,6 +21,14 @@ import json
 import threading
 from start import start_calculation, start_scrambler, start_checker
 from pathlib import Path
+
+# Persistent usage logger — one line per job submission
+_usage_logger = logging.getLogger('mason_usage')
+_usage_logger.setLevel(logging.INFO)
+_usage_handler = logging.FileHandler(
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static/data/usage.log'))
+_usage_handler.setFormatter(logging.Formatter('%(message)s'))
+_usage_logger.addHandler(_usage_handler)
 
 path_parent = Path(app.root_path).parent
 
@@ -337,6 +346,11 @@ def start():
             inputfile.write("\n" + additional_screen)
             inputfile.write("\n" + use_ml)
 
+        _usage_logger.info('%s | mason | %s | %s | %s',
+                          datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
+                          request.remote_addr, form.presets.data,
+                          '; '.join(target_genes))
+
         return redirect(url_for('result', result_id=time_string))
     autofill = request.method == 'GET' and request.path == '/startauto'
     return render_template("start.html", title="Start", essential=ESSENTIAL_GENES, essential_studies=ESSENTIAL_GENE_STUDIES, form=form, autofill=autofill)
@@ -387,6 +401,10 @@ def scrambler():
         with open(os.path.join(base_dir, "inputs.txt"), "a") as inputfile:
             inputfile.write("\n" + result_custom_id + "\n" + pna_seq)
             inputfile.write("\n" + additional_screen)
+
+        _usage_logger.info('%s | scrambler | %s | %s | %s',
+                          datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
+                          request.remote_addr, form.presets.data, pna_seq)
 
         return redirect(url_for('result_scrambler', result_id=time_string))
     return render_template("scrambler.html", title="Scrambler", form=form)
@@ -448,6 +466,11 @@ ATATATATA"""
             if target_gene:
                 inputfile.write("\n" + target_gene)
                 inputfile.write("\n" + use_ml)
+
+        _usage_logger.info('%s | checker | %s | %s | %d sequences',
+                          datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
+                          request.remote_addr, form.presets.data,
+                          pna_seq.count('>'))
 
         return redirect(url_for('result_checker', result_id=time_string))
     return render_template("checker.html", title="ASO-Checker", essential=ESSENTIAL_GENES, essential_studies=ESSENTIAL_GENE_STUDIES, form=form)

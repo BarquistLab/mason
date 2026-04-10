@@ -348,8 +348,8 @@ def start():
 
         _usage_logger.info('%s | mason | %s | %s | %s',
                           datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
-                          request.remote_addr, form.presets.data,
-                          '; '.join(target_genes))
+                          request.headers.get('X-Forwarded-For', request.remote_addr).split(',')[0].strip(),
+                          form.presets.data, '; '.join(target_genes))
 
         return redirect(url_for('result', result_id=time_string))
     autofill = request.method == 'GET' and request.path == '/startauto'
@@ -404,7 +404,8 @@ def scrambler():
 
         _usage_logger.info('%s | scrambler | %s | %s | %s',
                           datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
-                          request.remote_addr, form.presets.data, pna_seq)
+                          request.headers.get('X-Forwarded-For', request.remote_addr).split(',')[0].strip(),
+                          form.presets.data, pna_seq)
 
         return redirect(url_for('result_scrambler', result_id=time_string))
     return render_template("scrambler.html", title="Scrambler", form=form)
@@ -469,8 +470,8 @@ ATATATATA"""
 
         _usage_logger.info('%s | checker | %s | %s | %d sequences',
                           datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
-                          request.remote_addr, form.presets.data,
-                          pna_seq.count('>'))
+                          request.headers.get('X-Forwarded-For', request.remote_addr).split(',')[0].strip(),
+                          form.presets.data, pna_seq.count('>'))
 
         return redirect(url_for('result_checker', result_id=time_string))
     return render_template("checker.html", title="ASO-Checker", essential=ESSENTIAL_GENES, essential_studies=ESSENTIAL_GENE_STUDIES, form=form)

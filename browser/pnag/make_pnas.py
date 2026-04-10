@@ -87,7 +87,8 @@ for r in range(len(target_regions)):
             sf.write(f"{sd_pos + 1}\t{sd_pos + len(sd)}\n")
 
 
-    for i in range(30-(length-3), 31):   # 30 is start of cds
+    start_pos = 30 - bases_before if bases_before != 0 else 30 - (length - 3)
+    for i in range(start_pos, 31):   # 30 is start of cds
         s = seq[i:i+length]
         aso = s.reverse_complement()
 

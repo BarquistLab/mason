@@ -23,18 +23,53 @@
         {{ render_field(form.ncbi_accession) }}
     </div>
 </div>
+<div id="div_upload_format" style="display:none;">
+    <div class="form-group row">
+        <div class="col-md-6">
+            {{ form.upload_format.label(class="form-control-label", style="font-weight: bold;") }}
+            {{ render_field(form.upload_format) }}
+        </div>
+    </div>
+</div>
 <div class="form-group row" id="div_genome">
     <p class="col-md-12"> Below, custom FASTA and GFF files of a bacterium of interest can be uploaded (can be downloaded from
             <a href="https://www.ncbi.nlm.nih.gov/genome/">NCBI</a>): </p>
-    <div class="col-md-6" id="div_genome" >
+    <div class="col-md-6" id="div_genome_inner">
         {{ form.genome.label(class="form-control-label") }}
         {{ render_field(form.genome) }}
     </div>
-    <div class="col-md-6" id="div_gff" >
+    <div class="col-md-6" id="div_gff">
         {{ form.gff.label(class="form-control-label") }}
         {{ render_field(form.gff) }}
     </div>
 </div>
+<div class="form-group row" id="div_genbank" style="display:none;">
+    <p class="col-md-12"> Upload a GenBank file (.gb, .gbk, .gbff) of the target organism: </p>
+    <div class="col-md-6">
+        {{ form.genbank.label(class="form-control-label") }}
+        {{ render_field(form.genbank) }}
+    </div>
+</div>
+<script>
+(function() {
+    var formatSelect = document.getElementById('upload_format');
+    if (!formatSelect) return;
+    function toggleUploadFormat() {
+        var fmt = formatSelect.value;
+        var fastaGffDiv = document.getElementById('div_genome');
+        var genbankDiv = document.getElementById('div_genbank');
+        if (fmt === 'genbank') {
+            fastaGffDiv.style.display = 'none';
+            genbankDiv.style.display = 'flex';
+        } else {
+            fastaGffDiv.style.display = 'flex';
+            genbankDiv.style.display = 'none';
+        }
+    }
+    formatSelect.addEventListener('change', toggleUploadFormat);
+    toggleUploadFormat();
+})();
+</script>
 {% endmacro %}
 
 {% macro off_target_screen_radios(tool_name) %}

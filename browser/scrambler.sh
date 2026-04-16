@@ -3,7 +3,7 @@
 # I start with assigning the flags (user inputs):
 
 
-while getopts ":f:g:p:i:m:s:t:u:" flag; do
+while getopts ":f:g:p:i:m:s:t:u:n:" flag; do
     case "${flag}" in
         f) fasta=${OPTARG} ;;
         g) gff=${OPTARG} ;;
@@ -13,6 +13,7 @@ while getopts ":f:g:p:i:m:s:t:u:" flag; do
         s) screen=${OPTARG} ;;
         t) target=${OPTARG} ;;
         u) use_ml=${OPTARG} ;;
+        n) num_mismatches=${OPTARG} ;;
         \?) echo "Invalid option: -$OPTARG" >&2
             exit 1 ;;
         :) echo "Option -$OPTARG requires an argument." >&2
@@ -93,6 +94,19 @@ then
     echo "No PNAs created!"
     touch "$RES/../done.txt"
     echo  "No PNAs created!" >> "$RES/../error.txt"
+  fi
+elif [ "$mode" == "mismatch" ]
+then
+  echo ">PNA" > "$REF/PNA_sequence.fasta"
+  echo "$pna_input" >> "$REF/PNA_sequence.fasta"
+  echo "generating mismatch sequences with $num_mismatches mismatches" >> logfile_masonscript.log 2>&1
+  python "./pnag/mismatch_generator.py" "$REF/PNA_sequence.fasta" "$RES" "$num_mismatches" >> logfile_masonscript.log 2>&1
+
+  if [ "$(wc -l < "$REF/aso_targets.fasta")" -lt 3 ]
+  then
+    echo "No mismatch sequences created!"
+    touch "$RES/../done.txt"
+    echo  "No mismatch sequences could be generated. Try fewer mismatches." >> "$RES/../error.txt"
   fi
 elif [ "$mode" == "checker" ]
 then
@@ -242,7 +256,7 @@ run_seqmap_and_process_mismatches -32
 
 echo "summarize off-targets"
 
-if [ -z "$mode" ]
+if [ -z "$mode" ] || [ "$mode" == "mismatch" ]
 then
   python ./pnag/summarize_ots_scrambler.py "$OUT" "$screen"  >> logfile_masonscript.log 2>&1
   Rscript ./pnag/plot_ots_scrambler.R "$OUT" "$screen" >> logfile_masonscript.log 2>&1

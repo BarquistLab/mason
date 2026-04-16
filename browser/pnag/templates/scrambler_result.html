@@ -21,9 +21,24 @@
 	</article>
 
 	{% if rfin %}
-			<h2 id="res">Scrambler results:</h2>
+			<h2 id="res">Scrambler results{% if scrambler_mode == "mismatch" %} (mismatch mode){% endif %}:</h2>
 			{% include "includes/delete_modal.html" %}
 			<div class="content-section">
+						{% if scrambler_mode == "mismatch" %}
+						<h3 class="border-bottom mb-4">Mismatched control sequences</h3>
+						<p>
+							Below, the designed mismatch control ASOs are visualized.
+							The sequences are shown in 5' to 3' orientation. The mismatch option generates control
+							sequences by systematically swapping pairs of non-equal bases in the input ASO sequence.
+							The generated sequences are filtered by following criteria:
+							<ul>
+								<li>Maximum stretch of consecutive identical bases with the input sequence must be &lt;6</li>
+								<li>The sequences are then ranked by the lowest number of
+									off-targets in the transcriptome's translation initiation region (TIR) of the
+									targeted organism</li>
+							</ul>
+						</p>
+						{% else %}
 						<h3 class="border-bottom mb-4">Scrambled sequences</h3>
 						<p>
 							Below, the designed scrambled ASOs are visualized.
@@ -31,7 +46,7 @@
 							ASO-sequence 500 times while keeping the nucleotide content constant. The 500 scrambled
 							sequences are then filtered by following criteria:
 							<ul>
-								<li>Scrambled sequence has to be dissimilar to the input sequence <40% identity</li>
+								<li>Scrambled sequence has to be dissimilar to the input sequence &lt;40% identity</li>
 								<li>Maximum stretch of self-complementary bases (SC_bases) is +-1 that of the input sequence</li>
 								<li>Longest purine stretch (long_pur_stretch) is +-1 that of the input sequence</li>
 								<li>Scrambler then selects 10 scrambled sequences with the lowest number of
@@ -39,6 +54,7 @@
 									targeted organism</li>
 							</ul>
 						</p>
+						{% endif %}
 						<div style="text-align: center;">
 							<img src="{{ dir_out + '/outputs/heatmap.png' }}" style="width: 50%; height: auto; display: inline-block;">
 						</div>
@@ -93,7 +109,7 @@
 
 
 	{% else %}
-		<p>Scrambler is running ... The webpage automatically refreshes after 30 seconds and shows the results when finished</p>
+		<p>Scrambler{% if scrambler_mode == "mismatch" %} (mismatch mode){% endif %} is running ... The webpage automatically refreshes after 15 seconds and shows the results when finished</p>
 	{% endif %}
 
 {% endblock %}

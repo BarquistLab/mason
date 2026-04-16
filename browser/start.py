@@ -23,10 +23,13 @@ def start_calculation(mason, fasta, gff, targets, length, b_before, id, result_i
     print("finished mason calculation!")
 
 
-def start_scrambler(scrambler, fasta, gff, id, result_id, pna_input, screen):
+def start_scrambler(scrambler, fasta, gff, id, result_id, pna_input, screen,
+                     scrambler_mode="scramble", num_mismatches="0"):
     """Start the scrambler calculation."""
-    run_pipeline(scrambler,
-                 ["-f", fasta, "-g", gff, "-i", id, "-p", pna_input, "-s", screen],
+    args = ["-f", fasta, "-g", gff, "-i", id, "-p", pna_input, "-s", screen]
+    if scrambler_mode == "mismatch":
+        args += ["-m", "mismatch", "-n", num_mismatches]
+    run_pipeline(scrambler, args,
                  "./pnag/static/data/" + result_id + "/done.txt")
     print("finished scrambler calculation!")
 

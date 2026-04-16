@@ -26,8 +26,11 @@ class NoValidationSelectMultipleField(SelectField):
 class BaseOrganismForm(FlaskForm):
     """Base form with fields shared by all tools: custom ID, genome/gff upload, and presets."""
     custom_id = StringField('Custom ID for result recognition', validators=[InputRequired(), Length(min=3, max=25)])
+    upload_format = SelectField('File format', choices=[('fasta_gff', 'FASTA + GFF'), ('genbank', 'GenBank')],
+                                default='fasta_gff')
     genome = FileField('FASTA File', validators=[FileAllowed(['fasta', 'fa', 'fna'])])
     gff = FileField('GFF File', validators=[FileAllowed(['gff', 'gff3', 'gff2', 'gff1', 'gtf'])])
+    genbank = FileField('GenBank File', validators=[FileAllowed(['gb', 'gbk', 'genbank', 'gbff'])])
     presets = SelectField('Genome of target organism', choices=[], validators=[InputRequired()])
     ncbi_accession = StringField('NCBI Assembly Accession',
                                  validators=[Optional(), Regexp(r'^GC[AF]_\d{9}(\.\d+)?$',
@@ -35,8 +38,12 @@ class BaseOrganismForm(FlaskForm):
 
     def validate_presets(self, presets):
         if presets.data == 'upload':
-            if not self.genome.data or not self.gff.data:
-                raise ValidationError('Please select a preset or upload both files, genome and gff.')
+            if self.upload_format.data == 'genbank':
+                if not self.genbank.data:
+                    raise ValidationError('Please upload a GenBank file.')
+            else:
+                if not self.genome.data or not self.gff.data:
+                    raise ValidationError('Please select a preset or upload both files, genome and gff.')
         elif presets.data == 'ncbi':
             if not self.ncbi_accession.data or not self.ncbi_accession.data.strip():
                 raise ValidationError('Please enter an NCBI assembly accession number.')
@@ -69,6 +76,8 @@ class ScrambledForm(BaseOrganismForm):
     seq_input = StringField("ASO-sequence (5' to 3'):",
                             validators=[InputRequired(), Regexp("^[ATGCatgc]+$", message="use DNA alphabet only (A,T,G,C)"),
                                         Length(min=8, max=15, message="choose sequence with 8-14 nucleotides!")])
+    num_mismatches = SelectField('Number of mismatches', choices=[('2', '2'), ('4', '4'), ('6', '6')],
+                                 default='2')
     submit_scr = SubmitField('Submit & start Scrambler')
 
 

@@ -186,22 +186,83 @@ def _download_ncbi_accession(accession, dest_dir, locus_tag_prefix=None):
     return {'genome': fna_files[0], 'gff': gff_files[0]}
 
 
+def _convert_genbank_to_fasta_gff(gb_path, dest_dir):
+    """Convert a GenBank file to FASTA and GFF3 files.
+
+    Returns dict with 'genome' and 'gff' paths.
+    """
+    from Bio import SeqIO
+
+    fasta_path = os.path.join(dest_dir, 'genome.fasta')
+    gff_path = os.path.join(dest_dir, 'annotation.gff3')
+
+    try:
+        records = list(SeqIO.parse(gb_path, 'genbank'))
+    except Exception as e:
+        raise RuntimeError(
+            'Could not parse the uploaded file as GenBank format. '
+            'Please make sure it is a valid GenBank/GBFF file. '
+            f'Error: {e}')
+    if not records:
+        raise RuntimeError(
+            'No sequence records found in the GenBank file. '
+            'Please check that the file is not empty and is in GenBank format (.gb, .gbk, .gbff).')
+
+    # Write FASTA
+    SeqIO.write(records, fasta_path, 'fasta')
+
+    # Write GFF3
+    with open(gff_path, 'w') as gff:
+        gff.write('##gff-version 3\n')
+        for record in records:
+            seq_id = record.id
+            for feature in record.features:
+                if feature.type in ('source', 'misc_feature'):
+                    continue
+                start = int(feature.location.start) + 1  # GFF is 1-based
+                end = int(feature.location.end)
+                strand = '+' if feature.location.strand == 1 else '-'
+
+                attrs = []
+                qualifiers = feature.qualifiers
+                if 'locus_tag' in qualifiers:
+                    attrs.append(f"locus_tag={qualifiers['locus_tag'][0]}")
+                if 'gene' in qualifiers:
+                    attrs.append(f"gene={qualifiers['gene'][0]}")
+                if 'product' in qualifiers:
+                    attrs.append(f"product={qualifiers['product'][0]}")
+                if 'old_locus_tag' in qualifiers:
+                    attrs.append(f"old_locus_tag={qualifiers['old_locus_tag'][0]}")
+
+                feat_id = qualifiers.get('locus_tag', qualifiers.get('gene', ['unknown']))[0]
+                attrs.insert(0, f"ID={feat_id}")
+
+                attr_str = ';'.join(attrs) if attrs else '.'
+                gff.write(f"{seq_id}\tGenBank\t{feature.type}\t{start}\t{end}\t.\t{strand}\t.\t{attr_str}\n")
+
+    return {'genome': fasta_path, 'gff': gff_path}
+
+
 def _resolve_genome_paths(form, time_string):
     """Handle preset-or-upload file logic. Returns dict with 'genome' and 'gff' paths."""
     paths = {}
     if form.presets.data == 'upload':
-        # Create directory first using proper path joining
         base_dir = os.path.join(app.root_path, 'static/data', time_string)
         os.makedirs(base_dir, exist_ok=True)
 
-        # Now save files to the created directory
-        genome_file = os.path.join(base_dir, form.genome.data.filename)
-        gff_file = os.path.join(base_dir, form.gff.data.filename)
+        if form.upload_format.data == 'genbank':
+            gb_file = os.path.join(base_dir, form.genbank.data.filename)
+            form.genbank.data.save(gb_file)
+            paths = _convert_genbank_to_fasta_gff(gb_file, base_dir)
+        else:
+            # FASTA + GFF upload
+            genome_file = os.path.join(base_dir, form.genome.data.filename)
+            gff_file = os.path.join(base_dir, form.gff.data.filename)
 
-        form.genome.data.save(genome_file)
-        form.gff.data.save(gff_file)
-        paths['genome'] = genome_file
-        paths['gff'] = gff_file
+            form.genome.data.save(genome_file)
+            form.gff.data.save(gff_file)
+            paths['genome'] = genome_file
+            paths['gff'] = gff_file
     elif form.presets.data == 'ncbi':
         base_dir = os.path.join(app.root_path, 'static/data', time_string)
         paths = _download_ncbi_accession(form.ncbi_accession.data.strip(), base_dir)
@@ -214,7 +275,95 @@ def _resolve_genome_paths(form, time_string):
         else:
             paths['genome'] = preset['genome']
             paths['gff'] = preset['gff']
+
+    # Validate files (skip bundled presets which are known-good)
+    is_bundled_preset = (form.presets.data in PRESETS
+                         and 'accession' not in PRESETS[form.presets.data])
+    if not is_bundled_preset:
+        _validate_genome_files(paths)
+
     return paths
+
+
+def _validate_genome_files(paths):
+    """Validate uploaded FASTA and GFF files before running the pipeline.
+
+    Raises RuntimeError with a user-friendly message if validation fails.
+    """
+    genome_path = paths['genome']
+    gff_path = paths['gff']
+
+    # --- FASTA validation ---
+    with open(genome_path) as f:
+        first_line = f.readline().strip()
+    if not first_line.startswith('>'):
+        raise RuntimeError(
+            'The uploaded FASTA file does not appear to be in FASTA format. '
+            'FASTA files must start with a header line beginning with ">".')
+
+    # Check that FASTA has actual sequence content
+    has_sequence = False
+    with open(genome_path) as f:
+        for line in f:
+            if not line.startswith('>') and line.strip():
+                has_sequence = True
+                break
+    if not has_sequence:
+        raise RuntimeError(
+            'The uploaded FASTA file contains no sequence data. '
+            'Please check that the file is not empty or contains only headers.')
+
+    # Collect FASTA sequence IDs
+    fasta_ids = set()
+    with open(genome_path) as f:
+        for line in f:
+            if line.startswith('>'):
+                fasta_ids.add(line[1:].split()[0])
+
+    # --- GFF validation ---
+    with open(gff_path) as f:
+        first_line = f.readline().strip()
+    # Skip comment lines to find the first feature line
+    has_features = False
+    has_gene_id = False
+    gff_seq_ids = set()
+    with open(gff_path) as f:
+        for line in f:
+            if line.startswith('#') or not line.strip():
+                continue
+            cols = line.split('\t')
+            if len(cols) < 9:
+                raise RuntimeError(
+                    'The uploaded GFF file does not appear to be in GFF format. '
+                    'GFF files must be tab-separated with 9 columns. '
+                    'Make sure you are not uploading a CSV or other format.')
+            has_features = True
+            gff_seq_ids.add(cols[0])
+            if 'locus_tag=' in cols[8] or 'gene=' in cols[8] or 'old_locus_tag=' in cols[8]:
+                has_gene_id = True
+            # Only need to check a few lines
+            if len(gff_seq_ids) > 50:
+                break
+
+    if not has_features:
+        raise RuntimeError(
+            'The uploaded GFF file contains no feature entries. '
+            'Please check that the file is a valid GFF/GFF3 annotation file.')
+
+    if not has_gene_id:
+        raise RuntimeError(
+            'The uploaded GFF file does not contain any gene identifiers. '
+            'MASON requires locus_tag, gene, or old_locus_tag attributes in the GFF '
+            'to identify genes. Please check the 9th column of your GFF file.')
+
+    # Check that GFF sequence IDs match FASTA headers
+    if fasta_ids and gff_seq_ids:
+        matching = fasta_ids & gff_seq_ids
+        if not matching:
+            raise RuntimeError(
+                f'The sequence IDs in the GFF file ({", ".join(sorted(gff_seq_ids)[:3])}) '
+                f'do not match any sequence IDs in the FASTA file ({", ".join(sorted(fasta_ids)[:3])}). '
+                'Please make sure the FASTA and GFF files are from the same genome.')
 
 
 def _init_run_directory(time_string, paths):
@@ -375,7 +524,7 @@ def scrambler():
             paths = _resolve_genome_paths(form, time_string)
         except RuntimeError as e:
             flash(str(e), 'danger')
-            return render_template("scrambler.html", title="Scrambler", form=form)
+            return render_template("scrambler.html", title="Scrambler", form=form, essential=ESSENTIAL_GENES, essential_studies=ESSENTIAL_GENE_STUDIES)
         base_dir = _init_run_directory(time_string, paths)
 
         if additional_screen == "essential_genes":
@@ -393,14 +542,18 @@ def scrambler():
 
         open(os.path.join(path_parent, "logfile_masonscript.log"), "w").close()
 
+        scrambler_mode = request.form.get('scrambler_mode', 'scramble')
+        num_mismatches = form.num_mismatches.data if scrambler_mode == 'mismatch' else '0'
+
         threading.Thread(target=start_scrambler, name="scramblers",
                          args=[str(path_parent) + "/scrambler.sh", paths['genome'],
                                paths['gff'], time_string, time_string, pna_seq,
-                               additional_screen]).start()
+                               additional_screen, scrambler_mode, num_mismatches]).start()
 
         with open(os.path.join(base_dir, "inputs.txt"), "a") as inputfile:
             inputfile.write("\n" + result_custom_id + "\n" + pna_seq)
             inputfile.write("\n" + additional_screen)
+            inputfile.write("\n" + scrambler_mode)
 
         _usage_logger.info('%s | scrambler | %s | %s | %s',
                           datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
@@ -408,7 +561,7 @@ def scrambler():
                           form.presets.data, pna_seq)
 
         return redirect(url_for('result_scrambler', result_id=time_string))
-    return render_template("scrambler.html", title="Scrambler", form=form)
+    return render_template("scrambler.html", title="Scrambler", form=form, essential=ESSENTIAL_GENES, essential_studies=ESSENTIAL_GENE_STUDIES)
 
 
 @app.route("/checkerauto", methods=['GET', 'POST'])
@@ -497,12 +650,14 @@ def result_scrambler(result_id):
     ctx = _read_result_context(result_id)
     pnaseq = ctx['lines'][2]
     add_screen = ctx['lines'][3].strip() if len(ctx['lines']) > 3 else "none"
+    scrambler_mode = ctx['lines'][4].strip() if len(ctx['lines']) > 4 else "scramble"
 
     return render_template("scrambler_result.html", title="Result", result=result_id, dir_out=ctx['dir_out'],
                            all_output_dirs=ctx['all_output_dirs'],
                            rfin=ctx['rfinished'], genome_file=ctx['ffile'], gff_file=ctx['gfffile'],
                            custom_id=ctx['custom_id'], pnaseq=pnaseq,
-                           time=ctx['time'], errs=ctx['errs'], add_screen=add_screen)
+                           time=ctx['time'], errs=ctx['errs'], add_screen=add_screen,
+                           scrambler_mode=scrambler_mode)
 
 
 @app.route("/result_checker/<result_id>")

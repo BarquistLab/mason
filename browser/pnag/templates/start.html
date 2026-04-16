@@ -98,20 +98,22 @@
 					select_presets.onchange = function() {
 						value = select_presets.value;
 						first = document.getElementById('div_genome');
-						second = document.getElementById('div_gff');
 						ncbi = document.getElementById('div_ncbi_accession');
+						uploadFmt = document.getElementById('div_upload_format');
+						genbank = document.getElementById('div_genbank');
 						egenes = document.getElementById('essgenes');
 						if (value == 'upload') {
 							egenes.style.display = 'none';
-							first.style.display = 'block';
-							second.style.display = 'block';
+							uploadFmt.style.display = 'block';
 							ncbi.style.display = 'none';
 							essential_choice.innerHTML = '';
 							updateEssentialScreenPreset('');
+							document.getElementById('upload_format').dispatchEvent(new Event('change'));
 						} else if (value == 'ncbi') {
 							egenes.style.display = 'none';
 							first.style.display = 'none';
-							second.style.display = 'none';
+							genbank.style.display = 'none';
+							uploadFmt.style.display = 'none';
 							ncbi.style.display = 'flex';
 							essential_choice.innerHTML = '';
 							updateEssentialScreenPreset('');
@@ -133,7 +135,8 @@
 							}
 							updateEssentialScreenPreset(select_presets.value);
 							first.style.display = 'none';
-							second.style.display = 'none';
+							genbank.style.display = 'none';
+							uploadFmt.style.display = 'none';
 							ncbi.style.display = 'none';
 						}
 					}

@@ -33,9 +33,10 @@ def generate_mismatch_sequences(seq_str, num_mismatches):
     num_swaps = num_mismatches // 2
 
     # Find all pairs of positions where bases differ
+    # Exclude the first 2 and last 2 positions (termini) from swaps
     diff_pairs = []
-    for i in range(seq_len):
-        for j in range(i + 1, seq_len):
+    for i in range(2, seq_len - 2):
+        for j in range(i + 1, seq_len - 2):
             if seq_str[i] != seq_str[j]:
                 diff_pairs.append((i, j))
 

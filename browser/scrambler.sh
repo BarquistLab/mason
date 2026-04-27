@@ -165,12 +165,13 @@ then
       exit 0
     fi
 
-    # calculate MFE with RNAfold
-    RNAfold -i "$REF/targetgene_mfe.fasta" --noPS > "$REF/intarna_output.fold"
+    # MFE + ensemble pair probabilities. Run with -p so RNAfold writes dot.ps
+    # (base-pair probability matrix); cd into REF so it lands there.
+    SEQ=$(awk 'NR==2' "$REF/targetgene_mfe.fasta")
+    (cd "$REF" && echo "$SEQ" | RNAfold -p --noPS > intarna_output.fold)
     FOLD_FILE="$REF/intarna_output.fold"
-    SEQ=$(awk 'NR==2' "$FOLD_FILE")
-    STRUCT=$(awk 'NR==3 {print $1}' "$FOLD_FILE")
-    MFE=$(grep -o '[(][[:space:]]*[-][0-9.]\+' "$FOLD_FILE" | tail -1 | tr -d '()[:space:]')
+    STRUCT=$(awk 'NR==2 {print $1}' "$FOLD_FILE")
+    MFE=$(awk 'NR==2' "$FOLD_FILE" | grep -o '[(][[:space:]]*[-][0-9.]\+' | tail -1 | tr -d '()[:space:]')
     echo "$MFE" > "$OUT/mfe_values.txt"
 
     # run checker_modify_pnas.py with target gene FASTA args
@@ -186,53 +187,73 @@ then
       exit 0
     fi
 
-    # Read SD position for VARNA highlighting (written by checker_modify_pnas.py)
+    # Per-base pairing probability (from RNAfold dot plot) for VARNA -colorMap
+    PAIR_PROBS=$(python ./pnag/parse_dotplot.py "$REF/dot.ps" ${#SEQ})
+
+    # Show as mRNA (T → U) in the structure
+    SEQ_RNA=$(echo "$SEQ" | tr 'Tt' 'Uu')
+
+    # Highlight regions: SD (orange) and start codon (red, larger circle = visually thicker)
     if [ -s "$OUT/sd_position.txt" ]; then
         read SD_START SD_END < "$OUT/sd_position.txt"
         SD_HIGHLIGHT="${SD_START}-${SD_END}:fill=#FFA500,outline=#FFA500,radius=10;"
     else
         SD_HIGHLIGHT=""
     fi
-    VARNA_HIGHLIGHT="${SD_HIGHLIGHT}31-33:fill=#FF0000,outline=#FF0000,radius=10"
+    VARNA_HIGHLIGHT="${SD_HIGHLIGHT}31-33:fill=#FF0000,outline=#FF0000,radius=14"
+
+    VIRIDIS='0:#440154,0.25:#3B528B,0.5:#21918C,0.75:#5EC962,1:#FDE725'
 
     # generate VARNA plots: one per-gene structure + per-ASO with binding highlighted
     # first: plain TIR structure (same as mason.sh)
-    xvfb-run -a /home/jakob/bin/varna -sequenceDBN "$SEQ" \
+    xvfb-run -a /home/jakob/bin/varna -sequenceDBN "$SEQ_RNA" \
       -structureDBN "$STRUCT" \
+      -colorMap "$PAIR_PROBS" \
+      -colorMapMin 0.0 -colorMapMax 1.0 \
+      -colorMapStyle "$VIRIDIS" \
+      -colorMapCaption 'BP prob.' \
       -highlightRegion "$VARNA_HIGHLIGHT" \
       -title "Secondary structure of $target (MFE = $MFE kcal/mol)" \
       -titleSize 10 \
       -o "$OUT/varna_plot.svg"
 
-    xvfb-run -a /home/jakob/bin/varna -sequenceDBN "$SEQ" \
+    xvfb-run -a /home/jakob/bin/varna -sequenceDBN "$SEQ_RNA" \
       -structureDBN "$STRUCT" \
+      -colorMap "$PAIR_PROBS" \
+      -colorMapMin 0.0 -colorMapMax 1.0 \
+      -colorMapStyle "$VIRIDIS" \
+      -colorMapCaption 'BP prob.' \
       -highlightRegion "$VARNA_HIGHLIGHT" \
       -title "Sec. structure of $target (MFE = $MFE kcal/mol)" \
       -titleSize 10 \
       -resolution "3.0" \
       -o "$OUT/varna_plot.png"
 
-    # per-ASO VARNA plots: ASO binding drawn first with larger radius so it remains
-    # visible behind the SD (orange) and start codon (red) regions
+    # per-ASO VARNA plots: ASO binding drawn first (larger radius), SD on top,
+    # start codon on top of all so SD/start codon are visible if they overlap with ASO.
     if [ -f "$OUT/varna_positions.tsv" ]
     then
       tail -n +2 "$OUT/varna_positions.tsv" | while IFS=$'\t' read -r aso_name start_pos end_pos
       do
-        if [ -n "$SD_HIGHLIGHT" ]; then
-            HIGHLIGHT="$start_pos-$end_pos:fill=#4169E1,outline=#4169E1,radius=15;${SD_HIGHLIGHT}31-33:fill=#FF0000,outline=#FF0000,radius=10"
-        else
-            HIGHLIGHT="$start_pos-$end_pos:fill=#4169E1,outline=#4169E1,radius=15;31-33:fill=#FF0000,outline=#FF0000,radius=10"
-        fi
-        xvfb-run -a /home/jakob/bin/varna -sequenceDBN "$SEQ" \
+        ASO_HIGHLIGHT="$start_pos-$end_pos:fill=#4169E1,outline=#4169E1,radius=18;${SD_HIGHLIGHT}31-33:fill=#FF0000,outline=#FF0000,radius=14"
+        xvfb-run -a /home/jakob/bin/varna -sequenceDBN "$SEQ_RNA" \
           -structureDBN "$STRUCT" \
-          -highlightRegion "$HIGHLIGHT" \
+          -colorMap "$PAIR_PROBS" \
+          -colorMapMin 0.0 -colorMapMax 1.0 \
+          -colorMapStyle "$VIRIDIS" \
+          -colorMapCaption 'BP prob.' \
+          -highlightRegion "$ASO_HIGHLIGHT" \
           -title "$aso_name binding on $target (MFE = $MFE kcal/mol)" \
           -titleSize 10 \
           -o "$OUT/varna_${aso_name}.svg"
 
-        xvfb-run -a /home/jakob/bin/varna -sequenceDBN "$SEQ" \
+        xvfb-run -a /home/jakob/bin/varna -sequenceDBN "$SEQ_RNA" \
           -structureDBN "$STRUCT" \
-          -highlightRegion "$HIGHLIGHT" \
+          -colorMap "$PAIR_PROBS" \
+          -colorMapMin 0.0 -colorMapMax 1.0 \
+          -colorMapStyle "$VIRIDIS" \
+          -colorMapCaption 'BP prob.' \
+          -highlightRegion "$ASO_HIGHLIGHT" \
           -title "$aso_name on $target (MFE = $MFE kcal/mol)" \
           -titleSize 10 \
           -resolution "3.0" \

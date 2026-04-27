@@ -126,13 +126,15 @@ then
 	  grep -A 1 $target "$REF/full_transcripts_$FASTA_NEW" | \
       sed -E 's/^([A-Z]{60}).*/\1/' > "$REF/targetgene_mfe.fasta"
 
-    # calculate MFE for target gene start region w rnafold
-    RNAfold -i "$REF/targetgene_mfe.fasta" --noPS > "$REF/intarna_output.fold" #>> logfile_masonscript.log 2>&1
+    # calculate MFE + ensemble pair probabilities for target gene start region.
+    # Run with -p so RNAfold writes dot.ps (base-pair probability matrix); cd into
+    # REF so the dot plot lands there (RNAfold writes PS files to CWD).
+    SEQ=$(awk 'NR==2' "$REF/targetgene_mfe.fasta")
+    (cd "$REF" && echo "$SEQ" | RNAfold -p --noPS > intarna_output.fold)
 
     FOLD_FILE="$REF/intarna_output.fold"
-    SEQ=$(awk 'NR==2' "$FOLD_FILE")
-    STRUCT=$(awk 'NR==3 {print $1}' "$FOLD_FILE")
-    MFE=$(grep -o '[(][[:space:]]*[-][0-9.]\+' "$FOLD_FILE" | tail -1 | tr -d '()[:space:]')
+    STRUCT=$(awk 'NR==2 {print $1}' "$FOLD_FILE")
+    MFE=$(awk 'NR==2' "$FOLD_FILE" | grep -o '[(][[:space:]]*[-][0-9.]\+' | tail -1 | tr -d '()[:space:]')
     # save MFE value as mfe_values.txt
     echo "$MFE" > "$OUT/mfe_values.txt"
 
@@ -141,18 +143,29 @@ then
     echo "$result_id"
     python ./pnag/make_pnas.py "$length" "$RES" "$bases_before" >> logfile_masonscript.log 2>&1
 
-    # Read SD position for VARNA highlighting (written by make_pnas.py)
+    # Per-base pairing probability (from RNAfold dot plot) for VARNA -colorMap
+    PAIR_PROBS=$(python ./pnag/parse_dotplot.py "$REF/dot.ps" ${#SEQ})
+
+    # Show as mRNA (T → U) in the structure
+    SEQ_RNA=$(echo "$SEQ" | tr 'Tt' 'Uu')
+
+    # Highlight regions: SD (orange) and start codon (red, larger circle = visually thicker)
     if [ -s "$OUT/sd_position.txt" ]; then
         read SD_START SD_END < "$OUT/sd_position.txt"
-        SD_HIGHLIGHT="${SD_START}-${SD_END}:fill=#FFA500,outline=#FFA500,radius=10;"
+        VARNA_HIGHLIGHT="${SD_START}-${SD_END}:fill=#FFA500,outline=#FFA500,radius=10;31-33:fill=#FF0000,outline=#FF0000,radius=14"
     else
-        SD_HIGHLIGHT=""
+        VARNA_HIGHLIGHT="31-33:fill=#FF0000,outline=#FF0000,radius=14"
     fi
-    VARNA_HIGHLIGHT="${SD_HIGHLIGHT}31-33:fill=#FF0000,outline=#FF0000,radius=10"
+
+    VIRIDIS='0:#440154,0.25:#3B528B,0.5:#21918C,0.75:#5EC962,1:#FDE725'
 
     echo "Running VARNA SVG..." >> logfile_masonscript.log
-    xvfb-run -a /home/jakob/bin/varna -sequenceDBN "$SEQ" \
+    xvfb-run -a /home/jakob/bin/varna -sequenceDBN "$SEQ_RNA" \
       -structureDBN "$STRUCT" \
+      -colorMap "$PAIR_PROBS" \
+      -colorMapMin 0.0 -colorMapMax 1.0 \
+      -colorMapStyle "$VIRIDIS" \
+      -colorMapCaption 'BP prob.' \
       -highlightRegion "$VARNA_HIGHLIGHT" \
       -title "Secondary structure of $target (MFE = $MFE kcal/mol)" \
       -titleSize 10 \
@@ -160,8 +173,12 @@ then
 
     # same but output a png file
     echo "Running VARNA PNG..." >> logfile_masonscript.log
-    xvfb-run -a /home/jakob/bin/varna -sequenceDBN "$SEQ" \
+    xvfb-run -a /home/jakob/bin/varna -sequenceDBN "$SEQ_RNA" \
       -structureDBN "$STRUCT" \
+      -colorMap "$PAIR_PROBS" \
+      -colorMapMin 0.0 -colorMapMax 1.0 \
+      -colorMapStyle "$VIRIDIS" \
+      -colorMapCaption 'BP prob.' \
       -highlightRegion "$VARNA_HIGHLIGHT" \
       -title "Sec. structure of $target (MFE = $MFE kcal/mol)" \
       -titleSize 10 \

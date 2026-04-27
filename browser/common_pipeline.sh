@@ -165,9 +165,11 @@ cleanup_intermediate_files() {
         rm -f "$REF/targetgene_startreg.fasta"
         rm -f "$REF/targetgene_mfe.fasta"
         rm -f "$REF/intarna_output.fold"
+        rm -f "$REF/dot.ps"
     fi
     if [[ "$mode" == "scrambler" || "$mode" == "checker_target" ]]; then
         rm -f "$REF/PNA_sequence.fasta"
+        rm -f "$REF/dot.ps"
     fi
 
     # Common outputs/ files

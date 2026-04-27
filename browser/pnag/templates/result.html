@@ -153,7 +153,7 @@
 										pur_perc = percentage of purine bases in ASO sequence (too high % should be avoided) <br>
 										S_B_ΔG = self-binding minimum free energy of the ASO, calculated with RNAfold (green: MFE > -1, yellow: -3 to -1, red: &lt; -3)<br>
 										{% if use_ml == "yes" %}
-											MIC_ranked = rank of ASOs by predicted MIC (lower rank = better predicted efficacy)<br>
+											MIC_rank = rank of ASOs by predicted MIC (lower rank = better predicted efficacy)<br>
 										{% endif %}
 										long_pur_stretch = longest purine stretch (too long purine stretches should be avoided) <br>
 										Mw = molecular weight (Da)<br>
@@ -169,7 +169,9 @@
 											OT_ess_TIR = off-targets in TIR of user-defined essential genes<br>
 										{% endif %}
 										{% if use_ml == "yes" %}
-											MIC_pred = predicted minimum inhibitory concentration (random forest model)<br>
+											MIC_predicted = predicted minimum inhibitory concentration (random forest model). Hover the
+											<span style="color:#1f77b4;font-weight:bold">SHAP</span> link next to each value for a SHAP force
+											plot showing which features pushed the prediction up or down.<br>
 										{% endif %}
 
 									</p>
@@ -199,6 +201,69 @@
 		{% endfor %}
 	{% else %}
 		<p>MASON is running ... The webpage automatically refreshes after 30 seconds and shows the results when finished</p>
+	{% endif %}
+
+	{% if rfin %}
+	<div id="shap-preview" style="display:none;position:fixed;z-index:9999;background:white;border:1px solid #999;box-shadow:0 4px 16px rgba(0,0,0,0.25);padding:6px;width:600px;max-width:80vw;pointer-events:none;"></div>
+	<script>
+	(function() {
+		var preview = document.getElementById('shap-preview');
+		var currentSrc = null;
+
+		function place(parentX, parentY) {
+			var pw = preview.offsetWidth || 600;
+			var ph = preview.offsetHeight || 200;
+			var x = parentX + 18;
+			var y = parentY + 18;
+			if (x + pw > window.innerWidth - 8)  x = parentX - pw - 18;
+			if (y + ph > window.innerHeight - 8) y = window.innerHeight - ph - 8;
+			if (x < 8) x = 8;
+			if (y < 8) y = 8;
+			preview.style.left = x + 'px';
+			preview.style.top  = y + 'px';
+		}
+		function show(src, parentX, parentY) {
+			if (src !== currentSrc) {
+				preview.innerHTML = '<img src="' + src + '" style="display:block;width:100%;height:auto;">';
+				currentSrc = src;
+			}
+			preview.style.display = 'block';
+			place(parentX, parentY);
+		}
+		function hide() { preview.style.display = 'none'; currentSrc = null; }
+
+		function bind(doc, baseHref, obj) {
+			doc.querySelectorAll('a.shap-link').forEach(function(a) {
+				var rel = a.getAttribute('data-shap-src') || a.getAttribute('href');
+				var src = new URL(rel, baseHref).href;
+				a.addEventListener('mouseenter', function(e) {
+					var r = obj.getBoundingClientRect();
+					show(src, r.left + e.clientX, r.top + e.clientY);
+				});
+				a.addEventListener('mousemove', function(e) {
+					var r = obj.getBoundingClientRect();
+					place(r.left + e.clientX, r.top + e.clientY);
+				});
+				a.addEventListener('mouseleave', hide);
+			});
+		}
+
+		document.querySelectorAll('object[type="text/html"]').forEach(function(obj) {
+			function tryBind() {
+				try {
+					var doc = obj.contentDocument;
+					if (doc && doc.readyState === 'complete') {
+						bind(doc, obj.data, obj);
+					} else {
+						setTimeout(tryBind, 200);
+					}
+				} catch (e) { /* cross-origin — give up silently */ }
+			}
+			obj.addEventListener('load', tryBind);
+			tryBind();
+		});
+	})();
+	</script>
 	{% endif %}
 
 {% endblock %}

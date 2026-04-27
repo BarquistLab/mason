@@ -17,12 +17,24 @@ use_ml <- commandArgs(trailingOnly = TRUE)[3]
 output_df <- read_csv(paste0(path_output, "/result_table.csv"))
 df_plot <- read_csv(paste0(path_output, "/df_plot.csv"))
 
+# Add gene-level TIR MFE (constant across ASOs of the same gene) if available
+mfe_path <- paste0(path_output, "/mfe_values.txt")
+if (file.exists(mfe_path)) {
+  output_df$MFE <- as.numeric(readLines(mfe_path)[1])
+  output_df <- output_df %>% relocate(MFE, .after = `S_B_ΔG`)
+}
+
 if (!is.na(use_ml) && use_ml == "yes") {
   ml_res <- read_csv(paste0(path_output, "/saved_table_ml.csv"))
-  output_df$MIC_pred <- round(ml_res$MIC_pred, 2)
-  output_df$MIC_ranked <- rank(output_df$MIC_pred, ties.method = "min")
-  # Place MIC_ranked after S_B_ΔG
-  output_df <- output_df %>% relocate(MIC_ranked, .after = `S_B_ΔG`)
+  output_df$MIC_predicted <- round(ml_res$MIC_pred, 2)
+  output_df$MIC_rank <- rank(output_df$MIC_predicted, ties.method = "min")
+  # Place MIC_rank + MIC_predicted together (after MFE if present, else after S_B_ΔG)
+  if ("MFE" %in% names(output_df)) {
+    output_df <- output_df %>% relocate(MIC_rank, .after = MFE)
+  } else {
+    output_df <- output_df %>% relocate(MIC_rank, .after = `S_B_ΔG`)
+  }
+  output_df <- output_df %>% relocate(MIC_predicted, .after = MIC_rank)
 }
 
 # reorder columns so that MIC columns are next to each other. [1] "ASO"              "gene"             "ASO_seq"          "SC_bases"
@@ -33,8 +45,21 @@ if (!is.na(use_ml) && use_ml == "yes") {
 
 #output_df <- output_df[, c(1:9, 14, 15, 10:13, 16:18)]
 
+# Build a display copy with a "?" SHAP link in the MIC_pred and MIC_ranked
+# cells (HTML only — CSV/XLSX downloads keep the numeric values).
+display_df <- output_df
+if (!is.na(use_ml) && use_ml == "yes" && dir.exists(paste0(path_output, "/shap"))) {
+  shap_link <- paste0(
+    " <a class='shap-link' href='shap/shap_", display_df$ASO, ".svg' target='_blank'",
+    " data-shap-src='shap/shap_", display_df$ASO, ".svg'",
+    " title='Hover for SHAP force plot — click for full view'",
+    " style='margin-left:4px;color:#1f77b4;font-weight:bold;text-decoration:none'>SHAP</a>"
+  )
+  display_df$MIC_predicted <- paste0(display_df$MIC_predicted, shap_link)
+}
+
 # make table with kableextra
-table_out <- kable(output_df, format = "html", escape = FALSE) %>%
+table_out <- kable(display_df, format = "html", escape = FALSE) %>%
   kable_styling(bootstrap_options = c("bordered","hover", "condensed", "centered")) %>%
   column_spec(1, bold = TRUE) %>%
   # if column 4 is <5, make it red
@@ -55,11 +80,18 @@ table_out <- kable(output_df, format = "html", escape = FALSE) %>%
                              ifelse(output_df[["S_B_ΔG"]] >= -3, "yellow",
                                     "red")))
 
-# Conditionally add MIC_ranked coloring
-if ("MIC_ranked" %in% names(output_df)) {
+# Conditionally add MIC_rank coloring
+if ("MIC_rank" %in% names(output_df)) {
   table_out <- table_out %>%
-    column_spec(which(names(output_df) == "MIC_ranked"), color = "black",
-                background = colorRampPalette(c("green", "yellow", "red"))(100)[as.numeric(cut(output_df$MIC_ranked, breaks = 100))])
+    column_spec(which(names(output_df) == "MIC_rank"), color = "black",
+                background = colorRampPalette(c("green", "yellow", "red"))(100)[as.numeric(cut(output_df$MIC_rank, breaks = 100))])
+}
+
+# Highlight MFE in yellow when the TIR structure is strong (< -15 kcal/mol)
+if ("MFE" %in% names(output_df)) {
+  table_out <- table_out %>%
+    column_spec(which(names(output_df) == "MFE"), color = "black",
+                background = ifelse(output_df$MFE < -15, "yellow", "white"))
 }
 
 

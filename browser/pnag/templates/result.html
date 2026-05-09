@@ -152,8 +152,12 @@
 										Tm = Melting temperature<br>
 										pur_perc = percentage of purine bases in ASO sequence (too high % should be avoided) <br>
 										S_B_ΔG = self-binding minimum free energy of the ASO, calculated with RNAfold (green: MFE > -1, yellow: -3 to -1, red: &lt; -3)<br>
+										MFE = minimum free energy of the gene's translation initiation region (yellow if &lt; -15 kcal/mol)<br>
 										{% if use_ml == "yes" %}
 											MIC_rank = rank of ASOs by predicted MIC (lower rank = better predicted efficacy)<br>
+											MIC_predicted = predicted minimum inhibitory concentration (random forest model). Hover the
+											<span style="color:#1f77b4;font-weight:bold">SHAP</span> link next to each value for a SHAP force
+											plot showing which features pushed the prediction up or down.<br>
 										{% endif %}
 										long_pur_stretch = longest purine stretch (too long purine stretches should be avoided) <br>
 										Mw = molecular weight (Da)<br>
@@ -167,11 +171,6 @@
 										{% endif %}
 										{% if add_screen == "essential_genes" %}
 											OT_ess_TIR = off-targets in TIR of user-defined essential genes<br>
-										{% endif %}
-										{% if use_ml == "yes" %}
-											MIC_predicted = predicted minimum inhibitory concentration (random forest model). Hover the
-											<span style="color:#1f77b4;font-weight:bold">SHAP</span> link next to each value for a SHAP force
-											plot showing which features pushed the prediction up or down.<br>
 										{% endif %}
 
 									</p>

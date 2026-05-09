@@ -88,6 +88,58 @@
 			</div>
 		</div>
 		<hr class="hr-line">
+		<div class="faq-ml">
+			<!-- faq question -->
+			<h5 class="faq-page">How does the machine-learning option work?</h5>
+			<!-- faq answer -->
+			<div class="faq-body">
+				<p>If the "Use machine-learning (random forest) model to predict MICs" box is ticked, MASON
+					feeds each designed ASO into a random forest regressor and returns a predicted minimum
+					inhibitory concentration (MIC) along with a relative rank.
+				<ul>
+					<li>The model was trained on an internal, unpublished dataset of ~586 PNAs targeting the
+						essential genome of uropathogenic <i>E. coli</i> str. 536 (UPEC 536). Each PNA in
+						the training set was assayed for its MIC against UPEC 536.</li>
+					<li>Input features include PNA sequence properties (Tm, % self-complementary bases, purine
+						percentage), the number of off-targets in TIR regions of UPEC 536 (1 mismatch), the
+						codon-adaptation index (CAI) of the target gene, and the minimum free energy (MFE)
+						of the target's translation initiation region.</li>
+					<li>Predicted MIC values are reported in µM. Because the model was trained on UPEC 536
+						data, they should not be interpreted as absolute MICs in other organisms — instead,
+						use the MIC_rank column to compare ASOs <i>relative to each other</i>.</li>
+				</ul>
+				</p>
+			</div>
+		</div>
+		<hr class="hr-line">
+		<div class="faq-shap">
+			<!-- faq question -->
+			<h5 class="faq-page">What is a SHAP value?</h5>
+			<!-- faq answer -->
+			<div class="faq-body">
+				<p>SHAP (SHapley Additive exPlanations) values explain individual predictions by attributing
+					each feature a contribution that pushes the model output above or below the average
+					prediction (the "base value"). They are based on game-theoretic Shapley values and are
+					computed here with the
+					<a href="https://shap.readthedocs.io/" target="_blank"><code>shap</code> Python library</a>
+					applied to the random forest MIC predictor.
+				<p>For every designed ASO we generate a <b>force plot</b> which can be opened by hovering over
+					the <span style="color:#1f77b4;font-weight:bold">SHAP</span> link in the MIC_predicted
+					column of the result table. In the plot:
+				<ul>
+					<li>the bold value on the axis is the model's predicted MIC for that ASO,</li>
+					<li>the "base value" is the average predicted MIC across the training set,</li>
+					<li><span style="color:#FF8C00;font-weight:bold">orange</span> bars push the prediction
+						<i>up</i> (worse predicted MIC), <span style="color:#00008B;font-weight:bold">dark
+						blue</span> bars push it <i>down</i> (better predicted MIC), and the size of the bar
+						reflects how strongly that feature moved the prediction.</li>
+				</ul>
+				This makes it possible to see, for any given ASO, which sequence properties or off-target
+				counts are responsible for the predicted MIC.
+				</p>
+			</div>
+		</div>
+		<hr class="hr-line">
 		<div class="faq-four">
 			<!-- faq question -->
 			<h5 class="faq-page">How to interpret the off-target output table?</h5>

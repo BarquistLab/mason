@@ -457,7 +457,11 @@ def start():
         time_string = datetime.utcnow().strftime('%Y_%m_%d_%H_%M_%S')
         additional_screen = request.form['add_screen']
         target_genes = [x.strip() for x in form.genes.data.split(',') if x.strip()]
-        b_before = form.bases_before.data
+        # bases_before may be empty, "N", or "N, M" (before, after)
+        bb_raw = (form.bases_before.data or '').strip()
+        bb_parts = [p.strip() for p in bb_raw.split(',')] if bb_raw else []
+        b_before = bb_parts[0] if len(bb_parts) >= 1 and bb_parts[0] else "0"
+        b_after = bb_parts[1] if len(bb_parts) >= 2 and bb_parts[1] else "0"
         use_ml = "yes" if form.use_ml.data else "no"
 
         if form.essential.data:
@@ -485,7 +489,7 @@ def start():
             threading.Thread(target=start_calculation, name="masons",
                              args=[str(path_parent) + "/mason.sh", paths['genome'],
                                    paths['gff'], tgene, str(form.len_PNA.data),
-                                   str(b_before),
+                                   str(b_before), str(b_after),
                                    resultid, resultid, additional_screen,
                                    use_ml]).start()
 

@@ -3,7 +3,7 @@
 # I start with assigning the flags (user inputs):
 
 
-while getopts f:g:t:l:m:p:i:b:s:u: flag
+while getopts f:g:t:l:m:p:i:b:a:s:u: flag
 do
     # shellcheck disable=SC2220
     case "${flag}" in
@@ -14,6 +14,7 @@ do
 	i) result_id=${OPTARG};;
 	p) pna_input=${OPTARG};;
 	b) bases_before=${OPTARG};;
+	a) bases_after=${OPTARG};;
 	s) screen=${OPTARG};;
 	u) use_ml=${OPTARG};;
     esac
@@ -33,8 +34,13 @@ if [ -z "$bases_before" ]; then
     bases_before=$((0))
 fi
 
+if [ -z "$bases_after" ]; then
+    bases_after=$((0))
+fi
+
 # I print them out to be sure it worked out:
 echo "bases_before= $bases_before"
+echo "bases_after= $bases_after"
 echo "fasta: $fasta";
 echo "gff: $gff";
 echo "screen: $screen";
@@ -120,8 +126,15 @@ if [ -z  "$pna_input" ];
 then
     echo "no PNA put in"
     # Now I create a list of all PNAs:
+    # Default to 46 (-30 to +16, original behavior) so the heatmap keeps the
+    # AUG/SD roughly centered. Only extend past 46 if bases_after pushes the
+    # rightmost ASO past that.
+    STARTREG_LEN=$((30 + length + bases_after))
+    if [ "$STARTREG_LEN" -lt 46 ]; then
+        STARTREG_LEN=46
+    fi
     grep -A 1 $target "$REF/full_transcripts_$FASTA_NEW" | \
-	    sed -E 's/^([A-Z]{46}).*/\1/' > "$REF/targetgene_startreg.fasta" # select -30 to + 16 region
+	    sed -E "s/^([A-Z]{${STARTREG_LEN}}).*/\1/" > "$REF/targetgene_startreg.fasta" # -30 to (start codon + length + bases_after), min 46
 	  # do same but get -30 to +30 region
 	  grep -A 1 $target "$REF/full_transcripts_$FASTA_NEW" | \
       sed -E 's/^([A-Z]{60}).*/\1/' > "$REF/targetgene_mfe.fasta"
@@ -141,7 +154,7 @@ then
     # Now I run the python script which I wrote to design PNAs:
     echo "$length"
     echo "$result_id"
-    python ./pnag/make_pnas.py "$length" "$RES" "$bases_before" >> logfile_masonscript.log 2>&1
+    python ./pnag/make_pnas.py "$length" "$RES" "$bases_before" "$bases_after" >> logfile_masonscript.log 2>&1
 
     # Per-base pairing probability (from RNAfold dot plot) for VARNA -colorMap
     PAIR_PROBS=$(python ./pnag/parse_dotplot.py "$REF/dot.ps" ${#SEQ})

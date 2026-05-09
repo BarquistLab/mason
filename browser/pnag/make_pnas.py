@@ -13,9 +13,12 @@ from pna_utils import calculate_purine_stats, calculate_self_complementarity, be
 length = int(sys.argv[1])
 res_path = sys.argv[2]
 bases_before = int(sys.argv[3])
+bases_after = int(sys.argv[4]) if len(sys.argv) > 4 and sys.argv[4] else 0
 
 print("BASES BEFORE:")
 print(bases_before)
+print("BASES AFTER:")
+print(bases_after)
 
 # import fasta file:
 target_regions = list(SeqIO.parse(res_path + "/reference_sequences" + "/targetgene_startreg.fasta", "fasta"))
@@ -88,7 +91,10 @@ for r in range(len(target_regions)):
 
 
     start_pos = 30 - bases_before if bases_before != 0 else 30 - (length - 3)
-    for i in range(start_pos, 31):   # 30 is start of cds
+    end_pos = 31 + bases_after  # extend downstream past the 1st base of the start codon
+    for i in range(start_pos, end_pos):   # 30 is start of cds
+        if i + length > len(seq):
+            break  # ran out of sequence (e.g., short gene or near contig end)
         s = seq[i:i+length]
         aso = s.reverse_complement()
 

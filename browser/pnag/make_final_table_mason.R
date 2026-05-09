@@ -80,11 +80,18 @@ table_out <- kable(display_df, format = "html", escape = FALSE) %>%
                              ifelse(output_df[["S_B_ΔG"]] >= -3, "yellow",
                                     "red")))
 
-# Conditionally add MIC_rank coloring
-if ("MIC_rank" %in% names(output_df)) {
+# Color MIC_predicted relatively: lowest MIC = green, highest = red
+if ("MIC_predicted" %in% names(output_df)) {
+  mic_vals <- as.numeric(output_df$MIC_predicted)
+  if (length(unique(mic_vals)) > 1) {
+    mic_bins <- as.numeric(cut(mic_vals, breaks = 100))
+    mic_bg <- colorRampPalette(c("green", "yellow", "red"))(100)[mic_bins]
+  } else {
+    mic_bg <- rep("yellow", length(mic_vals))
+  }
   table_out <- table_out %>%
-    column_spec(which(names(output_df) == "MIC_rank"), color = "black",
-                background = colorRampPalette(c("green", "yellow", "red"))(100)[as.numeric(cut(output_df$MIC_rank, breaks = 100))])
+    column_spec(which(names(output_df) == "MIC_predicted"), color = "black",
+                background = mic_bg)
 }
 
 # Highlight MFE in yellow when the TIR structure is strong (< -15 kcal/mol)

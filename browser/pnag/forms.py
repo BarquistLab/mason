@@ -57,9 +57,8 @@ class startForm(BaseOrganismForm):
                             message="please use less than 5 genes")])
     len_PNA = IntegerField('Length of ASOs', validators=[InputRequired(), NumberRange(min=7, max=16)])
 
-    bases_before = StringField('Bases before (5 prime) CDS (start codon) to start ASO design (optional)',
-                               validators=[
-                                   Regexp("^[1-9]$|^1[0-9]$|^2[0]$|^$", message="Numbers between 1-20 are acepted")])
+    bases_before = StringField('Bases before / after start codon (optional)',
+                               validators=[Optional()])
     use_ml = BooleanField('Use machine-learning (random forest) model to predict MICs', default=False)
     submit = SubmitField('Submit & start MASON')
 
@@ -70,6 +69,16 @@ class startForm(BaseOrganismForm):
             raise ValidationError("Don't use the fasta record of the gene. Use the locus_tag instead.")
         elif genes.data.find(';') != -1:
             raise ValidationError("Please separate the locus_tags by comma: ','")
+
+    def validate_bases_before(self, field):
+        if not field.data or not field.data.strip():
+            return
+        parts = [p.strip() for p in field.data.split(',')]
+        if len(parts) > 2:
+            raise ValidationError('Use the format "before" or "before, after".')
+        for p in parts:
+            if not p.isdigit() or not (0 <= int(p) <= 20):
+                raise ValidationError('Each value must be a number between 0 and 20.')
 
 
 class ScrambledForm(BaseOrganismForm):

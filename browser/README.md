@@ -22,9 +22,9 @@ This is a basic Webserver for using the MASON algorithm. MASON can be accessed v
 
 | Category | Packages |
 |----------|----------|
-| Python | python >=3.12, flask, flask-wtf, biopython, numpy, pandas, matplotlib, seaborn, scikit-learn, openpyxl |
+| Python | python >=3.12, flask, flask-wtf, biopython, numpy, pandas, matplotlib, seaborn, scikit-learn, shap, openpyxl |
 | R | r-base >=4.3, r-ggplot2, r-dplyr, r-readr, r-kableextra, r-viridis, r-writexl, bioconductor-rmelting |
-| CLI tools | bedtools, seqmap, bioawk, viennarna (esl-shuffle), openjdk |
+| CLI tools | bedtools, seqmap, bioawk, viennarna (RNAfold, esl-shuffle), openjdk |
 | pip | cdifflib |
 
 ## Installation

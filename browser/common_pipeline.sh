@@ -16,8 +16,8 @@ setup_directories() {
     FASTA="$(basename -- "$fasta")"
     WARNINGS="$RES/warnings.txt"
 
-    # delete old files (>30 days)
-    find ./pnag/static/data/20*  -mtime +30  -delete 2>/dev/null
+    # delete old files (>10 days)
+    find ./pnag/static/data/20*  -mtime +10  -delete 2>/dev/null
 
     mkdir -p "$REF" "$OUT"
     touch "$WARNINGS"

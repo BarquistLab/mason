@@ -26,10 +26,13 @@ dependencies:
   - r-viridis
   - r-writexl
   - bioconductor-rmelting
+  # ML dependencies
+  - numba
   # CLI tools
   - bedtools
   - seqmap
   - bioawk
+  - emboss
   - viennarna
   - openjdk >=11
   # pip dependencies

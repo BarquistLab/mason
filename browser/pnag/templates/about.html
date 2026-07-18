@@ -9,6 +9,14 @@
 		web-interface </p>
 		<p>This project is licensed under the terms of the MIT license. </p>
 
+		<legend class="border-bottom mb-4">Usage statistics</legend>
+		{% if usage_plots_available %}
+			<img src="{{ url_for('static', filename='data/usage_plot_overall.svg') }}" width="100%" alt="Overall usage per week"/>
+			<img src="{{ url_for('static', filename='data/usage_plot_by_tool.svg') }}" width="100%" alt="Usage per tool per week" style="margin-top: 1rem;"/>
+		{% else %}
+			<p>Usage statistics are currently unavailable.</p>
+		{% endif %}
+
 		<legend class="border-bottom mb-4">Contact</legend>
 	    <p>Jakob Jung <br>
 		Institute for Molecular Infection Biology (IMIB), Würzburg, Germany & <br>

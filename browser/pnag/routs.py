@@ -20,6 +20,7 @@ import base64
 import json
 import threading
 from start import start_calculation, start_scrambler, start_checker
+from pnag.generate_usage_plots import main as regenerate_usage_plots
 from pathlib import Path
 
 # Persistent usage logger — one line per job submission
@@ -503,6 +504,7 @@ def start():
                           datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
                           request.headers.get('X-Forwarded-For', request.remote_addr).split(',')[0].strip(),
                           form.presets.data, '; '.join(target_genes))
+        regenerate_usage_plots()
 
         return redirect(url_for('result', result_id=time_string))
     autofill = request.method == 'GET' and request.path == '/startauto'
@@ -563,6 +565,7 @@ def scrambler():
                           datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
                           request.headers.get('X-Forwarded-For', request.remote_addr).split(',')[0].strip(),
                           form.presets.data, pna_seq)
+        regenerate_usage_plots()
 
         return redirect(url_for('result_scrambler', result_id=time_string))
     return render_template("scrambler.html", title="Scrambler", form=form, essential=ESSENTIAL_GENES, essential_studies=ESSENTIAL_GENE_STUDIES)
@@ -629,6 +632,7 @@ ATATATATA"""
                           datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
                           request.headers.get('X-Forwarded-For', request.remote_addr).split(',')[0].strip(),
                           form.presets.data, pna_seq.count('>'))
+        regenerate_usage_plots()
 
         return redirect(url_for('result_checker', result_id=time_string))
     return render_template("checker.html", title="ASO-Checker", essential=ESSENTIAL_GENES, essential_studies=ESSENTIAL_GENE_STUDIES, form=form)
@@ -746,7 +750,10 @@ def download(path):
 
 @app.route("/about")
 def about():
-    return render_template("about.html", title="About")
+    data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static/data')
+    plots_available = os.path.exists(os.path.join(data_dir, 'usage_plot_overall.svg'))
+    return render_template("about.html", title="About",
+                           usage_plots_available=plots_available)
 
 
 @app.route("/help")
